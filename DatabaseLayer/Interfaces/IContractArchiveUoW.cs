@@ -6,6 +6,8 @@ namespace DatabaseLayer.Interfaces
 {
     public interface IContractArchiveUoW : IDisposable
     {
+        IReadonlyRepoEF<AdditionalTerm> AdditionalTerms { get; }
+        IReadonlyRepoEF<AdditionalTermFile> AdditionalTermFiles { get; }
         IPageRepository<Estimate> Estimates { get; }
         IReadonlyRepoEF<EstimateFile> EstimateFiles { get; }
         IReadonlyRepoEF<SlctnProcedureFile> SlctnProcedureFiles { get; }

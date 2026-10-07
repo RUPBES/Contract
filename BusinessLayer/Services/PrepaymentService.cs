@@ -1,31 +1,45 @@
 ﻿using AutoMapper;
+using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.Shared;
+using BusinessLayer.Models.Extra;
 using BusinessLayer.Models.KDO;
+using BusinessLayer.Models.Settings;
 using DatabaseLayer.Interfaces;
+using DatabaseLayer.Interfaces.Dapper;
 using DatabaseLayer.Models;
+using DatabaseLayer.Models.EXTRA;
 using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Reflection;
 
 namespace BusinessLayer.Services
 {
-    internal class PrepaymentService: IPrepaymentService
+    internal class PrepaymentService : IPrepaymentService
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly DbSettings _archiveOptions;
         private readonly IContractArchiveUoW _databaseArch;
         private readonly IContractsLogger _logger;
-        private readonly IHttpContextAccessor _http;
+        private readonly IReadonlyPrepaymentDapperRepo _prepaymentDapperRepo;
 
-        public PrepaymentService(IContractUoW database, IMapper mapper, IContractsLogger logger, IHttpContextAccessor http, IContractArchiveUoW databaseArch)
+        public PrepaymentService(
+            IContractUoW database,
+            IMapper mapper,
+            IContractsLogger logger,
+            IContractArchiveUoW databaseArch,
+            IOptions<DbSettings> archiveOptions,
+            IReadonlyPrepaymentDapperRepo prepaymentDapperRepo)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
-            _http = http;
             _databaseArch = databaseArch;
+            _prepaymentDapperRepo = prepaymentDapperRepo;
+            _archiveOptions = archiveOptions.Value;
         }
 
         public int? Create(PrepaymentDTO item)
@@ -56,7 +70,7 @@ namespace BusinessLayer.Services
                            methodName: MethodBase.GetCurrentMethod().Name);
 
             return null;
-        }
+        } 
 
         public void Delete(int id, int? secondId = null)
         {
@@ -139,34 +153,41 @@ namespace BusinessLayer.Services
             }
         }
 
+
         public IEnumerable<PrepaymentDTO> Find(Func<Prepayment, bool> predicate, bool? useArchiveData)
         {
             return (useArchiveData == true) ?
-                _mapper.Map<IEnumerable<PrepaymentDTO>>(_databaseArch.Prepayments.Find(predicate)):
+                _mapper.Map<IEnumerable<PrepaymentDTO>>(_databaseArch.Prepayments.Find(predicate)) :
                 _mapper.Map<IEnumerable<PrepaymentDTO>>(_database.Prepayments.Find(predicate));
         }
 
         public IEnumerable<PrepaymentDTO> FindByContractId(int id, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<PrepaymentDTO>>( (useArchiveData == true) ?
+            return _mapper.Map<IEnumerable<PrepaymentDTO>>((useArchiveData == true) ?
                 _databaseArch.Prepayments.Find(p => p.ContractId == id) :
                  _database.Prepayments.Find(p => p.ContractId == id)
                 );
         }
 
-        public AmendmentDTO? GetAmendmentByPrepaymentId(int prepaymentId)
+        //public AmendmentDTO? GetAmendmentByPrepaymentId(int prepaymentId)
+        //{
+        //    return _mapper.Map<AmendmentDTO>(_database.PrepaymentAmendments?.Find(p => p.PrepaymentId == prepaymentId)?.FirstOrDefault()?.Amendment);
+        //}
+
+        public async Task<PrepaymentScheduleDTO>? GetPeriodAdvancesAsync(int contractId, DateTime startPeriod, DateTime endPeriod, bool? useArchiveData)
         {
-            var prepModelChange = _database.Prepayments.GetById(prepaymentId);
-            return _mapper.Map<AmendmentDTO>(_database.PrepaymentAmendments?.Find(p => p.PrepaymentId == prepModelChange.ChangePrepaymentId)?.FirstOrDefault()?.Amendment);
+            var prepSchdl = _mapper.Map<PrepaymentScheduleDTO>(await _prepaymentDapperRepo.GetTotalsAsync(contractId, useArchiveData == true? _archiveOptions.TargetArchiveDb : null));
+            prepSchdl.Periods = _mapper.Map<List<PeriodAdvanceDTO>>(await _prepaymentDapperRepo.GetPeriodAdvancesAsync(contractId, startPeriod, endPeriod, useArchiveData == true ? _archiveOptions.TargetArchiveDb : null));
+            return prepSchdl;
         }
 
         public void AddAmendmentToPrepayment(int amendmentId, int prepaymentId)
         {
             if (amendmentId > 0 && prepaymentId > 0)
             {
-                _database.PrepaymentAmendments.Create(new PrepaymentAmendment 
-                { 
-                    AmendmentId = amendmentId, 
+                _database.PrepaymentAmendments.Create(new PrepaymentAmendment
+                {
+                    AmendmentId = amendmentId,
                     PrepaymentId = prepaymentId
                 });
 
@@ -218,12 +239,12 @@ namespace BusinessLayer.Services
                 if (ob == null)
                     obj.Item2 = new DateTime(1900, 1, 1);
                 else obj.Item2 = (useArchiveData == true) ?
-                        (DateTime )_databaseArch.Amendments.Find(x => x.Id == ob.AmendmentId).Select(x => x.Date).FirstOrDefault() :
+                        (DateTime)_databaseArch.Amendments.Find(x => x.Id == ob.AmendmentId).Select(x => x.Date).FirstOrDefault() :
                         (DateTime)_database.Amendments.Find(x => x.Id == ob.AmendmentId).Select(x => x.Date).FirstOrDefault();
                 obj.Item1 = item;
                 listSort.Add(obj);
             }
-            listSort = listSort.OrderBy(x => x.Item2).ToList(); 
+            listSort = listSort.OrderBy(x => x.Item2).ToList();
             return _mapper.Map<Prepayment>(listSort.Select(x => x.Item1).LastOrDefault());
         }
 
@@ -240,5 +261,39 @@ namespace BusinessLayer.Services
             }
             else return null;
         }
+
+
+
+
+        public void FillReceived(PrepaymentReceivedDTO item)
+        {
+            if (item is not null)
+            {
+                _database.PrepaymentReceiveds.Update(_mapper.Map<PrepaymentReceived>(item));
+                _database.Save();
+
+                _logger.WriteLog(
+                           logLevel: LogLevel.Information,
+                           message: $"update prepayment received, ID={item.Id}",
+                           nameSpace: typeof(PrepaymentService).Name,
+                           methodName: MethodBase.GetCurrentMethod().Name);
+            }
+            else
+            {
+                _logger.WriteLog(
+                           logLevel: LogLevel.Warning,
+                           message: $"not update prepayment received, object is null",
+                           nameSpace: typeof(PrepaymentService).Name,
+                           methodName: MethodBase.GetCurrentMethod().Name);
+            }
+        }
+
+        public IEnumerable<PrepaymentReceivedDTO> FindRecieved(Func<PrepaymentReceived, bool> predicate, bool? useArchiveData)
+        {
+            return (useArchiveData == true) ?
+                 Array.Empty<PrepaymentReceivedDTO>() : // _mapper.Map<IEnumerable<PrepaymentReceivedDTO>>(_databaseArch.PrepaymentReceiveds.Find(predicate)) :
+                _mapper.Map<IEnumerable<PrepaymentReceivedDTO>>(_database.PrepaymentReceiveds.Find(predicate));
+        }
+
     }
 }

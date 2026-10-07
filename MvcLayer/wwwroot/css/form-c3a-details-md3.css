@@ -1,0 +1,819 @@
+﻿:root {
+    --border: #d9e1ec;
+    --border-light: #e6ebf2;
+    --head: #edf2f9;
+    --head-light: #f8fafd;
+    --text: #344762;
+    --muted: #8290a5;
+    --cost-head: #eaf1ff;
+    --cost-bg: #f7faff;
+    --cost-text: #1758a3;
+    --ded-head: #fff0f0;
+    --ded-bg: #fff9f9;
+    --ded-text: #c63f3f;
+    --pay-head: #dff4ee;
+    --pay-bg: #effaf7;
+    --pay-text: #08775f;
+    --summary-bg: #f3f6fa;
+    --summary-border: #cbd6e3;
+}
+
+body {
+    margin: 0;
+    padding: 24px;
+    background: #f4f6fa;
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+}
+
+.table-card {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(40, 62, 95, .07);
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+}
+
+/* =========================================================WIDTHS========================================================= */
+
+.w-org {
+    width: 205px;
+    min-width: 115px;
+}
+
+.w-period {
+    width: 155px;
+}
+
+.w-dates {
+    width: 125px;
+}
+
+.w-cost {
+    width: 260px;
+    min-width: 260px;
+    /* width: 285px; */
+}
+
+.w-deduction {
+    /* width: 385px; */
+    width: 320px;
+    min-width: 320px;
+}
+
+.w-pay {
+    width: 115px;
+    min-width: 115px;
+}
+
+/* =========================================================
+                                                                                                                                                                               HEADER
+                                                                                                                                                                               ========================================================= */
+
+thead th {
+    padding: 0;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+}
+
+    thead th:last-child {
+        border-right: 0;
+    }
+
+.simple-head {
+    height: 43px;
+    background: var(--head);
+    color: #697b96;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.group-head {
+    height: 43px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.group-cost {
+    background: var(--cost-head);
+    color: var(--cost-text);
+}
+
+.group-deduction {
+    background: var(--ded-head);
+    color: var(--ded-text);
+    border-bottom-color: #edb8b8;
+}
+
+.group-pay {
+    background: var(--pay-head);
+    color: var(--pay-text);
+}
+
+.group-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 100%;
+}
+
+.group-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 18px;
+    min-width: 20px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: rgba(255,255,255,.7);
+    font-size: 9px;
+}
+
+/* =========================================================
+                                                                                                                                                                               DATA ROW
+                                                                                                                                                                               ========================================================= */
+
+tbody tr.data-row td {
+    height: 69px;
+    padding: 7px 9px;
+    border-right: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light);
+    background: #fff;
+    vertical-align: middle;
+}
+
+    tbody tr.data-row td:last-child {
+        border-right: 0;
+    }
+
+tbody tr.data-row:hover td {
+    background: #f8fbff;
+}
+
+tbody tr.data-row.expanded td {
+    background: #f5f9ff;
+}
+
+/* =========================================================
+                                                                                                                                                                               FIRST CELLS + INLINE TOOLS
+                                                                                                                                                                               ========================================================= */
+
+.main-cell {
+    position: relative;
+    padding-right: 66px !important;
+}
+
+.org-name {
+    display: block;
+    color: #2f4567;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.org-type {
+    display: block;
+    margin-top: 3px;
+    color: #8b97a9;
+    font-size: 10px;
+}
+
+.period-main {
+    display: block;
+    color: #425572;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.period-label {
+    display: block;
+    margin-top: 3px;
+    color: #98a2b1;
+    font-size: 10px;
+}
+
+/* Кнопки прямо в строке */
+.row-tools {
+    position: absolute;
+    top: 75%;
+    right: 8px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px;
+    border: 1px solid #dde4ed;
+    border-radius: 8px;
+    background: rgba(255,255,255,.96);
+    opacity: .65;
+    transition: opacity .15s ease, box-shadow .15s ease;
+}
+
+.data-row:hover .row-tools,
+.data-row.expanded .row-tools {
+    opacity: 1;
+    box-shadow: 0 2px 6px rgba(53, 74, 103, .08);
+}
+
+.row-tool {
+    position: relative;
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #607895;
+    cursor: pointer;
+}
+
+    .row-tool:hover {
+        background: #edf3fa;
+    }
+
+    .row-tool svg {
+        width: 14px;
+        height: 14px;
+    }
+
+.file-badge {
+    position: absolute;
+    top: -4px;
+    right: -3px;
+    min-width: 14px;
+    height: 14px;
+    padding: 0 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    background: #617fa7;
+    color: white;
+    font-size: 8px;
+    font-weight: 700;
+}
+
+.expand-icon {
+    transition: transform .2s ease;
+}
+
+.data-row.expanded .expand-icon {
+    transform: rotate(180deg);
+}
+
+/* =========================================================
+                                                                                                                                                                               DATES
+                                                                                                                                                                               ========================================================= */
+
+.dates-cell {
+    text-align: center;
+}
+
+.date-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 7px;
+}
+
+    .date-line + .date-line {
+        margin-top: 5px;
+    }
+
+.date-label {
+    color: #8996a8;
+    font-size: 10px;
+}
+
+.date-value {
+    color: #455b78;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.date-empty {
+    color: #abb5c2;
+}
+
+/* =========================================================
+                                                                                                                                                                               AMOUNTS
+                                                                                                                                                                               ========================================================= */
+
+.amount-grid {
+    display: grid;
+}
+
+.cost-grid {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.ded-grid {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.amount-item {
+    min-width: 0;
+    padding: 0 7px;
+    text-align: right;
+    border-right: 1px solid #e5e9ef;
+}
+
+    /* .amount-item:first-child {
+                                                                                                                                                                            padding-left: 0;
+                                                                                                                                                                        } */
+
+    .amount-item:last-child {
+        /* padding-right: 0; */
+        border-right: 0;
+    }
+
+.amount-label {
+    display: block;
+    overflow: hidden;
+    color: #8794a7;
+    font-size: 9px;
+    line-height: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.amount-value {
+    display: block;
+    margin-top: 2px;
+    font-size: 12.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.cost-value {
+    color: var(--cost-text);
+}
+
+.ded-value {
+    color: var(--ded-text);
+}
+
+.amount-total-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 5px;
+    padding-top: 4px;
+    border-top: 1px dashed #dbe2ea;
+}
+
+.amount-total {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+}
+
+.amount-total-label {
+    color: #7d8a9d;
+    font-size: 9px;
+}
+
+.amount-total-value {
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+    .amount-total-value.cost {
+        color: var(--cost-text);
+    }
+
+    .amount-total-value.ded {
+        color: var(--ded-text);
+    }
+
+/* =========================================================
+                                                                                                                                                                               PAY
+                                                                                                                                                                               ========================================================= */
+
+.pay-cell {
+    background: var(--pay-bg) !important;
+    text-align: right;
+}
+
+.pay-value {
+    color: var(--pay-text);
+    font-size: 15px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* =========================================================
+                                                                                                                                                                               DETAILS
+                                                                                                                                                                               ========================================================= */
+
+.details-row {
+    display: none;
+}
+
+    .details-row.open {
+        display: table-row;
+    }
+
+.details-cell {
+    padding: 0 !important;
+    border-right: 0 !important;
+    background: #f7faff !important;
+}
+
+.details-panel {
+    padding: 15px 18px;
+    border-bottom: 1px solid #dce5f0;
+}
+
+.details-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 40px;
+}
+
+.details-title {
+    margin-bottom: 8px;
+    color: #919397;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.details-list {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1px 20px;
+    font-size: 14px;
+}
+
+.details-label {
+    color: #718097;
+}
+
+.details-value {
+    color: #3d5270;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+    .details-value.ded {
+        color: var(--ded-text);
+    }
+
+.details-bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 10px;
+    padding-top: 5px;
+    border-top: 1px solid #dde6ef;
+}
+
+.details-top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dde6ef;
+}
+
+.detail-files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.detail-file {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 9px;
+    border: 1px solid #d1dce8;
+    border-radius: 6px;
+    background: #fff;
+    color: #41648a;
+    text-decoration: none;
+    font-size: 10px;
+}
+
+    .detail-file:hover {
+        background: #eef4fb;
+    }
+
+.actions {
+    display: flex;
+    gap: 6px;
+}
+
+.action {
+    height: 30px;
+    padding: 0 11px;
+    border: 1px solid #ccd7e4;
+    border-radius: 6px;
+    background: white;
+    color: #50657f;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+    .action:hover {
+        background: #eef4fa;
+    }
+
+    .action.delete {
+        color: #c14d4d;
+    }
+
+/* =========================================================
+                                                                                                                                                                               SUMMARY ROWS
+                                                                                                                                                                               ========================================================= */
+
+.summary-row td {
+    padding: 7px 9px;
+    border-right: 1px solid #d5dee9;
+    border-bottom: 1px solid #cbd6e3;
+    background: var(--summary-bg);
+}
+
+.summary-row:last-child td {
+    border-bottom: 0;
+}
+
+.summary-label {
+    color: #536681;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+    .summary-label small {
+        display: block;
+        margin-top: 2px;
+        color: #8a96a7;
+        font-size: 9px;
+        font-weight: 400;
+        text-transform: none;
+    }
+
+.summary-number {
+    display: block;
+    color: #415570;
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.summary-cost {
+    background: #eef4ff !important;
+}
+
+    .summary-cost .summary-number {
+        color: var(--cost-text);
+    }
+
+.summary-deduction {
+    background: #fff4f4 !important;
+}
+
+    .summary-deduction .summary-number {
+        color: var(--ded-text);
+    }
+
+.summary-pay {
+    background: #e7f7f2 !important;
+}
+
+    .summary-pay .summary-number {
+        color: var(--pay-text);
+        font-size: 14px;
+    }
+
+.summary-mini {
+    display: grid;
+    gap: 0;
+}
+
+.summary-cost-grid {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.summary-ded-grid {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.summary-mini-item {
+    padding: 0 7px;
+    text-align: right;
+    border-right: 1px solid #d7dfe8;
+}
+
+    .summary-mini-item:first-child {
+        padding-left: 0;
+    }
+
+    .summary-mini-item:last-child {
+        padding-right: 0;
+        border-right: 0;
+    }
+
+.summary-mini-label {
+    display: block;
+    color: #8995a7;
+    font-size: 8px;
+    white-space: nowrap;
+}
+
+.summary-mini-value {
+    display: block;
+    margin-top: 2px;
+    color: #51627a;
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.summary-row.subcontract td:first-child {
+    border-top: 2px solid #c7d7e9;
+}
+
+.summary-row.own-force td:first-child {
+    border-top: 2px solid #d5ddd5;
+}
+
+/* =========================================================
+                                                                                                                                                                               FOOTER
+                                                                                                                                                                               ========================================================= */
+
+.table-footer {
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: #f8fafc;
+    border-top: 1px solid var(--border);
+}
+
+.footer-left {
+    display: flex;
+    gap: 8px;
+}
+
+.badge {
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 11px;
+    border: 1px solid #bfd1e8;
+    border-radius: 14px;
+    background: #eef5ff;
+    color: #4f6e98;
+    font-size: 11px;
+}
+
+    .badge.total {
+        border-color: #a6ddce;
+        background: #eafaf5;
+        color: #087861;
+    }
+
+/* =========================================================
+                                                                                                                                                                               FILE POPUP
+                                                                                                                                                                               ========================================================= */
+
+.file-popup {
+    position: fixed;
+    z-index: 1000;
+    min-width: 230px;
+    padding: 6px;
+    border: 1px solid #d6dfeb;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(37, 59, 91, .18);
+}
+
+    .file-popup a {
+        display: block;
+        padding: 7px 8px;
+        border-radius: 5px;
+        color: #41648a;
+        text-decoration: none;
+        font-size: 11px;
+    }
+
+        .file-popup a:hover {
+            background: #f1f5fa;
+        }
+
+
+
+.dm-modal {
+    width: min(90vw, 1600px) !important;
+    max-width: 1600px !important;
+}
+
+@media (max-width: 1150px) {
+    body {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .ded-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .cost-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 1050px) {
+    .w-deduction {
+        width: 280px;
+        min-width: 280px;
+    }
+
+    .w-cost {
+        width: 220px;
+        min-width: 220px;
+    }
+}
+
+@media (max-width: 940px) {
+    .w-cost,
+    .w-deduction {
+        width: 170px;
+        min-width: 170px;
+    }
+
+    .pay-value {
+        font-size: 14px;
+    }
+
+    .w-pay {
+        width: 100px;
+        min-width: 100px;
+    }
+
+    .w-org {
+        width: 100px;
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 940px) {
+    .ded-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .cost-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+}
+
+@media (max-width: 1349px) {
+    .amount-value {
+        white-space: wrap;
+    }
+}
+
+thead th {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 2;
+}
+
+.table-scroll {
+    max-height: 400px;
+    overflow-y: scroll;
+}

@@ -5,157 +5,237 @@
 @using BusinessLayer.Models;
 @using BusinessLayer.Models.KDO
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scopes
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject IHttpContextUserProvider HttpHelper
 
-
 @{
     var permissions = HttpHelper.GetUserPermissions();
+    var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
     ViewData["Title"] = "Проектно-сметная документация";
-    int backId = 0;
-    if (ViewBag.returnContractId == 0)
-        backId = ViewBag.contractId;
-    else backId = ViewBag.returnContractId;
-    // bool isAdmin = true;
+
     string redirectAction = "GetByContractId";
     string redirectController = "EstimateDocs";
-    var contract = Contract.GetById((int)ViewBag.contractId);
-    var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
 
+    int backId = ViewBag.returnContractId == 0
+        ? (int)ViewBag.contractId
+        : (int)ViewBag.returnContractId;
+
+    var contract = (int)ViewBag.contractId is > 0
+        ? Contract.GetById((int)ViewData["contractId"])
+        : null;
+
+    var isThereScopeWorks = Scopes.Find(x => x.ContractId == contract.Id)?.Count() > 0 && contract?.IsMultiple != true ? true : false;
 }
 
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
+<style>
+    .dm-modal {
+        width: min(90vw, 1600px) !important;
+        max-width: 1600px !important;
+    }
+</style>
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" @* style="width: 860px;" *@>
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"] по договору @contract?.Number</label>
-                    @if (backId != null && backId > 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
-                    }
-                    @if (backId == null || backId == 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
-                    }
-                </div>
-                <hr class="modal-line" />
-                @if (Model.Any())
-                {
-                    <table class="table table-striped table-bordered table-main table-hover">
-                        <thead>
-                            <tr>
-                                <th class="text-center" colspan="4">
-                                    Проектно-сметная документация
-                                </th>
-                                <th class="text-center">
-                                    Файлы ПСД
-                                </th>
-                                <th rowspan="2"></th>
-                            </tr>
-                            <tr>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.Number)
-                                </th>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.DateChange)
-                                </th>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.DateOutput)
-                                </th>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.Reason)
-                                </th>
-                                <th>Файлы изменений</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
+            <div class="dm-modal">
+                <div class="am-wrap">
+                    <!-- Шапка -->
+                    <div class="am-header">
+                        <span class="am-header-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                            </svg>
+                        </span>
+                        <div class="am-header-info">
+                            <h1 class="am-header-title">
+                                @ViewData["Title"]
+                                @if (contract != null)
+                                {
+                                    <span> по договору <span style="color:var(--md3-primary);">№@contract.Number</span></span>
+                                }
+
+                            </h1>
+                            @if (contract?.NameObject != null)
                             {
-                                <tr>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.Number)
-                                    </td>
-                                    <td>
-                                        @if (item.Reason.Equals("Первоночальная проектно-сметная документация договора") == false)
-                                        {
-                                            <span>@item.DateChange?.ToShortDateString()</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @item.DateOutput?.ToShortDateString()
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.Reason)
-                                    </td>
-                                    <td>
-                                        @foreach (FileDTO file in Files.GetAttachedFiles(item.Id, Folder.EstimateDocumentations))
-                                        {
-                                            <div>
-                                                <a href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>
-                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
-                                                {
-                                                    <a asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id"
-                                                       asp-route-redirectAction="@redirectAction"
-                                                       asp-route-redirectController="@redirectController"
-                                                       asp-route-contractId="@item.ContractId"
-                                                       title="Удалить файл"
-                                                       class="modal-link del-btn"
-                                                       data-message="Прикрепленный файл будет удален. Продолжить?">×</a>
-                                                }
-                                            </div>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
-                                        {
-                                            <span class="icon file-add" title="Добавить файл к письму">
-                                                <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@Folder.EstimateDocumentations" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                            </span>
-                                        }
-                                        @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
-                                        {
-                                            <span class="icon edit" title="Редактировать письмо">
-                                                <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                            </span>
-                                        }
-                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
-                                        {
-                                            <span class="icon delete" title="Удалить письмо">
-                                                <a asp-action="Delete"
-                                                   asp-route-id="@item.Id"
-                                                   asp-route-contractId="@item.ContractId"
-                                                   class="modal-link"
-                                                   data-message="Проектно-сметная документация и прикрепленные файлы будут удалены. Продолжить?">
-                                                </a>
-                                            </span>
-                                        }
-                                    </td>
-                                </tr>
+                                <div class="am-header-sub">@contract.NameObject</div>
                             }
-                        </tbody>
-                    </table>
-                }
-                else
-                {
-                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                        <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
-                        </symbol>
-                        <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
-                        </symbol>
-                        <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-                        </symbol>
-                    </svg>
-                    <div class="alert alert-warning d-flex align-items-center" role="alert">
-                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill" /></svg>
-                        <div>
-                            Отсутствуют данные
+                        </div>
+                        <div class="am-header-actions">
+                            @if (backId > 0)
+                            {
+                                <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn" aria-label="Закрыть"></a>
+                            }
+                            else
+                            {
+                                <a asp-controller="Contracts" asp-action="" class="close-btn" aria-label="Закрыть"></a>
+                            }
                         </div>
                     </div>
-                }
+                    <!-- Панель инструментов -->
+                    @if (isThereScopeWorks && permissions.IsCreator && isGRP_Contract)
+                    {
+                        <div class="am-toolbar">
+                            <div class="am-toolbar-actions">
+                                <a asp-action="Create" asp-controller="EstimateDocs" asp-route-contractId="@contract?.Id" asp-route-returnContractId="@ViewBag.returnContractId" class="am-btn am-btn-primary md3-btn--tonal" title="Добавить акт ввода">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19" />
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                    </svg>
+                                    <span>Добавить</span>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                    <!-- Карточка -->
+                    <div class="am-card">
+                        @if (Model.Any())
+                        {
+                            <div class="am-table-scroll">
+                                <table class="am-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-8per-110max"> @Html.DisplayNameFor(model => model.Number)</th>
+                                            <th class="col-6per-50min am-col-date">@Html.DisplayNameFor(model => model.DateChange)</th>
+                                            <th class="col-6per-50min am-col-date">@Html.DisplayNameFor(model => model.DateOutput)</th>
+                                            <th class="col-40per-250max">@Html.DisplayNameFor(model => model.Reason)</th>
+                                            <th class="col-5per-50max-files">
+                                                Файлы
+                                            </th>
+                                            <th class="am-col-actions col-2per-50max">
+                                            </th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model)
+                                        {
+                                            <tr>
+                                                <!-- Номер -->
+                                                <td class="col-8per-110max">
+                                                    <div class="am-num">
+                                                        @Html.DisplayFor(modelItem => item.Number)
+                                                    </div>
+                                                </td>
+
+                                                <!-- Дата -->
+                                                <td class="col-6per-50min am-col-date">
+                                                    <span class="am-date-val">
+                                                        @if (item.Reason.Equals("Первоночальная проектно-сметная документация договора") == false)
+                                                        {
+                                                            @item?.DateChange?.ToString("dd MMMM yyyy")
+                                                        }
+                                                    </span>
+                                                </td>
+                                                <!-- Дата -->
+                                                <td class="col-6per-50min am-col-date">
+                                                    <span class="am-date-val">
+                                                        @item?.DateOutput?.ToString("dd MMMM yyyy")
+                                                    </span>
+                                                </td>
+                                                <td class="col-40per-250max">
+                                                    @Html.DisplayFor(modelItem => item.Reason)
+                                                </td>
+
+                                                <!-- Файлы -->
+                                                <td class="col-5per-50max">
+                                                    @foreach (FileDTO file in Files.GetAttachedFiles(item.Id, Folder.EstimateDocumentations))
+                                                    {
+                                                        <div class="am-file-row">
+                                                            <a href="~/Files/OpenFile?id=@file.Id" title="@file.FileName" class="am-file-link" target="_blank">@file.FileName</a>
+                                                            @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
+                                                            {
+                                                                <a asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id"
+                                                                   asp-route-redirectAction="@redirectAction"
+                                                                   asp-route-redirectController="@redirectController"
+                                                                   asp-route-contractId="@item.ContractId"
+                                                                   asp-route-returnContractId="@ViewBag.returnContractId"
+                                                                   title="Удалить файл"
+                                                                   class="modal-link am-file-del"
+                                                                   data-message="Прикрепленный файл будет удален. Продолжить?">×</a>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </td>
+
+                                                <!-- Действия -->
+                                                <td class="am-col-actions col-5per-50max-files">
+                                                    <div class="am-actions-cell">
+                                                        @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
+                                                        {
+                                                            <span class="icon file-add" title="Добавить файл к письму">
+                                                                <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id"
+                                                                   asp-route-fileCategory="@Folder.EstimateDocumentations" asp-route-redirectAction=@redirectAction
+                                                                   asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId">
+                                                                </a>
+                                                            </span>
+                                                        }
+                                                        @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
+                                                        {
+                                                            <span class="icon edit" title="Редактировать письмо">
+                                                                <a asp-action="Edit"
+                                                                   asp-route-id="@item.Id"
+                                                                   asp-route-contractId="@item.ContractId"
+                                                                   asp-route-returnContractId="@ViewBag.returnContractId">
+                                                                </a>
+                                                            </span>
+                                                        }
+                                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
+                                                        {
+                                                            <span class="icon delete" title="Удалить письмо">
+                                                                <a asp-action="Delete"
+                                                                   asp-route-id="@item.Id"
+                                                                   asp-route-contractId="@item.ContractId"
+                                                                   asp-route-returnContractId="@ViewBag.returnContractId"
+                                                                   class="modal-link"
+                                                                   data-message="Проектно-сметная документация и прикрепленные файлы будут удалены. Продолжить?">
+                                                                </a>
+                                                            </span>
+                                                        }
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Подвал с итогами -->
+                            <div class="am-footer-row">
+                                <span class="am-footer-badge count">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="8" y1="6" x2="21" y2="6" />
+                                        <line x1="8" y1="12" x2="21" y2="12" />
+                                        <line x1="8" y1="18" x2="21" y2="18" />
+                                        <line x1="3" y1="6" x2="3.01" y2="6" />
+                                        <line x1="3" y1="12" x2="3.01" y2="12" />
+                                        <line x1="3" y1="18" x2="3.01" y2="18" />
+                                    </svg>
+                                    Записей: @Model.Count()
+                                </span>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Пустое состояние -->
+                            <div class="am-empty">
+                                <svg class="am-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <line x1="9" y1="13" x2="15" y2="13" />
+                                </svg>
+                                <p class="am-empty-text">Проектно-сметная документация отсутствует</p>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
     </div>

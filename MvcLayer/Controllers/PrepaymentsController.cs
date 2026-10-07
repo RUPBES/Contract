@@ -15,7 +15,6 @@ namespace MvcLayer.Controllers
     public class PrepaymentsController : Controller
     {
         private readonly IContractService _contractService;
-        private readonly IContractOrganizationService _contractOrganizationService;
         private readonly IOrganizationService _organization;
         private readonly IPrepaymentService _prepayment;
         private readonly IFormService _form;
@@ -30,7 +29,7 @@ namespace MvcLayer.Controllers
 
         public PrepaymentsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IPrepaymentService prepayment, IScopeWorkService scopeWork, IPrepaymentFactService prepaymentFact,
-            IPrepaymentPlanService prepaymentPlan, IAmendmentService amendment, IContractOrganizationService contractOrganizationService,
+            IPrepaymentPlanService prepaymentPlan, IAmendmentService amendment,
             IFormService form, IFileService file, ISWCostService SWCost, IPrepaymentTakeService prepaymentTake)
         {
             _contractService = contractService;
@@ -41,437 +40,284 @@ namespace MvcLayer.Controllers
             _scopeWork = scopeWork;
             _prepaymentFact = prepaymentFact;
             _prepaymentPlan = prepaymentPlan;
-            _contractOrganizationService = contractOrganizationService;
             _form = form;
             _file = file;
             _SWCost = SWCost;
             _prepaymentTake = prepaymentTake;
         }
 
-        public IActionResult Index()
+
+        public async Task<IActionResult> GetByContractId(int contractId, int returnContractId = 0)
         {
-            return View(_mapper.Map<IEnumerable<PrepaymentViewModel>>(_prepayment.GetAll()));
-        }
-
-        public IActionResult GetByContractId(int contractId, PrepaymentStatementViewModel? viewModel, int returnContractId = 0)
-        {
-            #region Проверка есть ли условие о наличии авансов
-            #region Поиск условий авансов
-            var avans = _contractService.Find(x => x.Id == contractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
-            if (avans == null && returnContractId != 0)
-                avans = _contractService.Find(x => x.Id == returnContractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
-            #endregion
-            if (avans != null)
+            var contract = _contractService.GetById(contractId);
+            if (contract?.PaymentСonditionsAvans?.Contains("Без авансов") is true)
             {
-                #region Если условие "нет авансов" возврашаем на страницу договора с сообщением
-                if (avans.Contains("Без авансов"))
-                {
-                    NotificationHelper.SetNotification(TempData, "Условие контракта - без авансов", NotificationType.Warning);
-                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-
-                }
-                #endregion
-                #region Проверка условия авансов
-                if (avans.Contains("текущего")) { ViewData["Current"] = true; }
-                if (avans.Contains("целевого")) { ViewData["Target"] = true; }
-                #endregion
+                NotificationHelper.SetNotification(TempData, "Условие договора не предусматривает внесение авансов!", NotificationType.Warning);
+                return RedirectToAction("Details", "Contracts", new { id = (returnContractId == 0) ? contractId : returnContractId });
             }
-            #endregion
-            // Получение списка авансов
-            var prepCheck = _prepayment.FindByContractId(contractId);
-            #region Проверка есть, ли авансы, с возвращением с сообщением
-            if (!prepCheck.Any())
-            {
-                NotificationHelper.SetNotification(TempData, "Не заполнены авансы", NotificationType.Warning);
-                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
 
-            }
-            #endregion
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
-            //Создание переиенной для отправки на View
-            var answer = new PrepaymentStatementViewModel();
-            #region Заполнение модели для view
-            if (viewModel != null && viewModel.maxEndPeriod != null)
-            {
-                #region Переход между view и получение модели сразу
-                answer = viewModel;
-                if (answer.NameAmendment == null)
-                {
-                    answer.NameAmendment = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).Select(x => x.Number).LastOrDefault();
-                }
-                #endregion
-            }
-            else
-            {
-                #region Заполнение впервый раз модели
-                answer.NameObject = _contractService.Find(x => x.Id == contractId).Select(x => x.NameObject).FirstOrDefault();
-                if (answer.NameObject == null)
-                {
-                    answer.NameObject = "";
-                }
-                var orgId = _contractOrganizationService.GetById(contractId);
-                answer.Client = _organization.GetNameByContractId(contractId);
+            ViewData["Current"] = contract?.PaymentСonditionsAvans?.Contains("текущего аванса") is true ? "true" : "false";
+            ViewData["Target"] = contract?.PaymentСonditionsAvans?.Contains("целевого аванса") is true ? "true" : "false";
 
-                answer.TheoryCurrent = 0;
-                answer.TheoryTarget = 0;
+            // Получение списка авансов
+            //var prepCheck = _prepayment.FindByContractId(contractId);
+            var period = _contractService.GetFullPeriodRange(contractId);// _scopeWork.GetScopeWorkPeriodRange(contractId);
+            //if (!prepCheck.Any())
+            //{
+            //    NotificationHelper.SetNotification(TempData, "Не заполнены авансы", NotificationType.Warning);
+            //    return RedirectToAction("Details", "Contracts", new { id = returnContractId == 0 ? contractId : returnContractId });
+            //}
 
-                int prepaymentId = prepCheck.Where(x => x.IsChange == false).FirstOrDefault().Id;
-                var sumOfTakePrepayment = _prepaymentTake.Find(x => x.PrepaymentId == prepaymentId && x.IsTarget == true);
-                answer.TargetReceived = 0;
-
-                foreach (var item in sumOfTakePrepayment)
-                {
-                    var sum = item.IsRefund.HasValue && item.IsRefund == false ? item.Total : (-1) * item?.Total;
-                    answer.TargetReceived += sum;
-                }
-
-                answer.TargetRepaid = _form.Find(x => x.ContractId == contractId && x.IsOwnForces != true).Sum(x => x.OffsetTargetPrepayment);
-
-                answer.NameAmendment = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).Select(x => x.Number).LastOrDefault();
-                answer.startPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).LastOrDefault();
-                var amend = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).ToList();
-                if (amend.Count > 0)
-                {
-                    answer.minStartPeriod = _contractService.Find(x => x.Id == contractId).Select(x => x.Date).FirstOrDefault();
-                    answer.maxEndPeriod = amend.LastOrDefault().DateEndWork;
-                }
-                else
-                {
-                    var contract = _contractService.GetById(contractId);
-                    answer.minStartPeriod = contract.Date;
-                    answer.maxEndPeriod = contract.DateEndWork;
-                }
-                if (answer.startPeriod == null)
-                {
-                    answer.startPeriod = answer.maxEndPeriod;
-                }
-                answer.endPeriod = answer.startPeriod;
-                #endregion
-            }
-            #endregion
-            #region Получение списка Id форм
-            var formId = _form.Find(x => x.ContractId == contractId && x.IsOwnForces == false).OrderBy(x => x.Period).Select(x => new { x.Id, x.Period }).ToList();
-            if (answer.startPeriod != null && answer.endPeriod != null)
-            {
-                formId = formId.Where(x => DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period) &&
-                    DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod)).ToList();
-            }
-            else if (answer.startPeriod != null && answer.endPeriod == null)
-            {
-                formId = formId.Where(x =>
-                    DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period)).ToList();
-                answer.endPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).LastOrDefault();
-            }
-            else if (answer.startPeriod == null && answer.endPeriod != null)
-            {
-                formId = formId.Where(x =>
-                    DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod)).ToList();
-                answer.startPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).FirstOrDefault();
-            }
-            else
-            {
-                answer.startPeriod = formId.Select(x => x.Period).FirstOrDefault();
-                answer.endPeriod = formId.Select(x => x.Period).LastOrDefault();
-            }
-            #endregion
-            #region Заполнение спикса файлов по справкам С-3А
-            answer.listFiles = new List<FileWithDate>();
-            foreach (var item in formId)
-            {
-                var obj = new FileWithDate();
-                obj.file = _file.GetAttachedFiles(item.Id, Folder.Form3C);
-                obj.date = item.Period;
-                answer.listFiles.Add(obj);
-            }
-            #endregion
-            #region Заполнение данных(объем работ/авансы)
-            answer.listSmrWithAvans = new List<SmrWithPrepayment>();
-            var scope = _scopeWork.GetLastScope(contractId, isOwnForces: false);
-            var prep = _prepayment.GetLastPrepayment(contractId);
-            if (prep != null)
-            {
-                answer.TheoryCurrent = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id).Sum(x => x.CurrentValue);
-                answer.TheoryTarget = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id).Sum(x => x.TargetValue);
-            }
-            for (var i = answer.startPeriod; DateComparer.IsLessOrSameYearAndMonth(i, answer.endPeriod); i = i.Value.AddMonths(1))
-            {
-                var ob = new SmrWithPrepayment();
-                #region Объем работ(План)
-                if (scope != null)
-                {
-                    var swCost = _SWCost.Find(x => x.ScopeWorkId == scope.Id && DateComparer.IsSameYearAndMonth(x.Period, i)).
-                        Select(x => x.SmrCost).FirstOrDefault();
-                    if (swCost != null)
-                    {
-                        ob.SmrPlan = swCost;
-                    }
-                    else
-                    {
-                        ob.SmrPlan = 0;
-                    }
-                }
-                #endregion
-                #region Объем работ и авансы по форме С-3А
-                var form3C = _form.Find(x => x.ContractId == contractId && x.IsOwnForces == false && DateComparer.IsSameYearAndMonth(x.Period, i)).FirstOrDefault();
-                if (form3C != null)
-                {
-                    ob.SmrFact = form3C.SmrCost != null ? form3C.SmrCost : 0;
-                    ob.TargetFact = form3C.OffsetTargetPrepayment != null ? form3C.OffsetTargetPrepayment : 0;
-                    ob.CurrentFact = form3C.OffsetCurrentPrepayment != null ? form3C.OffsetCurrentPrepayment : 0;
-                }
-                else
-                {
-                    ob.SmrFact = 0;
-                    ob.TargetFact = 0;
-                    ob.CurrentFact = 0;
-                }
-                #endregion
-                #region Авансы(План)
-                if (prep != null)
-                {
-                    var prepPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id && DateComparer.IsSameYearAndMonth(x.Period, i)).FirstOrDefault();
-                    if (prepPlan != null)
-                    {
-                        ob.TargetPlan = prepPlan.TargetValue != null ? prepPlan.TargetValue : 0;
-                        ob.CurrentPlan = prepPlan.CurrentValue != null ? prepPlan.CurrentValue : 0;
-                    }
-                    else
-                    {
-                        ob.TargetPlan = 0;
-                        ob.CurrentPlan = 0;
-                    }
-                }
-                #endregion
-                ob.Period = i;
-                answer.listSmrWithAvans.Add(ob);
-            }
-            #endregion
-            if (_amendment.Find(x => x.ContractId == contractId).FirstOrDefault() == null)
-                ViewData["Amend"] = true;
-            return View(answer);
+            var result = await _prepayment.GetPeriodAdvancesAsync(contractId, (DateTime)contract?.Date, (DateTime)(period?.End));
+            return await Task.FromResult<IActionResult>(View(result));
         }
+
 
         [Route("/archive/Prepayments")]
-        public IActionResult GetArchByContractId(int contractId, int returnContractId = 0)
+        public async Task<IActionResult> GetArchByContractId(int contractId, int returnContractId = 0)
         {
-            #region Проверка есть ли условие о наличии авансов
-
-            var avans = _contractService.Find(x => x.Id == contractId, useArchiveData: true).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
-            if (avans == null && returnContractId != 0)
+            var contract = _contractService.GetById(contractId, useArchiveData: true);
+            if (contract?.PaymentСonditionsAvans?.Contains("Без авансов") is true)
             {
-                avans = _contractService.Find(x => x.Id == returnContractId, useArchiveData: true).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
-            }
-
-            if (avans != null)
-            {
-                if (avans.Contains("Без авансов"))  // Если условие "нет авансов" возврашаем на страницу договора с сообщением
-                {
-                    NotificationHelper.SetNotification(TempData, "Условие договора - без авансов", NotificationType.Warning);
-                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                    return RedirectToAction("DetailsArch", "Contracts", new { id = urlReturn });
-                }
-
-                // Проверка условия авансов
-                if (avans.Contains("текущего")) { ViewData["Current"] = true; }
-                if (avans.Contains("целевого")) { ViewData["Target"] = true; }
-            }
-
-            #endregion
-
-            var prepCheck = _prepayment.FindByContractId(contractId, useArchiveData: true);  // Получение списка авансов
-
-            // Проверка есть, ли авансы, с возвращением сообщения
-            if (!prepCheck.Any())
-            {
-                NotificationHelper.SetNotification(TempData, "Не заполнены авансы", NotificationType.Warning);
-                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                return RedirectToAction("DetailsArch", "Contracts", new { id = urlReturn });
-
+                NotificationHelper.SetNotification(TempData, "Условие договора не предусматривает внесение авансов!", NotificationType.Warning);
+                return RedirectToAction("DetailsArch", "Contracts", new { id = (returnContractId == 0) ? contractId : returnContractId });
             }
 
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
+            ViewData["Current"] = contract?.PaymentСonditionsAvans?.Contains("текущего аванса") is true ? "true" : "false";
+            ViewData["Target"] = contract?.PaymentСonditionsAvans?.Contains("целевого аванса") is true ? "true" : "false";
 
-            //Создание переиенной для отправки на View
-            var answer = new PrepaymentStatementViewModel();
-
-            #region Заполнение впервый раз модели
-            answer.NameObject = _contractService
-                                .Find(x => x.Id == contractId, useArchiveData: true)
-                                .Select(x => x.NameObject)
-                                .FirstOrDefault() ?? string.Empty;
-
-            answer.Client = _organization.GetNameByContractId(contractId, useArchiveData: true);
-            answer.TheoryCurrent = 0;
-            answer.TheoryTarget = 0;
-            answer.TargetReceived = 0;
-
-            int prepaymentId = prepCheck.Where(x => x.IsChange == false).FirstOrDefault()?.Id ?? 0;
-            var sumOfTakePrepayment = _prepaymentTake.Find(x => x.PrepaymentId == prepaymentId && x.IsTarget == true, useArchiveData: true);
-
-            foreach (var item in sumOfTakePrepayment)
+            // Получение списка авансов
+            var prepCheck = _prepayment.FindByContractId(contractId, useArchiveData: true);
+            var period = _contractService.GetFullPeriodRange(contractId, useArchiveData: true);
+            if (!prepCheck.Any())
             {
-                var sum = (item.IsRefund.HasValue && item.IsRefund == false) ? item.Total : (-1) * item?.Total;
-                answer.TargetReceived += sum;
+                NotificationHelper.SetNotification(TempData, "Не заполнены авансы", NotificationType.Warning);
+                return RedirectToAction("DetailsArch", "Contracts", new { id = returnContractId == 0 ? contractId : returnContractId });
             }
 
-            answer.TargetRepaid = _form
-                                    .Find(x => x.ContractId == contractId && x.IsOwnForces != true, useArchiveData: true)
-                                    .Sum(x => x.OffsetTargetPrepayment);
-
-            answer.NameAmendment = _amendment
-                .Find(x => x.ContractId == contractId, useArchiveData: true)
-                .OrderBy(x => x.Date)
-                .Select(x => x.Number)
-                .LastOrDefault();
-
-            answer.startPeriod = _form
-                .Find(x => x.ContractId == contractId, useArchiveData: true)
-                .OrderBy(x => x.Period)
-                .Select(x => x.Period)
-                .LastOrDefault();
-
-            var amend = _amendment
-                .Find(x => x.ContractId == contractId, useArchiveData: true)
-                .OrderBy(x => x.Date)
-                .ToList();
-
-            if (amend.Count > 0)
-            {
-                answer.minStartPeriod = _contractService
-                    .Find(x => x.Id == contractId, useArchiveData: true)
-                    .Select(x => x.Date)
-                    .FirstOrDefault();
-
-                answer.maxEndPeriod = amend.LastOrDefault()?.DateEndWork;
-            }
-            else
-            {
-                var contract = _contractService.GetById(contractId, useArchiveData: true);
-                answer.minStartPeriod = contract.Date;
-                answer.maxEndPeriod = contract.DateEndWork;
-            }
-            if (answer.startPeriod == null)
-            {
-                answer.startPeriod = answer.maxEndPeriod;
-            }
-            answer.endPeriod = answer.startPeriod;
-            #endregion
-
-            #region Получение списка Id форм
-            var formId = _form
-                .Find(x => x.ContractId == contractId && x.IsOwnForces == false, useArchiveData: true)
-                .OrderBy(x => x.Period)
-                .Select(x => new { x.Id, x.Period })
-                .ToList();
-
-            if (answer.startPeriod != null && answer.endPeriod != null)
-            {
-                formId = formId.Where(x => DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period) &&
-                    DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod)).ToList();
-            }
-            else if (answer.startPeriod != null && answer.endPeriod == null)
-            {
-                formId = formId
-                    .Where(x => DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period))
-                    .ToList();
-
-                answer.endPeriod = _form
-                    .Find(x => x.ContractId == contractId, useArchiveData: true)
-                    .OrderBy(x => x.Period)
-                    .Select(x => x.Period)
-                    .LastOrDefault();
-            }
-            else if (answer.startPeriod == null && answer.endPeriod != null)
-            {
-                formId = formId
-                    .Where(x => DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod))
-                    .ToList();
-
-                answer.startPeriod = _form
-                    .Find(x => x.ContractId == contractId, useArchiveData: true)
-                    .OrderBy(x => x.Period)
-                    .Select(x => x.Period)
-                    .FirstOrDefault();
-
-            }
-            else
-            {
-                answer.startPeriod = formId.Select(x => x.Period).FirstOrDefault();
-                answer.endPeriod = formId.Select(x => x.Period).LastOrDefault();
-            }
-            #endregion
-            #region Заполнение спикса файлов по справкам С-3А
-            answer.listFiles = new List<FileWithDate>();
-            foreach (var item in formId)
-            {
-                var obj = new FileWithDate();
-                obj.file = _file.GetAttachedFiles(item.Id, Folder.Form3C);
-                obj.date = item.Period;
-                answer.listFiles.Add(obj);
-            }
-            #endregion
-
-            #region Заполнение данных(объем работ/авансы)
-            answer.listSmrWithAvans = new List<SmrWithPrepayment>();
-            var scope = _scopeWork.GetLastScope(contractId, isOwnForces: false, useArchiveData: true);
-            var prep = _prepayment.GetLastPrepayment(contractId, useArchiveData: true);
-            if (prep != null)
-            {
-                answer.TheoryCurrent = _prepaymentPlan
-                    .Find(x => x.PrepaymentId == prep.Id, useArchiveData: true)
-                    .Sum(x => x.CurrentValue);
-
-                answer.TheoryTarget = _prepaymentPlan
-                    .Find(x => x.PrepaymentId == prep.Id, useArchiveData: true)
-                    .Sum(x => x.TargetValue);
-            }
-
-            for (var i = answer.startPeriod; DateComparer.IsLessOrSameYearAndMonth(i, answer.endPeriod); i = i.Value.AddMonths(1))
-            {
-                var ob = new SmrWithPrepayment();
-                // Объем работ(План)
-                if (scope != null)
-                {
-                    var swCost = _SWCost
-                        .Find(x => x.ScopeWorkId == scope.Id && DateComparer.IsSameYearAndMonth(x.Period, i), useArchiveData: true)
-                        .Select(x => x.SmrCost)
-                        .FirstOrDefault();
-
-                    ob.SmrPlan = swCost ?? 0;
-                }
-
-                // Объем работ и авансы по форме С-3А
-                var form3C = _form
-                    .Find(x => x.ContractId == contractId && x.IsOwnForces == false && DateComparer.IsSameYearAndMonth(x.Period, i), useArchiveData: true)
-                    .FirstOrDefault();
-
-                ob.SmrFact = (form3C?.SmrCost) ?? 0;
-                ob.TargetFact = (form3C?.OffsetTargetPrepayment) ?? 0;
-                ob.CurrentFact = (form3C?.OffsetCurrentPrepayment) ?? 0;
+            var result = await _prepayment.GetPeriodAdvancesAsync(contractId, (DateTime)contract?.Date, (DateTime)(period?.End), useArchiveData: true);
+            return await Task.FromResult<IActionResult>(View(result));
 
 
-                // Авансы(План)
-                if (prep != null)
-                {
-                    var prepPlan = _prepaymentPlan
-                        .Find(x => x.PrepaymentId == prep.Id && DateComparer.IsSameYearAndMonth(x.Period, i), useArchiveData: true)
-                        .FirstOrDefault();
+            //#region Проверка есть ли условие о наличии авансов
 
-                    ob.TargetPlan = (prepPlan?.TargetValue) ?? 0;
-                    ob.CurrentPlan = (prepPlan?.CurrentValue) ?? 0;
-                }
+            //var avans = _contractService.Find(x => x.Id == contractId, useArchiveData: true).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
+            //if (avans == null && returnContractId != 0)
+            //{
+            //    avans = _contractService.Find(x => x.Id == returnContractId, useArchiveData: true).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
+            //}
 
-                ob.Period = i;
-                answer.listSmrWithAvans.Add(ob);
-            }
-            #endregion
-            if (_amendment.Find(x => x.ContractId == contractId, useArchiveData: true).FirstOrDefault() == null)
-                ViewData["Amend"] = true;
-            return View(answer);
+            //if (avans != null)
+            //{
+            //    if (avans.Contains("Без авансов"))  // Если условие "нет авансов" возврашаем на страницу договора с сообщением
+            //    {
+            //        NotificationHelper.SetNotification(TempData, "Условие договора - без авансов", NotificationType.Warning);
+            //        var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+            //        return RedirectToAction("DetailsArch", "Contracts", new { id = urlReturn });
+            //    }
+
+            //    // Проверка условия авансов
+            //    if (avans.Contains("текущего")) { ViewData["Current"] = true; }
+            //    if (avans.Contains("целевого")) { ViewData["Target"] = true; }
+            //}
+
+            //#endregion
+
+            //var prepCheck = _prepayment.FindByContractId(contractId, useArchiveData: true);  // Получение списка авансов
+
+            //// Проверка есть, ли авансы, с возвращением сообщения
+            //if (!prepCheck.Any())
+            //{
+            //    NotificationHelper.SetNotification(TempData, "Не заполнены авансы", NotificationType.Warning);
+            //    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+            //    return RedirectToAction("DetailsArch", "Contracts", new { id = urlReturn });
+
+            //}
+
+            //ViewData["contractId"] = contractId;
+            //ViewData["returnContractId"] = returnContractId;
+
+            ////Создание переиенной для отправки на View
+            //var answer = new PrepaymentStatementViewModel();
+
+            //#region Заполнение впервый раз модели
+            //answer.NameObject = _contractService
+            //                    .Find(x => x.Id == contractId, useArchiveData: true)
+            //                    .Select(x => x.NameObject)
+            //                    .FirstOrDefault() ?? string.Empty;
+
+            //answer.Client = _organization.GetNameByContractId(contractId, useArchiveData: true);
+            //answer.TheoryCurrent = 0;
+            //answer.TheoryTarget = 0;
+            //answer.TargetReceived = 0;
+
+            //int prepaymentId = prepCheck.Where(x => x.IsChange == false).FirstOrDefault()?.Id ?? 0;
+            //var sumOfTakePrepayment = _prepaymentTake.Find(x => x.PrepaymentId == prepaymentId && x.IsTarget == true, useArchiveData: true);
+
+            //foreach (var item in sumOfTakePrepayment)
+            //{
+            //    var sum = (item.IsRefund.HasValue && item.IsRefund == false) ? item.Total : (-1) * item?.Total;
+            //    answer.TargetReceived += sum;
+            //}
+
+            //answer.TargetRepaid = _form
+            //                        .Find(x => x.ContractId == contractId && x.IsOwnForces != true, useArchiveData: true)
+            //                        .Sum(x => x.OffsetTargetPrepayment);
+
+            //answer.NameAmendment = _amendment
+            //    .Find(x => x.ContractId == contractId, useArchiveData: true)
+            //    .OrderBy(x => x.Date)
+            //    .Select(x => x.Number)
+            //    .LastOrDefault();
+
+            //answer.startPeriod = _form
+            //    .Find(x => x.ContractId == contractId, useArchiveData: true)
+            //    .OrderBy(x => x.Period)
+            //    .Select(x => x.Period)
+            //    .LastOrDefault();
+
+            //var amend = _amendment
+            //    .Find(x => x.ContractId == contractId, useArchiveData: true)
+            //    .OrderBy(x => x.Date)
+            //    .ToList();
+
+            //if (amend.Count > 0)
+            //{
+            //    answer.minStartPeriod = _contractService
+            //        .Find(x => x.Id == contractId, useArchiveData: true)
+            //        .Select(x => x.Date)
+            //        .FirstOrDefault();
+
+            //    answer.maxEndPeriod = amend.LastOrDefault()?.DateEndWork;
+            //}
+            //else
+            //{
+            //    var contract = _contractService.GetById(contractId, useArchiveData: true);
+            //    answer.minStartPeriod = contract.Date;
+            //    answer.maxEndPeriod = contract.DateEndWork;
+            //}
+            //if (answer.startPeriod == null)
+            //{
+            //    answer.startPeriod = answer.maxEndPeriod;
+            //}
+            //answer.endPeriod = answer.startPeriod;
+            //#endregion
+
+            //#region Получение списка Id форм
+            //var formId = _form
+            //    .Find(x => x.ContractId == contractId && x.IsOwnForces == false, useArchiveData: true)
+            //    .OrderBy(x => x.Period)
+            //    .Select(x => new { x.Id, x.Period })
+            //    .ToList();
+
+            //if (answer.startPeriod != null && answer.endPeriod != null)
+            //{
+            //    formId = formId.Where(x => DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period) &&
+            //        DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod)).ToList();
+            //}
+            //else if (answer.startPeriod != null && answer.endPeriod == null)
+            //{
+            //    formId = formId
+            //        .Where(x => DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period))
+            //        .ToList();
+
+            //    answer.endPeriod = _form
+            //        .Find(x => x.ContractId == contractId, useArchiveData: true)
+            //        .OrderBy(x => x.Period)
+            //        .Select(x => x.Period)
+            //        .LastOrDefault();
+            //}
+            //else if (answer.startPeriod == null && answer.endPeriod != null)
+            //{
+            //    formId = formId
+            //        .Where(x => DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod))
+            //        .ToList();
+
+            //    answer.startPeriod = _form
+            //        .Find(x => x.ContractId == contractId, useArchiveData: true)
+            //        .OrderBy(x => x.Period)
+            //        .Select(x => x.Period)
+            //        .FirstOrDefault();
+
+            //}
+            //else
+            //{
+            //    answer.startPeriod = formId.Select(x => x.Period).FirstOrDefault();
+            //    answer.endPeriod = formId.Select(x => x.Period).LastOrDefault();
+            //}
+            //#endregion
+            //#region Заполнение спикса файлов по справкам С-3А
+            //answer.listFiles = new List<FileWithDate>();
+            //foreach (var item in formId)
+            //{
+            //    var obj = new FileWithDate();
+            //    obj.file = _file.GetAttachedFiles(item.Id, Folder.Form3C);
+            //    obj.date = item.Period;
+            //    answer.listFiles.Add(obj);
+            //}
+            //#endregion
+
+            //#region Заполнение данных(объем работ/авансы)
+            //answer.listSmrWithAvans = new List<SmrWithPrepayment>();
+            //var scope = _scopeWork.GetLastScope(contractId, isOwnForces: false, useArchiveData: true);
+            //var prep = _prepayment.GetLastPrepayment(contractId, useArchiveData: true);
+            //if (prep != null)
+            //{
+            //    answer.TheoryCurrent = _prepaymentPlan
+            //        .Find(x => x.PrepaymentId == prep.Id, useArchiveData: true)
+            //        .Sum(x => x.CurrentValue);
+
+            //    answer.TheoryTarget = _prepaymentPlan
+            //        .Find(x => x.PrepaymentId == prep.Id, useArchiveData: true)
+            //        .Sum(x => x.TargetValue);
+            //}
+
+            //for (var i = answer.startPeriod; DateComparer.IsLessOrSameYearAndMonth(i, answer.endPeriod); i = i.Value.AddMonths(1))
+            //{
+            //    var ob = new SmrWithPrepayment();
+            //    // Объем работ(План)
+            //    if (scope != null)
+            //    {
+            //        var swCost = _SWCost
+            //            .Find(x => x.ScopeWorkId == scope.Id && DateComparer.IsSameYearAndMonth(x.Period, i), useArchiveData: true)
+            //            .Select(x => x.SmrCost)
+            //            .FirstOrDefault();
+
+            //        ob.SmrPlan = swCost ?? 0;
+            //    }
+
+            //    // Объем работ и авансы по форме С-3А
+            //    var form3C = _form
+            //        .Find(x => x.ContractId == contractId && x.IsOwnForces == false && DateComparer.IsSameYearAndMonth(x.Period, i), useArchiveData: true)
+            //        .FirstOrDefault();
+
+            //    ob.SmrFact = (form3C?.SmrCost) ?? 0;
+            //    ob.TargetFact = (form3C?.OffsetTargetPrepayment) ?? 0;
+            //    ob.CurrentFact = (form3C?.OffsetCurrentPrepayment) ?? 0;
+
+
+            //    // Авансы(План)
+            //    if (prep != null)
+            //    {
+            //        var prepPlan = _prepaymentPlan
+            //            .Find(x => x.PrepaymentId == prep.Id && DateComparer.IsSameYearAndMonth(x.Period, i), useArchiveData: true)
+            //            .FirstOrDefault();
+
+            //        ob.TargetPlan = (prepPlan?.TargetValue) ?? 0;
+            //        ob.CurrentPlan = (prepPlan?.CurrentValue) ?? 0;
+            //    }
+
+            //    ob.Period = i;
+            //    answer.listSmrWithAvans.Add(ob);
+            //}
+            //#endregion
+            //if (_amendment.Find(x => x.ContractId == contractId, useArchiveData: true).FirstOrDefault() == null)
+            //    ViewData["Amend"] = true;
+            //return View(answer);
         }
 
         [Route("/archive/Prepayments/Takes")]
@@ -576,7 +422,7 @@ namespace MvcLayer.Controllers
 
                     itemPrepViewModel.CurrentPlan = (prepPlan?.CurrentValue) ?? 0;
                     itemPrepViewModel.TargetPlan = (prepPlan?.TargetValue) ?? 0;
-                    
+
                     if (facts.Count > 0)
                     {
                         foreach (var prepFactItem in facts)
@@ -614,7 +460,7 @@ namespace MvcLayer.Controllers
                             foreach (var contract in contr)
                             {
                                 prep = _prepaymentFact.GetLastPrepayment(contract, useArchiveData: true);
-                                
+
                                 if (prep != null)
                                 {
                                     facts = _prepaymentTake
@@ -660,611 +506,125 @@ namespace MvcLayer.Controllers
         }
 
 
-        public IActionResult GetByContractIdWithAmendments(int contractId, PrepaymentStatementViewModel? viewModel, int returnContractId = 0)
-        {
-            #region Проверка есть ли условие о наличии авансов
-            #region Поиск условий авансов
-            var avans = _contractService.Find(x => x.Id == contractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
-            if (avans == null && returnContractId != 0)
-                avans = _contractService.Find(x => x.Id == returnContractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
-            #endregion
-            if (avans != null)
-            {
-                #region Если условие "нет авансов" возврашаем на страницу договора с сообщением
-                if (avans.Contains("Без авансов"))
-                {
-                    NotificationHelper.SetNotification(TempData, "Условие контракта - без авансов", NotificationType.Warning);
-                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-
-                }
-                #endregion
-                #region Проверка условия авансов
-                if (avans.Contains("текущего")) { ViewData["Current"] = true; }
-                if (avans.Contains("целевого")) { ViewData["Target"] = true; }
-                #endregion
-            }
-            #endregion
-            ViewData["contractId"] = contractId;
-            ViewData["returnContractId"] = returnContractId;
-
-            #region Заполнение данным модели для View
-            var answer = new PrepaymentStatementWithAmendmentViewModel();
-            answer.NameObject = viewModel.NameObject;
-            answer.Client = viewModel.Client;
-            answer.TheoryCurrent = viewModel.TheoryCurrent;
-            answer.TheoryTarget = viewModel.TheoryTarget;
-            answer.TargetReceived = viewModel.TargetReceived;
-            answer.TargetRepaid = viewModel.TargetRepaid;
-            answer.startPeriod = viewModel.startPeriod;
-            answer.endPeriod = viewModel.endPeriod;
-            answer.minStartPeriod = viewModel.minStartPeriod;
-            answer.maxEndPeriod = viewModel.maxEndPeriod;
-            answer.listSmrWithPrepaymentByAmendment = new List<ListSmrPrepByAmendment>();
-            #endregion
-            var amend = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).ToList();
-
-            #region Получение списка форм С-3А
-            var formId = _form.Find(x => x.ContractId == contractId && x.IsOwnForces == false).OrderBy(x => x.Period).Select(x => new { x.Id, x.Period }).ToList();
-            if (answer.startPeriod != null && answer.endPeriod != null)
-            {
-                formId = formId.Where(x => DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period) &&
-                    DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod)).ToList();
-            }
-            else if (answer.startPeriod != null && answer.endPeriod == null)
-            {
-                formId = formId.Where(x =>
-                    DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period)).ToList();
-                answer.endPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).LastOrDefault();
-            }
-            else if (answer.startPeriod == null && answer.endPeriod != null)
-            {
-                formId = formId.Where(x =>
-                    DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod)).ToList();
-                answer.startPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).FirstOrDefault();
-            }
-            else
-            {
-                answer.startPeriod = formId.Select(x => x.Period).FirstOrDefault();
-                answer.endPeriod = formId.Select(x => x.Period).LastOrDefault();
-            }
-            #endregion
-            #region Получение список файлов справок С-3А
-            answer.listFiles = new List<FileWithDate>();
-            foreach (var item in formId)
-            {
-                var obj = new FileWithDate();
-                obj.file = _file.GetAttachedFiles(item.Id, Folder.Form3C);
-                obj.date = item.Period;
-                answer.listFiles.Add(obj);
-            }
-            #endregion
-            #region Заполнение списков по контракту и доп. соглашениям
-            foreach (var item in amend)
-            {
-                var scope = _scopeWork.GetByAmendmentId(item.Id);
-                var prep = _prepayment.GetPrepaymentByAmendment(item.Id);
-                if (scope != null || prep != null)
-                {
-                    #region Заполнено либо объем, либо аванс по доп. соглашению
-                    var listSmrWithAvans = new List<ElementOfListSmrPrepByAmend>();
-                    for (var i = answer.startPeriod; DateComparer.IsLessOrSameYearAndMonth(i, answer.endPeriod); i = i.Value.AddMonths(1))
-                    {
-                        var ob = new ElementOfListSmrPrepByAmend();
-                        #region Объем работы СМР
-                        if (scope != null)
-                        {
-                            var swCost = _SWCost.Find(x => x.ScopeWorkId == scope.Id && DateComparer.IsSameYearAndMonth(x.Period, i)).
-                                Select(x => x.SmrCost).FirstOrDefault();
-                            if (swCost != null)
-                            {
-                                ob.Smr = swCost != null ? swCost : 0;
-                            }
-                            else
-                            {
-                                ob.Smr = 0;
-                            }
-                        }
-                        #endregion
-                        #region Аванс(План)                        
-                        if (prep != null)
-                        {
-                            var prepPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id && DateComparer.IsSameYearAndMonth(x.Period, i)).FirstOrDefault();
-                            if (prepPlan != null)
-                            {
-                                ob.Target = prepPlan.TargetValue != null ? prepPlan.TargetValue : 0;
-                                ob.Current = prepPlan.CurrentValue != null ? prepPlan.CurrentValue : 0;
-                            }
-                            else
-                            {
-                                ob.Target = 0;
-                                ob.Current = 0;
-                            }
-                        }
-                        #endregion
-                        ob.Period = i;
-                        listSmrWithAvans.Add(ob);
-                    }
-                    var planlist = new ListSmrPrepByAmendment();
-                    planlist.NameAmendment = item.Number;
-                    planlist.listSmrWithAvans = listSmrWithAvans;
-                    answer.listSmrWithPrepaymentByAmendment.Add(planlist);
-                    #endregion
-                }
-                else
-                {
-                    #region По ДС нет ни объема, ни аванса, заполнение данными
-                    var planlist = new ListSmrPrepByAmendment();
-                    var listSmrWithAvans = new List<ElementOfListSmrPrepByAmend>();
-                    if (answer.listSmrWithPrepaymentByAmendment.Count == 0)
-                    {
-                        #region Есть Дс, но не заполнены объемы
-                        var scopeL = _scopeWork.Find(x => x.ContractId == contractId && x.IsChange != true).FirstOrDefault();
-                        var prepL = _prepayment.Find(x => x.ContractId == contractId && x.IsChange != true).FirstOrDefault();
-                        if (scopeL != null || prepL != null)
-                        {
-                            #region Получение данных в 1-ю ДС из контракта
-                            for (var i = answer.startPeriod; DateComparer.IsLessOrSameYearAndMonth(i, answer.endPeriod); i = i.Value.AddMonths(1))
-                            {
-                                var ob = new ElementOfListSmrPrepByAmend();
-                                #region Объем работы
-                                if (scopeL != null)
-                                {
-                                    var swCost = _SWCost.Find(x => x.ScopeWorkId == scopeL.Id && DateComparer.IsSameYearAndMonth(x.Period, i)).
-                                        Select(x => x.SmrCost).FirstOrDefault();
-                                    if (swCost != null)
-                                    {
-                                        ob.Smr = swCost != null ? swCost : 0;
-                                    }
-                                    else
-                                    {
-                                        ob.Smr = 0;
-                                    }
-                                }
-                                #endregion
-                                #region Авансы (План)                                
-                                if (prepL != null)
-                                {
-                                    var prepPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prepL.Id && DateComparer.IsSameYearAndMonth(x.Period, i)).FirstOrDefault();
-                                    if (prepPlan != null)
-                                    {
-                                        ob.Target = prepPlan.TargetValue != null ? prepPlan.TargetValue : 0;
-                                        ob.Current = prepPlan.CurrentValue != null ? prepPlan.CurrentValue : 0;
-                                    }
-                                    else
-                                    {
-                                        ob.Target = 0;
-                                        ob.Current = 0;
-                                    }
-                                }
-                                #endregion
-                                ob.Period = i;
-                                listSmrWithAvans.Add(ob);
-                            }
-                            planlist.listSmrWithAvans = listSmrWithAvans;
-                            #endregion
-                        }
-                        else
-                        {
-                            #region Отсутсвуют объемы
-                            for (var i = answer.startPeriod; DateComparer.IsLessOrSameYearAndMonth(i, answer.endPeriod); i = i.Value.AddMonths(1))
-                            {
-                                var emptyOb = new ElementOfListSmrPrepByAmend();
-                                emptyOb.Period = i;
-                                listSmrWithAvans.Add(emptyOb);
-                            }
-                            planlist.listSmrWithAvans = listSmrWithAvans;
-                            #endregion
-                        }
-                        #endregion
-                    }
-                    else
-                    {
-                        #region Взять из последней ДС
-                        planlist.listSmrWithAvans = answer.listSmrWithPrepaymentByAmendment.LastOrDefault().listSmrWithAvans;
-                        #endregion
-                    }
-                    planlist.NameAmendment = item.Number;
-                    answer.listSmrWithPrepaymentByAmendment.Add(planlist);
-                    #endregion
-                }
-            }
-            #endregion
-            var factElement = new ListSmrPrepByAmendment();
-            var listFactSmrWithAvans = new List<ElementOfListSmrPrepByAmend>();
-            #region Заполнение авансов и СМР по С-3А
-            for (var i = answer.startPeriod; DateComparer.IsLessOrSameYearAndMonth(i, answer.endPeriod); i = i.Value.AddMonths(1))
-            {
-                var ob = new ElementOfListSmrPrepByAmend();
-                var form3C = _form.Find(x => x.ContractId == contractId && x.IsOwnForces == false && DateComparer.IsSameYearAndMonth(x.Period, i)).FirstOrDefault();
-                if (form3C != null)
-                {
-                    ob.Smr = form3C.SmrCost != null ? form3C.SmrCost : 0;
-                    ob.Target = form3C.OffsetTargetPrepayment != null ? form3C.OffsetTargetPrepayment : 0;
-                    ob.Current = form3C.OffsetCurrentPrepayment != null ? form3C.OffsetCurrentPrepayment : 0;
-                }
-                else
-                {
-                    ob.Smr = 0;
-                    ob.Target = 0;
-                    ob.Current = 0;
-                }
-                listFactSmrWithAvans.Add(ob);
-            }
-            #endregion
-            var factlist = new ListSmrPrepByAmendment();
-            factlist.NameAmendment = "Факт";
-            factlist.listSmrWithAvans = listFactSmrWithAvans;
-            answer.listSmrWithPrepaymentByAmendment.Add(factlist);
-            return View(answer);
-        }
-
-        public IActionResult GetPrepaymentsTakes(int contractId, int returnContractId = 0)
-        {
-            var avans = _contractService.Find(x => x.Id == contractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
-            if (avans == null && returnContractId != 0)
-                avans = _contractService.Find(x => x.Id == returnContractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
-            if (avans != null)
-            {
-                if (avans.Contains("Без авансов"))
-                {
-                    NotificationHelper.SetNotification(TempData, "Условие контракта - без авансов", NotificationType.Warning);
-                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-
-                }
-                if (avans.Contains("текущего")) { ViewData["Current"] = true; }
-                if (avans.Contains("целевого")) { ViewData["Target"] = true; }
-            }
-            var prep = _prepayment.GetLastPrepayment(contractId);
-            if (prep == null)
-            {
-                NotificationHelper.SetNotification(TempData, "Не заполнены авансы", NotificationType.Warning);
-                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-
-            }
-            ViewData["contractId"] = contractId;
-            ViewData["returnContractId"] = returnContractId;
-
-            var answer = new PrepaymentTakeViewModel();
-            answer.NameObject = _contractService.Find(x => x.Id == contractId).Select(x => x.NameObject).FirstOrDefault();
-            if (answer.NameObject == null)
-            {
-                answer.NameObject = "";
-            }
-
-            var orgId = _contractOrganizationService.GetById(contractId);
-            answer.Client = _organization.GetNameByContractId(contractId);
-            answer.NameAmendment = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).Select(x => x.Number).LastOrDefault();
-            var amend = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).ToList();
-            #region Период времени
-            DateTime? start, end;
-            if (amend.Count > 0)
-            {
-                start = amend.LastOrDefault().DateBeginWork;
-                end = amend.LastOrDefault().DateEndWork;
-            }
-            else
-            {
-                var contract = _contractService.GetById(contractId);
-                start = contract.DateBeginWork;
-                end = contract.DateEndWork;
-            }
-            if (start == null && end != null)
-            {
-                start = end;
-            }
-            if (end == null && start != null)
-            {
-                end = start;
-            }
-            if (start == null)
-                start = DateTime.Today;
-            if (end == null)
-                end = DateTime.Today;
-            #endregion            
-
-            for (var date = start; DateComparer.IsLessOrSameYearAndMonth(date, end); date = date.Value.AddMonths(1))
-            {
-                var obj = new ItemPrepaymentTakeViewModel();
-                obj.Period = date;
-                prep = _prepaymentFact.GetLastPrepayment(contractId);
-                if (prep != null)
-                {
-                    var facts = _prepaymentTake.Find(x => x.PrepaymentId == prep.Id
-                    && DateComparer.IsSameYearAndMonth(x.Period, date)).ToList();
-                    var ob = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id
-                   && DateComparer.IsSameYearAndMonth(x.Period, date)).FirstOrDefault();
-                    if (ob != null)
-                    {
-                        if (ob.CurrentValue != null)
-                            obj.CurrentPlan = ob.CurrentValue;
-                        else obj.CurrentPlan = 0;
-                        if (ob.TargetValue != null)
-                            obj.TargetPlan = ob.TargetValue;
-                        else obj.TargetPlan = 0;
-                    }
-                    else
-                    {
-                        obj.CurrentPlan = 0;
-                        obj.TargetPlan = 0;
-                    }
-                    if (facts.Count > 0)
-                    {
-                        foreach (var item in facts)
-                        {
-                            if (item.IsRefund == true)
-                            {
-                                if (item.IsTarget == true)
-                                    obj.TargetFact -= item.Total;
-                                else
-                                {
-                                    obj.CurrentFact -= item.Total;
-                                }
-                            }
-                            else
-                            {
-                                if (item.IsTarget == true)
-                                    obj.TargetFact += item.Total;
-                                else
-                                {
-                                    obj.CurrentFact += item.Total;
-                                }
-                            }
-                            obj.Files.AddRange(_file.GetAttachedFiles((int)item.FileId, Folder.PrepaymentTake));
-                        }
-                    }
-                    if (returnContractId == 0)
-                    {
-                        var contr = _contractService.Find(x => x.MultipleContractId == contractId).Select(x => x.Id).ToList();
-                        if (contr.Count > 0)
-                        {
-                            foreach (var contract in contr)
-                            {
-                                prep = _prepaymentFact.GetLastPrepayment(contract);
-                                if (prep != null)
-                                {
-                                    facts = _prepaymentTake.Find(x => x.PrepaymentId == prep.Id
-                                            && DateComparer.IsSameYearAndMonth(x.Period, date)).ToList();
-                                    if (facts.Count > 0)
-                                    {
-                                        foreach (var item in facts)
-                                        {
-                                            if (item.IsRefund == true)
-                                            {
-                                                if (item.IsTarget == true)
-                                                    obj.TargetFact -= item.Total;
-                                                else
-                                                {
-                                                    obj.CurrentFact -= item.Total;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                if (item.IsTarget == true)
-                                                    obj.TargetFact += item.Total;
-                                                else
-                                                {
-                                                    obj.CurrentFact += item.Total;
-                                                }
-                                            }
-                                            obj.Files.AddRange(_file.GetAttachedFiles((int)item.FileId, Folder.PrepaymentTake));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                answer.List.Add(obj);
-            }
-
-            if (amend.Count > 0)
-                ViewData["Amend"] = true;
-            return View(answer);
-        }
-
-        [Authorize(Policy = "CreatePolicy")]
-        public IActionResult CreatePrepaymentTake(int contractId, int returnContractId = 0)
-        {
-            ViewData["contractId"] = contractId;
-            ViewData["returnContractId"] = returnContractId;
-            var answer = new List<DateTime>();
-            var prep = _prepayment.Find(x => x.ContractId == contractId && x.IsChange == false).Select(x => x.Id).FirstOrDefault();
-            if (prep != 0)
-            {
-                var prepForPlan = _prepaymentPlan.GetLastPrepayment(contractId);
-                if (prepForPlan != null)
-                {
-                    var listPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prepForPlan.Id).ToList();
-                    foreach (var plan in listPlan)
-                    {
-                        var ob = _prepaymentTake.Find(x => x.PrepaymentId == prep
-                        && DateComparer.IsSameYearAndMonth(x.Period, plan.Period)).FirstOrDefault();
-                        if (ob == null)
-                        {
-                            answer.Add(plan.Period.Value);
-                        }
-                    }
-                }
-                else
-                {
-                    NotificationHelper.SetNotification(TempData, "Не заполнены планируемые авансы", NotificationType.Warning);
-                    return RedirectToAction("GetPrepaymentsTakes", "Prepayments", new { contractId = contractId, returnContractId = returnContractId });
-                }
-            }
-            else
-            {
-                NotificationHelper.SetNotification(TempData, "Не заполнены планируемые авансы", NotificationType.Warning);
-                return RedirectToAction("GetPrepaymentsTakes", "Prepayments", new { contractId = contractId, returnContractId = returnContractId });
-            }
-            if (!answer.Any())
-            {
-                NotificationHelper.SetNotification(TempData, "Все фактические авансы заполнены", NotificationType.Warning);
-                return RedirectToAction("GetPrepaymentsTakes", "Prepayments", new { contractId = contractId, returnContractId = returnContractId });
-            }
-            ViewData["PrepaymentId"] = prep;
-            return View(answer);
-        }
-
-        public IActionResult ShowCreatePrepTakeView(DateTime DateTransfer, int PrepaymentId, int contractId, int returnContractId = 0)
-        {
-            var avans = _contractService.Find(x => x.Id == contractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
-            if (avans == null && returnContractId != 0)
-                avans = _contractService.Find(x => x.Id == returnContractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
-            if (avans != null)
-            {
-                if (avans.Contains("текущего")) { ViewData["Current"] = true; }
-                if (avans.Contains("целевого")) { ViewData["Target"] = true; }
-            }
-            var listModel = new List<PrepaymentsTakeAddViewModel>();
-            for (var i = 0; i < 20; i++)
-            {
-                var model = new PrepaymentsTakeAddViewModel();
-                model.Period = DateTransfer;
-                model.PrepaymentId = PrepaymentId;
-                listModel.Add(model);
-            }
-            ViewData["contractIdModal"] = contractId;
-            ViewData["returnContractIdModal"] = returnContractId;
-            return PartialView("_CreatePrepaymentTake", listModel);
-        }
-
-        [HttpPost]
-        [Authorize(Policy = "CreatePolicy")]
-        public IActionResult CreatePrepaymentTake(PrepaymentsTakeAddViewModel[] model, int contractId, int returnContractId = 0)
-        {
-            foreach (var item in model)
-            {
-                if (item.FileEntity != null && item.Total != null && item.DateTransfer != null)
-                {
-                    if (item.Period == null)
-                        item.Period = model[0].Period;
-                    if (item.PrepaymentId == null)
-                        item.PrepaymentId = model[0].PrepaymentId;
-                    var obj = _mapper.Map<PrepaymentTakeDTO>(item);
-                    obj.FileId = _file.Create(item.FileEntity, Folder.Other, 0, contractId == 0? null : contractId.ToString());
-                    _prepaymentTake.Create(obj);
-                    NotificationHelper.SetNotification(TempData, "Добавлена оплата", NotificationType.Info);
-                }
-            }
-            return RedirectToAction("GetPrepaymentsTakes", "Prepayments", new { contractId, returnContractId });
-        }
-
-        public IActionResult AddRowPrepaymentTake(int type, int contractId, int returnContractId, int index, int number)
-        {
-            ViewData["contractId"] = contractId;
-            ViewData["returnContractId"] = returnContractId;
-            ViewData["index"] = index;
-            ViewData["number"] = number;
-            ViewData["type"] = type;
-            return PartialView("_AddRowPrepaymentsTake");
-
-        }
-
-        /// <summary>
-        /// Выбор периода для заполнения авансов, на основе заполненного объема работ
-        /// </summary>
-        /// <param name="contractId"></param>
-        /// <param name="isFact"></param>
-        /// <returns></returns>
-        public IActionResult ChoosePeriod(int contractId, bool isFact, int returnContractId = 0)
+        public IActionResult Create(int contractId, bool isFact, int returnContractId = 0, PeriodChooseViewModel? prepaymentViewModel = null)
         {
             if (contractId > 0)
             {
-                #region Нахождение контракта и периода работ по "объему работ" 
-                var period = _scopeWork.GetScopeWorkPeriodRange(contractId);
                 var contract = _contractService.GetById(contractId);
-                #endregion
-                #region Для авансов, начало периода берем с начала договора
-                if ((period?.Item1.Year >= contract.Date?.Year) && (period?.Item1.Month > contract.Date?.Month))
+                if (contract?.PaymentСonditionsAvans?.Contains("Без авансов") is true)
                 {
-                    period = ((DateTime, DateTime)?)(contract.Date, period.Value.Item2);
+                    NotificationHelper.SetNotification(TempData, "Условие договора не предусматривает внесение авансов!", NotificationType.Warning);
+                    return RedirectToAction("Details", "Contracts", new { id = (returnContractId == 0) ? contractId : returnContractId });
                 }
-                #endregion
-                #region Проверка, что по условию договора есть авансы
-                if (contract.IsOneOfMultiple)
-                {
-                    #region Проверка есть ли условие аванса у генподрядчика(от подобъекта)
-                    var contractGen = _contractService.GetById((int)contract.MultipleContractId);
-                    if (contractGen.PaymentСonditionsAvans != null && contractGen.PaymentСonditionsAvans.Contains("Без авансов"))
-                    {
-                        NotificationHelper.SetNotification(TempData, "У контракта условие - без авансов", NotificationType.Warning);
-                        var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                        return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-                    }
-                    #endregion
-                }
-                else
-                {
-                    #region Проверка есть ли условие аванса у контракта
-                    if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
-                    {
-                        NotificationHelper.SetNotification(TempData, "У контракта условие - без авансов", NotificationType.Warning);
-                        var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                        return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-                    }
-                    #endregion
-                }
-                #endregion
-                #region Проверка на наличие объема работ и периода, иначе вернуть на страницу котнракта с сообщением.
+
+                // Нахождение периода работ по "объему работ"               
+                var period = _contractService.GetFullPeriodRange(contractId);// GetDateRangeScope(contractId);
                 if (period is null)
                 {
-                    NotificationHelper.SetNotification(TempData, "Заполните объем работ", NotificationType.Warning);                   
+                    NotificationHelper.SetNotification(TempData, "Не заполнены периоды по договору", NotificationType.Warning);
                     var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                     return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                 }
-                #endregion
-                ViewData["returnContractId"] = returnContractId;
+
                 ViewData["contractId"] = contractId;
-                #region Создание модели для View
+                ViewData["returnContractId"] = returnContractId;
+                ViewData["IsEdit"] = false;
+                ViewData["Current"] = contract?.PaymentСonditionsAvans?.Contains("текущего аванса") is true ? "true" : "false";
+                ViewData["Target"] = contract?.PaymentСonditionsAvans?.Contains("целевого аванса") is true ? "true" : "false";
+
                 var periodChoose = new PeriodChooseViewModel
                 {
                     ContractId = contractId,
-                    PeriodStart = period.Value.Item1,
-                    PeriodEnd = period.Value.Item2,
+                    PeriodStart = period.Value.Start,
+                    PeriodEnd = period.Value.End,
                     IsFact = isFact
                 };
-                #endregion
-                #region Проверка на наличие авансов и переход на View/Action
-                var prepaymentMain = _prepayment.Find(x => x.ContractId == contractId && x.IsChange != true).Select(x => x.Id).FirstOrDefault();
-                if (prepaymentMain == 0)
+
+                /// Проверка на наличие заполненных авансов и переход на View/Action
+                var lastPrepayment = _prepayment.Find(x => x.ContractId == contractId).LastOrDefault();
+
+                if (lastPrepayment is { Id: 0 } or null
+                    || (lastPrepayment is not { Id: 0 } && _prepaymentPlan.Find(x => x.PrepaymentId == lastPrepayment?.Id)?.Any() is false)
+                    || prepaymentViewModel is not { AmendmentId: null, IsChange: null })
                 {
-                    #region Переход на View создания авансов(План)
-                    periodChoose.IsChange = false;
-                    TempData["contractId"] = contractId;
-                    TempData["returnContractId"] = returnContractId;
-                    return RedirectToAction("CreatePeriods", periodChoose);
-                    #endregion
+                    PrepaymentViewModelOld prepayment = new();
+                    prepayment.IsChange = prepaymentViewModel?.AmendmentId is > 0 ? true : false;
+                    prepayment.AmendmentId = prepaymentViewModel?.AmendmentId;
+                    prepayment.ChangePrepaymentId = lastPrepayment?.Id;
+                    prepayment.ContractId = contractId;
+                    prepayment.PrepaymentPlans = GetPrepaymentPlanByPeriod(periodChoose.PeriodStart, periodChoose.PeriodEnd, lastPrepayment?.Id);
+
+                    return View(prepayment ?? new PrepaymentViewModelOld { ContractId = contractId });
                 }
-                else
+                else  // на страницу с выбором доп. соглашения
                 {
-                    var PrepaymentItem = _prepaymentPlan.Find(x => x.PrepaymentId == prepaymentMain).Select(x => x.Id).FirstOrDefault();
-                    if (PrepaymentItem == 0)
+                    /// Проверка есть авансы по изменениям
+                    var сhangePrepayment = _prepayment.Find(x => x.ContractId == contractId && x.IsChange == true)?.Select(x => x.Id)?.LastOrDefault() ?? 0;
+                    var listAmendment = _prepayment.GetFreeAmendment(contractId);
+                    var vm = new ActionChooseViewModel();
+                    vm.CloseUrl = Url.Action("Details", "Contracts", new { id = returnContractId != 0 ? returnContractId : contractId });
+
+                    if (!listAmendment.Any())
                     {
-                        #region Переход на View создания авансов(План)
-                        periodChoose.IsChange = false;
-                        TempData["contractId"] = contractId;
-                        TempData["returnContractId"] = returnContractId;
-                        return RedirectToAction("CreatePeriods", periodChoose);
-                        #endregion
+                        vm.HeadlineIcon = "check_circle";
+                        vm.HeadlineType = AlertType.Success;
+                        vm.HeadlineText = "Аванс заполнен";
+                        vm.SupportingText = "Дополнительных соглашений, не найдено...";
+                        vm.ShowSelector = false;
+                        vm.Alerts = new() { new AlertItem { Type = AlertType.Info, Text = "Отсутствуют незаполненные дополнительные соглашения" } };
+                        vm.Actions = new()
+                        {
+                            new ActionItem { Text = "Просмотр данных", Icon = "search", Variant = ActionVariant.Outlined,
+                                Controller = "Prepayments", Action = "GetByContractId", RouteValues = { ["contractId"] = contractId.ToString(), ["returnContractId"] = returnContractId.ToString() } },
+                            new ActionItem { Text = "Доп. соглашение", Icon = "add", Variant = ActionVariant.Filled, Accent = "create",
+                                Controller = "Amendments", Action = "Create", RouteValues = { ["contractId"] = contractId.ToString(), ["isPrepament"] = "true", ["returnContractId"] = returnContractId.ToString() } }
+                        };
                     }
                     else
                     {
-                        #region Отправка на страницу с выбором доп. соглашения
-                        #region Проверка есть, ли авансы, кроме первоначального
-                        var сhangePrepayment = _prepayment.Find(x => x.ContractId == contractId && x.IsChange == true).Select(x => x.Id).LastOrDefault();
-                        if (сhangePrepayment == 0)
-                            periodChoose.ChangePrepaymentId = prepaymentMain;
-                        else periodChoose.ChangePrepaymentId = сhangePrepayment;
-                        #endregion
-                        periodChoose.IsChange = true;
-                        return View(periodChoose);
-                        #endregion
+                        /*
+                         Как это работает во view:
+                            1-Model.Selector.HiddenFields → рендерятся как <input type="hidden"> внутри <form id="md3SelectorForm">.
+                            2-Model.Selector.Options → рендерятся как строки .md3-picker-item, каждая с data-value="@opt.Value" и невидимым <input type="radio">.
+                            3-Клик по строке (JS в конце partial'а):
+                                *снимает is-checked со всех строк,
+                                *ставит его на выбранную,
+                                *кладёт data-value в #md3SelectedValue (скрытое поле с именем Model.Selector.SelectName, то есть AmendmentId),
+                                *вызывает form.requestSubmit() — форма улетает GET-запросом на FormController/FormAction с параметром AmendmentId=... — точно так же, как раньше срабатывал $("#AmendId").on("change", ...).
+                         */
+                        vm.Title = "Выбрать дополнительное соглашение";
+                        vm.HeadlineIcon = "warning";    // верхний смысловой блок — как раньше был жёлтый баннер
+                        vm.HeadlineType = AlertType.Warning;
+                        vm.HeadlineText = "Авансы для данного договора заполнены";
+                        vm.SupportingText = "Выберите дополнительное соглашение, чтобы продолжить:";
+                        vm.ShowSelector = true;
+                        vm.Selector = new SelectorBlock
+                        {
+                            SelectName = "AmendmentId",
+                            FormController = "Prepayments",   // controller, куда уйдёт submit формы
+                            FormAction = "Create",            // action, куда уйдёт submit формы
+
+                            // list <option> → list picker-строк
+                            Options = listAmendment
+                                        .Select(org => new SelectOptionItem
+                                        {
+                                            Value = org.Id.ToString(),
+                                            Text = $"Номер: {org.Number} - Изменено: {org.ContractChanges}"
+                                        })
+                                        .ToList(),
+
+                            // это были <input ... hidden /> в исходной форме
+                            HiddenFields = new Dictionary<string, string?>
+                            {
+                                ["ContractId"] = contractId.ToString(),
+                                ["returnContractId"] = returnContractId.ToString(),
+                                ["ChangePrepaymentId"] = сhangePrepayment is > 0 ? сhangePrepayment.ToString() : (lastPrepayment.Id is > 0 ? lastPrepayment.Id.ToString() : ""),
+                                ["IsChange"] = true.ToString(),
+                            }
+                        };
                     }
+                    return PartialView("/Views/Shared/Partial/_ActionChooseModal.cshtml", vm);
                 }
-                #endregion
             }
             else
             {
@@ -1272,104 +632,10 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public IActionResult CreatePeriods(PeriodChooseViewModel prepaymentViewModel, int? contractId = 0, int? returnContractId = 0)
-        {
-            if (TempData["contractId"] != null)
-            {
-                contractId = TempData["contractId"] as int?;
-            }
-            if (TempData["returnContractId"] != null)
-            {
-                returnContractId = TempData["returnContractId"] as int?;
-            }
-            if (prepaymentViewModel is not null)
-            {
-                PrepaymentViewModel prepayment = new();
-
-                if (prepaymentViewModel.AmendmentId > 0)
-                {
-                    prepaymentViewModel.IsChange = true;
-                }
-
-
-                List<PrepaymentPlanDTO> plan = new();
-
-                while (DateComparer.IsLessOrSameYearAndMonth(prepaymentViewModel.PeriodStart, prepaymentViewModel.PeriodEnd))
-                {
-                    var prev = _prepaymentPlan.Find(p => p.PrepaymentId == prepaymentViewModel.ChangePrepaymentId && p.Period == prepaymentViewModel.PeriodStart).FirstOrDefault();
-                    if (prev == null)
-                    {
-                        plan.Add(new PrepaymentPlanDTO
-                        {
-                            Period = prepaymentViewModel.PeriodStart,
-                            CurrentValue = 0,
-                            TargetValue = 0,
-                            WorkingOutValue = 0,
-                        });
-                    }
-                    else
-                    {
-                        plan.Add(new PrepaymentPlanDTO
-                        {
-                            Period = prepaymentViewModel.PeriodStart,
-                            CurrentValue = prev.CurrentValue,
-                            TargetValue = prev.TargetValue,
-                            WorkingOutValue = prev.WorkingOutValue,
-                        });
-                    }
-
-                    prepaymentViewModel.PeriodStart = prepaymentViewModel.PeriodStart.AddMonths(1);
-                }
-
-                prepayment.IsChange = prepaymentViewModel.IsChange;
-                prepayment.ContractId = prepaymentViewModel.ContractId;
-                prepayment.AmendmentId = prepaymentViewModel.AmendmentId;
-                prepayment.ChangePrepaymentId = prepaymentViewModel.ChangePrepaymentId;
-                prepayment.PrepaymentPlans = plan;
-
-                ViewData["contractId"] = contractId;
-                ViewData["returnContractId"] = returnContractId;
-                var contract = _contractService.GetById((int)contractId);
-                if (contract.IsOneOfMultiple)
-                {
-                    var contractGen = _contractService.GetById((int)contract.MultipleContractId);
-                    if (contractGen.PaymentСonditionsAvans != null && contractGen.PaymentСonditionsAvans.Contains("текущего аванса"))
-                    {
-                        ViewData["Current"] = "true";
-                    }
-                    if (contractGen.PaymentСonditionsAvans != null && contractGen.PaymentСonditionsAvans.Contains("целевого аванса"))
-                    {
-                        ViewData["Target"] = "true";
-                    }
-                }
-                else
-                {
-                    if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("текущего аванса"))
-                    {
-                        ViewData["Current"] = "true";
-                    }
-                    if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("целевого аванса"))
-                    {
-                        ViewData["Target"] = "true";
-                    }
-                }
-                if (prepayment is not null)
-                {
-                    return View("Create", prepayment);
-                }
-                if (contractId > 0)
-                {
-                    return View("Create", new PrepaymentViewModel { ContractId = contractId });
-                }
-                return View();
-            }
-            return View(prepaymentViewModel);
-        }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policy = "CreatePolicy")]
-        public IActionResult Create(PrepaymentViewModel prepayment, int returnContractId = 0)
+        public IActionResult Create(PrepaymentViewModelOld prepayment, int returnContractId = 0)
         {
             if (prepayment is not null)
             {
@@ -1393,196 +659,231 @@ namespace MvcLayer.Controllers
             return View(prepayment);
         }
 
+
+        [Authorize(Policy = "EditPolicy")]
+        public async Task<IActionResult> Edit(int id, int contractId, string? PrepType = null, int returnContractId = 0)
+        {
+            if (id > 0)
+            {
+                var contract = _contractService.GetById(contractId);
+
+                ViewData["contractId"] = contractId;
+                ViewData["returnContractId"] = returnContractId;
+                ViewData["IsEdit"] = true;
+                ViewData["Current"] = contract?.PaymentСonditionsAvans?.Contains("текущего аванса") is true ? "true" : "false";
+                ViewData["Target"] = contract?.PaymentСonditionsAvans?.Contains("целевого аванса") is true ? "true" : "false";
+
+                var prepCheck = _prepayment.GetById(id);
+                var prpPlan = _prepaymentPlan.Find(x => x.PrepaymentId == id);
+
+                if (prepCheck is { Id: 0, ContractId: 0 })
+                {
+                    NotificationHelper.SetNotification(TempData, "Не заполнены авансы", NotificationType.Warning);
+                    return RedirectToAction("GetByContractId", "Prepayments", new { contractId = contractId });
+                }
+                else
+                {
+                    PrepaymentViewModelOld prepayment = new();
+                    prepayment.Id = prepCheck.Id;
+                    prepayment.IsChange = prepCheck?.IsChange;
+                    prepayment.ChangePrepaymentId = prepCheck?.ChangePrepaymentId;
+                    prepayment.ContractId = prepCheck.ContractId;
+                    prepayment.PrepaymentPlans = (prepCheck?.PrepaymentPlans?.Count is > 0)
+                        ? prepCheck?.PrepaymentPlans
+                        : _prepaymentPlan?.Find(x => x.PrepaymentId == id)?.ToList();
+
+                    return View("Create", prepayment);
+                }
+            }
+            NotificationHelper.SetNotification(TempData, "Авансы не заполнены или некорректные данные", NotificationType.Warning);
+            return RedirectToAction(nameof(GetByContractId), new { contractId = contractId, returnContractId = returnContractId, isEngineering = false });
+        }
+
         [HttpPost]
         [Authorize(Policy = "EditPolicy")]
-        public async Task<IActionResult> EditPrepayments(List<PrepaymentViewModel> prepayment, int returnContractId = 0)
+        public async Task<IActionResult> Edit(PrepaymentViewModelOld prepayment, int returnContractId = 0)
         {
-            if (prepayment is not null || prepayment.Count() > 0)
+            if (prepayment?.PrepaymentPlans.Count > 0)
             {
-                foreach (var item in prepayment)
+                foreach (var plan in prepayment.PrepaymentPlans)
                 {
-                    _prepayment.Update(_mapper.Map<PrepaymentDTO>(item));
-
+                    _prepaymentPlan.Update(_mapper.Map<PrepaymentPlanDTO>(plan));
                 }
+
+
                 NotificationHelper.SetNotification(TempData, "Обновлены данные аванса", NotificationType.Info);
-                return RedirectToAction("GetByContractId", "Prepayments", new { contractId = prepayment.FirstOrDefault().ContractId, returnContractId = returnContractId });
+                return RedirectToAction("GetByContractId", "Prepayments", new { contractId = prepayment.ContractId, returnContractId = returnContractId });
             }
-            NotificationHelper.SetNotification(TempData, "Некорректные данные", NotificationType.Warning);
+            NotificationHelper.SetNotification(TempData, "Не удалось обновить данные", NotificationType.Warning);
             return RedirectToAction("Index", "Contracts");
         }
 
+        [HttpGet]
         [Authorize(Policy = "DeletePolicy")]
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int? id, int contractId, int returnContractId = 0)
         {
-            if (id == null)
+            if (id is < 1)
             {
-                return NotFound();
+                NotificationHelper.SetNotification(TempData, "Не удалось удалить авансы по договору/последнему ДС", NotificationType.Warning);
+                if (contractId is > 0)
+                {
+                    return RedirectToAction(nameof(GetByContractId), new { contractId = contractId, returnContractId = returnContractId });
+                }
+                return RedirectToAction("Index", "Contracts");
             }
 
             _prepayment.Delete((int)id);
-            NotificationHelper.SetNotification(TempData, "Удален аванс", NotificationType.Info);
-            return RedirectToAction(nameof(Index));
+            NotificationHelper.SetNotification(TempData, "Авансы по договору/последнему ДС удалены", NotificationType.Info);
+            return RedirectToAction(nameof(GetByContractId), new { contractId = contractId, returnContractId = returnContractId });
         }
 
-        public IActionResult FormEditPrepaymentPlan(int contractId, int returnContractId = 0)
-        {
-            #region Проверка есть ли условие о наличии авансов
-            #region Поиск условий авансов
-            var avans = _contractService.Find(x => x.Id == contractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
-            if (avans == null && returnContractId != 0)
-                avans = _contractService.Find(x => x.Id == returnContractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
-            #endregion
-            if (avans != null)
-            {
-                #region Если условие "нет авансов" возврашаем на страницу договора с сообщением
-                if (avans.Contains("Без авансов"))
-                {
-                    NotificationHelper.SetNotification(TempData, "Условие контракта - без авансов", NotificationType.Warning);
-                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
 
-                }
-                #endregion
-                #region Проверка условия авансов
-                if (avans.Contains("текущего")) { ViewData["Current"] = true; }
-                if (avans.Contains("целевого")) { ViewData["Target"] = true; }
-                #endregion
-            }
-            #endregion
-            var amendments = _amendment.Find(x => x.ContractId == contractId).ToList();
-            ViewData["contractId"] = contractId;
-            ViewData["returnContractId"] = returnContractId;
-            return View(amendments);
-        }
-
-        /// <summary>
-        /// Получение частичного представления с плановыми авансами для view FormEditPrepaymentPlan
-        /// </summary>
-        /// <param name="prepaymentId"></param>
-        /// <param name="contractId"></param>
-        /// <returns></returns>
-        public IActionResult GetPrepaymentPlanByAmendment(int prepaymentId, int contractId, string current, string target)
-        {
-            var prepayment = new PrepaymentDTO();
-            var list = new List<PrepaymentPlanDTO>();
-            ViewData["Current"] = current;
-            ViewData["Target"] = target;
-            #region Нахождение prepayment
-            if (prepaymentId == 0)
-            {
-                prepayment = _prepayment.Find(x => x.ContractId == contractId).FirstOrDefault();
-            }
-            else
-            {
-                prepayment = _mapper.Map<PrepaymentDTO>(_prepayment.GetPrepaymentByAmendment(prepaymentId));
-            }
-            #endregion
-            #region Заполнение листа плановыми авансами, при отсутствии оставить ноль
-            if (prepayment != null)
-            {
-                list = _prepaymentPlan.Find(x => x.PrepaymentId == prepayment.Id).ToList();
-            }
-            #endregion
-            return PartialView("_GetPrepaymentPlanByAmendment", list);
-        }
+        /*
+         Полученные АВАНСЫ
+         
+         */
 
         [HttpGet]
-        [Authorize(Policy = "EditPolicy")]
-        public async Task<IActionResult> EditPrepaymentPlan(int id)
+        [Route("/Prepayments/Received")]
+        [ActionName("/Prepayments/Create/Received")]
+        public IActionResult FillRecieved(int contractId, int returnContractId = 0)
         {
-            if (id != null && id != 0)
+            if (contractId > 0)
             {
-                var prepayment = _prepaymentPlan.Find(x => x.PrepaymentId == id).ToList();
-                var contractId = _prepayment.Find(x => x.Id == id).Select(x => x.ContractId).FirstOrDefault();
-                var returnContractId = _contractService.Find(x => x.Id == contractId).Select(x => x.MultipleContractId).FirstOrDefault();
-                #region Проверка есть ли условие о наличии авансов
-                #region Поиск условий авансов
-                var avans = _contractService.Find(x => x.Id == contractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
-                if (avans == null && returnContractId != 0)
-                    avans = _contractService.Find(x => x.Id == returnContractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
-                #endregion
-                if (avans != null)
+                var contract = _contractService.GetById(contractId);
+                var period = _contractService.GetFullPeriodRange(contractId); // _scopeWork.GetScopeWorkPeriodRange(contractId);
+                if (period is null)
                 {
-                    #region Если условие "нет авансов" возврашаем на страницу договора с сообщением
-                    if (avans.Contains("Без авансов"))
-                    {
-                        NotificationHelper.SetNotification(TempData, "Условие контракта - без авансов", NotificationType.Warning);
-                        var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                        return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                    NotificationHelper.SetNotification(TempData, "Заполните объем работ", NotificationType.Warning);
+                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                }
 
-                    }
-                    #endregion
-                    #region Проверка условия авансов
-                    if (avans.Contains("текущего")) { ViewData["Current"] = true; }
-                    if (avans.Contains("целевого")) { ViewData["Target"] = true; }
-                    #endregion
-                }
-                #endregion
-                #region Перегонка в пустой класс без виртуальный переменных
-                var list = new List<PrepaymentPlanViewModel>();
-                foreach (var item in prepayment)
+                ViewData["contractId"] = contractId;
+                ViewData["returnContractId"] = returnContractId;
+                ViewData["IsEdit"] = _prepayment.FindRecieved(x => x.ContractId == contractId).Any();
+                ViewData["Current"] = contract?.PaymentСonditionsAvans?.Contains("текущего аванса") is true ? "true" : "false";
+                ViewData["Target"] = contract?.PaymentСonditionsAvans?.Contains("целевого аванса") is true ? "true" : "false";
+
+                // Для авансов, начало периода = начало договора (дата подписания)
+                if (period is var (start, end) && contract?.Date is { } date)
                 {
-                    var ob = new PrepaymentPlanViewModel();
-                    ob.Id = item.Id;
-                    ob.WorkingOutValue = item.WorkingOutValue;
-                    ob.CurrentValue = item.CurrentValue;
-                    ob.TargetValue = item.TargetValue;
-                    ob.PrepaymentId = item.PrepaymentId;
-                    ob.Period = item.Period;
-                    list.Add(ob);
+                    if (start.Year >= date.Year && start.Month > date.Month)
+                    {
+                        period = (date, end);
+                    }
                 }
-                #endregion
-                return PartialView("_EditPrepaymentPlan", list);
+
+                PrepaymentViewModelOld prepayment = new();
+                prepayment.ContractId = contractId;
+                prepayment.PrepaymentPlans = GetRecievedByPeriod(period?.Start, period?.End, contractId);
+
+                return View("Received", prepayment ?? new PrepaymentViewModelOld { ContractId = contractId });
             }
             else
             {
-                return View();
+                return RedirectToAction("Index", "Contracts");
             }
         }
 
         [HttpPost]
-        [Authorize(Policy = "EditPolicy")]
-        public async Task<IActionResult> EditPrepaymentPlan(List<PrepaymentPlanViewModel> prepayment)
+        public IActionResult FillRecieved(PrepaymentViewModelOld prepayment, int contractId = 0, int returnContractId = 0)
         {
-            if (prepayment is not null || prepayment.Count() > 0)
+            if (prepayment is not null)
             {
-                foreach (var item in prepayment)
+                if (prepayment.PrepaymentPlans.Count() is > 0)
                 {
-                    var ob = new PrepaymentPlanDTO();
-                    ob.Id = item.Id;
-                    ob.WorkingOutValue = item.WorkingOutValue;
-                    ob.CurrentValue = item.CurrentValue;
-                    ob.TargetValue = item.TargetValue;
-                    ob.PrepaymentId = item.PrepaymentId;
-                    ob.Period = item.Period;
-                    _prepaymentPlan.Update(ob);
+                    foreach (var item in prepayment.PrepaymentPlans)
+                    {
+                        _prepayment.FillReceived(new()
+                        {
+                            Id = item.Id,
+                            CurrentValue = item.CurrentValue,
+                            TargetValue = item.TargetValue,
+                            ContractId = prepayment.ContractId,
+                            Period = item.Period
+                        });
+                    }
+                    NotificationHelper.SetNotification(TempData, "Полученные авансы добавлены", NotificationType.Info);
                 }
-                return Content("Удачно обновилось");
+                return RedirectToAction(nameof(GetByContractId), new { contractId = contractId, returnContractId = returnContractId });
             }
-
-            return Content("Произошла ошибка");
+            NotificationHelper.SetNotification(TempData, "Некорректные данные", NotificationType.Warning);
+            return View(prepayment);
         }
 
-        [Authorize(Policy = "AdminPolicy")]
-        public async Task<IActionResult> DeletePrepaymentPlan(int? id)
+
+
+
+        /*
+         *
+         *
+         Вспомогательные методы
+         
+         */
+        //private (DateTime StartDate, DateTime EndDate)? GetDateRangeScope(int contractId)
+        //{
+        //    (DateTime start, DateTime end) resultPeriod;
+
+        //    var amendmend = _amendment.Find(x => x.ContractId == contractId && x.Type == "agreement").LastOrDefault();
+
+        //    if (amendmend == null)
+        //    {
+        //        amendmend = _amendment.Find(x => x.ContractId == contractId).LastOrDefault();
+        //    }
+
+        //    if (amendmend != null) {
+        //        resultPeriod.start = amendmend.DateBeginWork ?? new DateTime() ;
+        //        resultPeriod.end = amendmend.DateEndWork ?? new DateTime();
+
+        //        return resultPeriod;
+        //    }
+        //    return _scopeWork.GetScopeWorkPeriodRange(contractId);
+
+
+        //}
+
+
+        private List<PrepaymentPlanDTO> GetPrepaymentPlanByPeriod(DateTime? start, DateTime? end, int? prepaymentId)
         {
-            if (id == null || id < 1)
+            List<PrepaymentPlanDTO> plan = new();
+
+            while (DateComparer.IsLessOrSameYearAndMonth(start, end))
             {
-                return NotFound();
+                var prev = prepaymentId is not null ? _prepaymentPlan.Find(p => p.PrepaymentId == prepaymentId && p.Period == start).FirstOrDefault() : null;
+                plan.Add(new PrepaymentPlanDTO
+                {
+                    Period = start,
+                    CurrentValue = prev?.CurrentValue ?? 0,
+                    TargetValue = prev?.TargetValue ?? 0,
+                    WorkingOutValue = prev?.WorkingOutValue ?? 0,
+                });
+
+                start = start?.AddMonths(1);
             }
-            try
+
+            return plan;
+        }
+
+        private List<PrepaymentPlanDTO> GetRecievedByPeriod(DateTime? start, DateTime? end, int? contractId)
+        {
+            List<PrepaymentPlanDTO> plan = new();
+
+            while (DateComparer.IsLessOrSameYearAndMonth(start, end))
             {
-                _prepayment.Delete((int)id);
-                //NotificationHelper.SetNotification(TempData, "Аванс удален", NotificationType.Info);
-                //return Ok();
-                return Content("Аванс удален");
+                var prev = contractId is not null ? _prepayment.FindRecieved(p => p.ContractId == contractId && p.Period == start).FirstOrDefault() : null;
+                plan.Add(new PrepaymentPlanDTO
+                {
+                    Id = prev?.Id ?? 0,
+                    Period = start,
+                    CurrentValue = prev?.CurrentValue ?? 0,
+                    TargetValue = prev?.TargetValue ?? 0,
+                });
+
+                start = start?.AddMonths(1);
             }
-            catch (Exception)
-            {
-                return Content("Ошибка удаления");
-                //NotificationHelper.SetNotification(TempData, "Ошибка удаления", NotificationType.Error);
-                //return BadRequest();
-            }
+
+            return plan;
         }
     }
 }

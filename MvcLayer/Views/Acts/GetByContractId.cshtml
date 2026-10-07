@@ -5,176 +5,250 @@
 @using BusinessLayer.Models;
 @using BusinessLayer.Models.KDO
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scopes
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject IHttpContextUserProvider HttpHelper
 
 
 @{
     var permissions = HttpHelper.GetUserPermissions();
-
-    var contract = Contract.GetById((int)ViewBag.contractId);
     ViewData["Title"] = "Акты приостановления/возобновления работ (услуг)";
-    int backId = 0;
-    if (ViewBag.returnContractId == 0)
-    {
-        backId = ViewBag.contractId;
-    }
-    else
-    {
-        backId = ViewBag.returnContractId;
-    }
+
+    int backId = ViewBag.returnContractId == 0 ? (int)ViewBag.contractId : (int)ViewBag.returnContractId;
+
+    var contract = Model?.FirstOrDefault()?.ContractId is > 0
+        ? Contract.GetById(Model?.FirstOrDefault()?.ContractId ?? 0)
+        : null;
 
     string redirectAction = "GetByContractId";
     string redirectController = "Acts";
+
+    var isThereScopeWorks = Scopes.Find(x => x.ContractId == (contract?.Id ?? (int)ViewBag?.contractId))?.Count() > 0 && contract?.IsMultiple != true ? true : false;
     var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
 }
+<style>
+    .dm-modal {
+        width: min(90vw, 1600px) !important;
+        max-width: 1600px !important;
+    }
+</style>
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
 
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
             <div class="dm-modal">
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"] @contract?.Number</label>
-                    @if (backId != null && backId > 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
-                    }
-                    @if (backId == null || backId == 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
-                    }
-                </div>
-                <hr class="modal-line" />
-                @if (Model.Any())
-                {
-                    <table class="table table-striped table-bordered table-main table-hover">
-                        <thead>
-                            <tr>
-                                <th class="text-center" rowspan="2">
-                                    @Html.DisplayNameFor(model => model.DateAct)
-                                </th>
-                                <th class="text-center" rowspan="2">
-                                    Приостановка/возобновление работ
-                                </th>
-                                <th class="text-center" rowspan="2">
-                                    @Html.DisplayNameFor(model => model.Reason)
-                                </th>
-
-                                <th class="text-center align-middle" colspan="2">Период приостановки</th>
-                                <th class="text-center" rowspan="2">
-                                    @Html.DisplayNameFor(model => model.DateRenewal)
-                                </th>
-                                <th class="text-center" rowspan="2">Файлы</th>
-                                <th rowspan="2"></th>
-                            </tr>
-                            <tr>
-                                <th class="text-center align-middle" colspan="1">с "дата"</th>
-                                <th class="text-center align-middle" colspan="1">по "дата"</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
+                <div class="am-wrap">
+                    <!-- Шапка -->
+                    <div class="am-header">
+                        <span class="am-header-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                            </svg>
+                        </span>
+                        <div class="am-header-info">
+                            <h1 class="am-header-title">
+                                @ViewData["Title"]
+                                @if (contract != null)
+                                {
+                                    <span> по договору <span style="color:var(--md3-primary);">№@contract.Number</span></span>
+                                }
+                            </h1>
+                            @if (contract?.NameObject != null)
                             {
-                                <tr>
-                                    <td>
-                                        @item.DateAct?.ToShortDateString()
-                                    </td>
-                                    <td>
-                                        @if (item.IsSuspension == true)
-                                        {
-                                            <span>приостановка</span>
-                                        }
-                                        @if (item.IsSuspension != true)
-                                        {
-                                            <span>возобновление</span>
-                                        }
-
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.Reason)
-                                    </td>
-                                    <td>
-                                        @item.DateSuspendedFrom?.ToShortDateString()
-                                    </td>
-                                    <td>
-                                        @item.DateSuspendedUntil?.ToShortDateString()
-                                    </td>
-                                    <td>
-                                        @item.DateRenewal?.ToShortDateString()
-                                    </td>
-                                    <td>
-                                        @foreach (FileDTO file in Files.GetAttachedFiles(item.Id, Folder.Acts))
-                                        {
-                                            // <div>
-                                            //     <a onclick="window.open('@Url.Action("GetFile","Files", new {id=@item2.Id})', '_blank')">@item2.FileName</a>
-
-                                            // </div>
-
-                                            <div>
-                                                <a href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>
-                                                @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)
-                                                {
-                                                    <a asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id"
-                                                       asp-route-redirectAction="@redirectAction"
-                                                       asp-route-redirectController="@redirectController"
-                                                       asp-route-contractId="@item.ContractId"
-                                                       title="Удалить файл"
-                                                       class="modal-link del-btn"
-                                                       data-message="Прикрепленный файл будет удален. Продолжить?"> × </a>
-                                                }
-                                            </div>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
-                                        {
-                                            <span class="icon file-add" title="Добавить файл к акту">
-                                                <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@Folder.Acts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                            </span>
-                                        }
-                                        @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
-                                        {
-                                            <span class="icon edit" title="Редактировать акт">
-                                                <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                            </span>
-                                        }
-                                        @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)
-                                        {
-                                            <span class="icon delete" title="Удалить акт">
-                                                <a asp-action="Delete"
-                                                   asp-route-id="@item.Id"
-                                                   asp-route-contractId="@item.ContractId"
-                                                   class="modal-link"
-                                                   data-message="Акт приостановки/возобновления работ (услуг) и прикрепленные файлы будут удалены. Продолжить?">
-                                                </a>
-                                            </span>
-                                        }
-                                    </td>
-                                </tr>
+                                <div class="am-header-sub">@contract.NameObject</div>
                             }
-                        </tbody>
-                    </table>
-                }
-                else
-                {
-                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                        <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
-                        </symbol>
-                        <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
-                        </symbol>
-                        <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-                        </symbol>
-                    </svg>
-                    <div class="alert alert-warning d-flex align-items-center" role="alert">
-                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill" /></svg>
-                        <div>
-                            Отсутствуют данные
+                        </div>
+                        <div class="am-header-actions">
+                            @if (backId > 0)
+                            {
+                                <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn" aria-label="Закрыть"></a>
+                            }
+                            else
+                            {
+                                <a asp-controller="Contracts" asp-action="" class="close-btn" aria-label="Закрыть"></a>
+                            }
                         </div>
                     </div>
-                }
+                    <!-- Панель инструментов -->
+                    @if (isThereScopeWorks && permissions.IsCreator && isGRP_Contract)
+                    {
+                        <div class="am-toolbar">
+                            <div class="am-toolbar-actions">
+                                <a asp-action="Create" asp-controller="Acts" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId" class="am-btn am-btn-primary md3-btn--tonal" title="Добавить акт приостановки/возобновления">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19" />
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                    </svg>
+                                    <span>Добавить</span>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                    <!-- Карточка -->
+                    <div class="am-card">
+                        @if (Model.Any())
+                        {
+                            <div class="am-table-scroll">
+                                <table class="am-table">
+                                    <thead>
+                                        <!-- Строка 1: основные колонки + объединённый «Сроки» -->
+                                        <tr>
+                                            <th class="col-6per-67max " rowspan="2"> @Html.DisplayNameFor(model => model.DateAct)</th>
+                                            <th class="col-4per" rowspan="2">Приостановка/возобновление работ</th>
+                                            <th class="col-30per-250max" rowspan="2">@Html.DisplayNameFor(model => model.Reason)</th>
+                                            <th class="col-4per" colspan="2">Период приостановки</th>
+                                            <th class="col-4per" rowspan="2">@Html.DisplayNameFor(model => model.DateRenewal)</th>
+                                            <th class="col-4per-50max-files" rowspan="2">Файлы</th>
+                                            <th class="am-col-actions col-4per" rowspan="2"></th>
+                                        </tr>
+                                        <!-- Строка 2: начало / окончание -->
+                                        <tr>
+                                            <th class="col-4per am-col-date">начало</th>
+                                            <th class="col-4per am-col-date" style="border-right: 1px solid var(--md3-outline);">окончание</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model)
+                                        {
+                                            <tr>
+                                                <!-- Номер и дата -->
+                                                <td class="col-6per-67max">
+                                                    <div class="am-num">
+                                                        @item.DateAct?.ToShortDateString()
+                                                    </div>
+                                                </td>
+                                                <!--  -->
+                                                <td class="am-col-price col-5per">
+                                                    <span class="am-price">
+                                                        @(item.IsSuspension is true ? "приостановка" : "возобновление")
+                                                    </span>
+                                                </td>
+                                                <!-- Причина -->
+                                                <td class="col-30per-250max">
+                                                    @Html.DisplayFor(modelItem => item.Reason)
+                                                </td>
+                                                <!-- Начало работ -->
+                                                <td class="col-1pern am-col-date">
+                                                    <span class="am-date-val">
+                                                        @item.DateSuspendedFrom?.ToShortDateString()
+                                                    </span>
+                                                </td>
+                                                <!-- Окончание работ -->
+                                                <td class="col-1per am-col-date">
+                                                    <span class="am-date-val">
+                                                        @item.DateSuspendedUntil?.ToShortDateString()
+                                                    </span>
+                                                </td>
+
+                                                <!--  -->
+                                                <td class="col-1per am-col-date">
+                                                    <span class="am-date-val">
+                                                        @item.DateRenewal?.ToShortDateString()
+                                                    </span>
+                                                </td>
+                                                <!-- Файлы -->
+                                                <td class="col-5per-50max-files">
+                                                    @foreach (FileDTO file in Files.GetAttachedFiles(item.Id, Folder.Acts))
+                                                    {
+                                                        <div class="am-file-row">
+                                                            <a href="~/Files/OpenFile?id=@file.Id"
+                                                               title="@file.FileName" class="am-file-link" target="_blank">@file.FileName</a>
+                                                            @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)
+                                                            {
+                                                                <a asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id"
+                                                                   asp-route-redirectAction="@redirectAction"
+                                                                   asp-route-redirectController="@redirectController"
+                                                                   asp-route-contractId="@item.ContractId"
+                                                                   asp-route-returnContractId="@ViewBag.returnContractId"
+                                                                   title="Удалить файл"
+                                                                   class="am-file-del modal-link"
+                                                                   data-message="Прикрепленный файл будет удален. Продолжить?"> × </a>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </td>
+
+                                                <!-- Действия -->
+                                                <td class="am-col-actions col-4per">
+                                                    <div class="am-actions-cell">
+                                                        @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
+                                                        {
+                                                            <span class="icon file-add" title="Добавить файл к акту">
+                                                                <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@Folder.Acts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                            </span>
+                                                        }
+                                                        @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
+                                                        {
+                                                            <span class="icon edit" title="Редактировать акт">
+                                                                <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                            </span>
+                                                        }
+                                                        @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)
+                                                        {
+                                                            <span class="icon delete" title="Удалить акт">
+                                                                <a asp-action="Delete"
+                                                                   asp-route-id="@item.Id"
+                                                                   asp-route-contractId="@item.ContractId"
+                                                                   asp-route-returnContractId="@ViewBag.returnContractId"
+                                                                   class="modal-link"
+                                                                   data-message="Акт приостановки/возобновления работ (услуг) и прикрепленные файлы будут удалены. Продолжить?">
+                                                                </a>
+                                                            </span>
+                                                        }
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Подвал с итогами -->
+                            <div class="am-footer-row">
+                                <span class="am-footer-badge count">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="8" y1="6" x2="21" y2="6" />
+                                        <line x1="8" y1="12" x2="21" y2="12" />
+                                        <line x1="8" y1="18" x2="21" y2="18" />
+                                        <line x1="3" y1="6" x2="3.01" y2="6" />
+                                        <line x1="3" y1="12" x2="3.01" y2="12" />
+                                        <line x1="3" y1="18" x2="3.01" y2="18" />
+                                    </svg>
+                                    Актов: @Model.Count()
+                                </span>
+
+                                <span class="am-footer-badge total">
+                                    @* <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="12" y1="1" x2="12" y2="23" />
+                                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                        </svg> *@
+                                    Текущий статус: <span style="text-transform:uppercase"> @(Model?.LastOrDefault()?.IsSuspension is true ? "работа приостановлена" : "работа возобновлена")</span>
+                                </span>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Пустое состояние -->
+                            <div class="am-empty">
+                                <svg class="am-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <line x1="9" y1="13" x2="15" y2="13" />
+                                </svg>
+                                <p class="am-empty-text">Заполненные акты приостановления/возобновления работ отсутствуют</p>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
     </div>

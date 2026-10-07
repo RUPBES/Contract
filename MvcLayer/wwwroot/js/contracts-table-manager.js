@@ -57,7 +57,7 @@ class DataTableController {
         this.endET = '';
 
         // ============ Инициализация состояния скролла ============
-        this.tableSelector = '.full-width'; // селектор контейнера с прокруткой
+        this.tableSelector = '.table-scroll'; // селектор контейнера с прокруткой
         this.storageKey = `contractsTable_${options.container}`;
         this.isRestoring = false;
 

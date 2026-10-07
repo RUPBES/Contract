@@ -51,7 +51,7 @@ namespace DatabaseLayer.RepositoriesDapper.Repo
                     left join TypeWork t on t.Id = tc.TypeWorkId
                     left join SelectionProcedure sp on sp.ContractId = c.Id
                     OUTER APPLY (SELECT TOP 1 ContractPrice AS LastAmendmentPrice, DateBeginWork, DateEndWork, DateEntryObject FROM Amendment a WHERE ContractId = c.Id
-                    ORDER BY a.[Date] DESC) a";
+                    ORDER BY a.[Id] DESC) a";
 
         public ContractDpRepository(string connectionString)
         {
@@ -146,9 +146,12 @@ namespace DatabaseLayer.RepositoriesDapper.Repo
         {
             if (id > 0)
             {
-                string sqlDetails = sqlStrDetailsStart.Replace("FROM Contract c", $"FROM {DbQualifier.Qualify(databaseName, "Contract")} c");
+                string sqlDetails = sqlStrDetailsStart.Replace("FROM Contract c", $"FROM {DbQualifier.Qualify(databaseName, "Contract")} c");   
+                sqlDetails = databaseName is not null? 
+                    ($"use {databaseName}; " + sqlDetails) 
+                    : sqlDetails;
                 using (IDbConnection db = new SqlConnection(_connectionString))
-                {
+                {                       
                     return db.Query<VContract>(@$"{sqlDetails} {where} ", new { id }).ToList();
                 }
             }

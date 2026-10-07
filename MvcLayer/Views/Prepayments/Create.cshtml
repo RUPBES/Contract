@@ -1,198 +1,828 @@
 ﻿@using MvcLayer.Models;
 @using Newtonsoft.Json;
-@model MvcLayer.Models.PrepaymentViewModel
-
+@model MvcLayer.Models.PrepaymentViewModelOld
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+
 @{
-    ViewData["Title"] = "Авансы";
+    bool isEdit = ViewBag.IsEdit ?? false;
+    ViewData["Title"] = isEdit is true ? "Редактирование авансов" : "Добавление авансов";
     int index = 0;
 
-    int backId = 0;
-    if ((int)ViewData["returnContractId"] == 0)
-        backId = (int)ViewData["contractId"];
-    else backId = (int)ViewData["returnContractId"];
+    int backId = ViewBag.returnContractId == 0
+        ? (int)ViewBag.contractId
+        : (int)ViewBag.returnContractId;
 
-    bool isFact = Model.IsFact == true ? true : false;
-    string actionName = isFact ? "EditPrepayments" : "Create";
-    var contract = Contract.GetById((int)Model.ContractId);
+    string actionName = isEdit == true ? "Edit" : "Create";
+
+    var contract = ViewData["contractId"] is > 0
+        ? Contract.GetById((int)ViewData["contractId"])
+        : null;
 }
+
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
 <style>
-    .cont-table {
-        overflow-x: auto;
+    .dlg-content {
+        overflow-y: auto;
+        padding: 5px 20px 20px;
+        flex: 1 1 auto;
     }
 
-    th,
-    td {
-        min-width: 250px;
+    .btn-filled {
+        background: var(--md3-primary);
+        color: #fff;
     }
 
-    .input-group {
-        width: auto;
+        .btn-filled:hover {
+            background: #154784;
+        }
+
+    .btn-outlined {
+        background: var(--md3-surface);
+        color: var(--md3-primary);
+        border-color: var(--md3-outline-strong);
     }
 
-    .dm-modal {       
-        max-width: 1200px;
+        .btn-outlined:hover {
+            background: var(--md3-primary-light);
+            border-color: var(--md3-primary-mid);
+        }
+
+    .btn-excel {
+        color: var(--md3-gen);
+        border-color: var(--md3-outline-strong);
     }
 
-    .input_result {
-        width: 150px;
+        .btn-excel:hover {
+            background: var(--md3-gen-light);
+            border-color: var(--md3-gen);
+        }
+
+    .btn-text {
+        background: transparent;
+        color: var(--md3-on-surface-med);
+        padding: 9px 12px;
     }
 
-    .result_block {
+        .btn-text:hover {
+            background: var(--md3-surface-2);
+        }
+
+    .btn[disabled] {
+        opacity: .45;
+        cursor: not-allowed;
+    }
+
+    .demo-switch {
+        margin-left: auto;
         display: flex;
-        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        font-size: 11.5px;
+        color: var(--md3-on-surface-low);
     }
 
-    .input_block--result {
-        display: flex
+    .seg {
+        display: flex;
+        border: 1px solid var(--md3-outline-strong);
+        border-radius: 999px;
+        overflow: hidden;
     }
 
-    .text_error {
-        color: red;
+        .seg button {
+            border: none;
+            background: var(--md3-surface);
+            color: var(--md3-on-surface-med);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 13px;
+            cursor: pointer;
+            transition: all var(--md3-transition);
+            border-right: 1px solid var(--md3-outline);
+        }
+
+            .seg button:last-child {
+                border-right: none
+            }
+
+            .seg button.active {
+                background: var(--md3-primary);
+                color: #fff;
+            }
+
+            .seg button:hover:not(.active) {
+                background: var(--md3-primary-light);
+            }
+
+
+    .toolbar {
+        display: flex;
+        align-items: center;       
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        justify-content: end;
+    }
+
+    .section-label {
+        font-size: 12px;
         font-weight: 700;
+        letter-spacing: .04em;
+        color: var(--md3-on-surface-med);
+        margin: 2px 0 8px 2px;
+        text-transform: uppercase;
+    }
+
+    .table-outer {
+       /*  width: 90%; */
+        margin: 0 auto;
+    }
+
+    .scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(15,20,35,.36);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        z-index: 10;
+    }
+    .table-scroll {
+        overflow-x: auto;
+        overflow-y: hidden;
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface);
+    }
+
+        .table-scroll::-webkit-scrollbar {
+            height: 10px
+        }
+
+        .table-scroll::-webkit-scrollbar-thumb {
+            background: var(--md3-outline-strong);
+            border-radius: 8px
+        }
+
+    .periods-grid {
+        display: grid;
+        width: max-content;
+        min-width: 100%;
+    }
+
+        .periods-grid > .g-cell:nth-last-child(-n+1000) {
+        }
+        /* noop reset for specificity safety */
+        .periods-grid .g-cell:last-child, .periods-grid > .g-cell:nth-child(1n) {
+        }
+
+    .g-cell {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--md3-outline);
+        border-right: 1px solid var(--md3-outline);
+        display: flex;
+        align-items: center;
+        min-height: 46px;
+        gap: 5px;
+    }
+
+    .g-head {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--md3-surface-2);
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--md3-on-surface-med);
+        justify-content: center;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+        .g-head.g-label {
+            z-index: 4;
+        }
+
+    .g-label {
+        position: sticky;
+        left: 0;
+        z-index: 3;
+        background: var(--md3-surface-2);
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        box-shadow: 1px 0 0 var(--md3-outline);
+    }
+
+        .g-label .msi {
+            font-size: 16px;
+            margin-right: 6px;
+            color: var(--md3-primary);
+            flex-shrink: 0;
+        }
+
+
+    .g-input-cell {
+        padding: 7px 8px;
+    }
+
+    .g-input {
+        width: 100%;
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-sm);
+        padding: 8px 10px;
+        font-size: 13px;
+        /* font-family: 'Roboto Mono', monospace; */
+        color: var(--md3-on-surface);
+        background: var(--md3-surface);
+        transition: border-color var(--md3-transition), box-shadow var(--md3-transition);
+    }
+
+        .g-input:hover {
+            border-color: var(--md3-outline-strong);
+        }
+
+        .g-input:focus {
+            outline: none;
+            border-color: var(--md3-primary);
+            box-shadow: 0 0 0 3px var(--md3-primary-light);
+        }
+
+        .g-input::placeholder {
+            color: var(--md3-on-surface-low);
+            font-family: 'Roboto', sans-serif;
+        }
+
+    .row-current .g-input {
+    }
+
+    .row-target .g-input {
+    }
+
+    .row-worked .g-input {
+    }
+
+    div.g-label > svg {
+        stroke: var(--md3-primary);
+    }
+
+    .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 250px;
+        max-width: 320px;
+        width: 100%;
+    }
+
+        .summary-item .k {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--md3-on-surface-med);
+        }
+
+        .summary-item .v {
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Roboto Mono', monospace;
+            padding: 5px 10px;
+            border-radius: 999px;
+        }
+
+        .summary-item.target .v {
+            background: var(--md3-primary-light);
+            color: var(--md3-primary);
+        }
+
+        .summary-item.worked .v {
+            background: var(--md3-gen-light);
+            color: var(--md3-gen);
+        }
+
+        .summary-item.current .v {
+            background: var(--md3-warning-fill);
+            color: var(--md3-warning);
+        }
+
+            .summary-item.current .v.zero {
+                background: var(--md3-surface-3);
+                color: var(--md3-on-surface-low);
+            }
+
+
+
+
+    @@media (max-width:640px) {
+        .dialog {
+            border-radius: 16px;
+            max-height: 94vh
+        }
+
+        .table-outer {
+            width: 100%
+        }
+
+        .summary-bar {
+            flex-direction: column;
+            align-items: stretch
+        }
+
+        .summary-item {
+            justify-content: space-between
+        }
+    }
+
+    .dm-modal {
+        width: min(90vw, 1600px) !important;
+        max-width: 1600px !important;
     }
 
 
-    #txt1.focused {
-        border-color: red;
+
+
+
+   /*  / ================= Import wizard modal ================= /
+    .wizard-scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(15,20,35,.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        z-index: 20;
     }
 
-    .table-main tr:nth-child(2n) {
-        background-color: #ecf2f9 !important;
+        .wizard-scrim.open {
+            display: flex;
+        }
+
+    .wizard {
+        width: 100%;
+        max-width: 680px;
+        max-height: 86vh;
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-lg);
+        box-shadow: var(--md3-shadow-2);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
+
+    .wizard-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--md3-outline);
+    }
+
+        .wizard-header .dlg-icon {
+            background: var(--md3-gen);
+        }
+
+    .wizard-title {
+        font-size: 15px;
+        font-weight: 700;
+        flex: 1;
+    }
+
+    .wizard-steps {
+        display: flex;
+        align-items: center;
+        padding: 14px 20px 0;
+        gap: 0;
+    }
+
+    .wstep {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+    }
+
+        .wstep .num {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--md3-surface-3);
+            color: var(--md3-on-surface-low);
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all var(--md3-transition);
+        }
+
+        .wstep .lbl {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--md3-on-surface-low);
+            white-space: nowrap;
+        }
+
+        .wstep .line {
+            flex: 1;
+            height: 2px;
+            background: var(--md3-outline);
+            margin: 0 4px;
+        }
+
+        .wstep:last-child .line {
+            display: none;
+        }
+
+        .wstep.active .num {
+            background: var(--md3-primary);
+            color: #fff;
+        }
+
+        .wstep.active .lbl {
+            color: var(--md3-primary);
+        }
+
+        .wstep.done .num {
+            background: var(--md3-gen);
+            color: #fff;
+        }
+
+        .wstep.done .lbl {
+            color: var(--md3-gen);
+        }
+
+        .wstep.done .line {
+            background: var(--md3-gen);
+        }
+
+    .wizard-body {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .wpanel {
+        display: none;
+    }
+
+        .wpanel.active {
+            display: block;
+        }
+
+    .wcard {
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        padding: 16px;
+        background: var(--md3-surface-2);
+    }
+
+        .wcard h4 {
+            margin: 0 0 6px;
+            font-size: 13.5px;
+        }
+
+        .wcard p {
+            margin: 0;
+            font-size: 12.5px;
+            color: var(--md3-on-surface-med);
+            line-height: 1.5;
+        }
+
+    .dropzone {
+        border: 2px dashed var(--md3-outline-strong);
+        border-radius: var(--md3-radius-md);
+        padding: 32px 20px;
+        text-align: center;
+        color: var(--md3-on-surface-med);
+        background: var(--md3-surface-2);
+        cursor: pointer;
+        transition: all var(--md3-transition);
+    }
+
+        .dropzone:hover {
+            background: var(--md3-primary-light);
+            border-color: var(--md3-primary);
+        }
+
+        .dropzone .dz-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            margin: 8px 0 3px;
+            color: var(--md3-on-surface);
+        }
+
+        .dropzone .dz-sub {
+            font-size: 11.5px;
+            color: var(--md3-on-surface-low);
+        }
+
+    .file-picked {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-gen-light);
+        margin-top: 12px;
+    }
+
+        .file-picked .msi {
+            color: var(--md3-gen);
+            font-size: 22px;
+        }
+
+        .file-picked .fp-name {
+            font-size: 13px;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .file-picked .fp-remove {
+            background: none;
+            border: none;
+            color: var(--md3-danger);
+            cursor: pointer;
+            display: flex;
+        }
+
+    .wizard-footer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 20px;
+        border-top: 1px solid var(--md3-outline);
+    }
+
+        .wizard-footer .spacer {
+            flex: 1;
+        } */
 </style>
-
-
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
             <div class="dm-modal">
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"] @contract?.Number</label>
+
+
+                @*   {{-- ══ ШАПКА ══ --}} *@
+                <div class="org-header" style="border-bottom:1.5px solid var(--md3-outline); gap:10px;">
+                    <div class="org-header-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <div class="org-header-info">
+                        <h2 class="org-header-title" id="editOrgTitle"
+                            style="font-size:15px; margin:0 0 1px;">
+                            @ViewData["Title"] по договору №@contract?.Number
+                        </h2>
+                        <p class="org-header-sub" style="font-size:11px;">
+                            Заполните данные
+                        </p>
+                    </div>
                     @if (backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn" aria-label="Закрыть"></a>
                     }
-                    @if (backId == 0)
+                    else
                     {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="" class="close-btn" aria-label="Закрыть"></a>
                     }
                 </div>
-                <hr class="modal-line" />
-                <form asp-action=@actionName asp-route-returnContractId="@backId" class="row">
-                    <div class="cont-table">
-                        <table class="table table-bordered table-main table-hover">
-                            <tr>
-                                <th>Период</th>
-                                @foreach (var item in Model.PrepaymentPlans)
-                                {
-                                    <th>
-                                        @item.Period?.ToString("MMMM yyyy")
-                                        <input asp-for="@Model.PrepaymentPlans[index].Period" type="text" class="form-control" value="@item.Period" hidden />
-                                    </th>
-                                    index++;
-                                }
-                                @{
-                                    index = 0;
-                                }
-                            </tr>
+
+                @* {{-- ══ ФОРМА ══ --}} *@
+                <form asp-action=@actionName asp-route-returnContractId="@backId" novalidate>             
+                    <input asp-for="@Model.AmendmentId" hidden />
+                    <input asp-for="@Model.ContractId" hidden />
+                    <input asp-for="@Model.IsChange" hidden />
+                    <input asp-for="@Model.ChangePrepaymentId" hidden />
+                    <input name="returnContractId" value="@ViewBag.returnContractId" hidden>
+
+                    <div class="org-body" style="padding:12px 16px 5px; gap:10px;">
+                        <div class="dlg-content">
+                          @*   <div class="toolbar">
+                                <button type="button" class="md3-btn md3-btn-secondary-tonal" id="openWizardBtn" style="max-width: fit-content;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                        <polyline points="14 2 14 8 20 8" />
+                                        <path d="M8 13l2.5 4M10.5 13L8 17" />
+                                    </svg>
+                                    Импорт из Excel
+                                </button>                                
+                            </div>            *@               
+
+                            <div class="table-outer">
+                                <div class="table-scroll">
+                                    <div class="periods-grid" id="periodsGrid" style="grid-template-columns: 200px repeat(@(Model.PrepaymentPlans.Count), minmax(170px, 1fr));">
+                                        <div class="g-cell g-head g-label">Период</div>
+                                        @foreach (var item in Model.PrepaymentPlans)
+                                        {
+                                            <input asp-for="@Model.PrepaymentPlans[index].Id" hidden />
+                                            <input asp-for="@Model.PrepaymentPlans[index].PrepaymentId" hidden />
+                                            <div class="g-cell g-head">@item.Period?.ToString("MMMM yyyy")</div>
+                                            <input asp-for="@Model.PrepaymentPlans[index].Period" type="text" value="@item.Period" hidden />
+                                            index++;
+                                        }
+                                        @{
+                                            index = 0;
+                                        }
+
+                                        @if (ViewBag.Current != null)
+                                        {
+                                            <div class="g-cell g-label row-current">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="9" />
+                                                    <polyline points="12 7 12 12 15 14.5" />
+                                                </svg>
+                                                Текущий аванс
+                                            </div>
+                                            @foreach (var item in Model?.PrepaymentPlans)
+                                            {
+                                                <div class="g-cell g-input-cell row-current">
+                                                    <input class="g-input cost-format"
+                                                           type="text" inputmode="decimal"
+                                                           placeholder="0,00" data-row="current"                                                           
+                                                           asp-for="@Model.PrepaymentPlans[index].CurrentValue"
+                                                           data-col="@index">
+                                                </div>
+                                                index++;
+                                            }
+                                            index = 0;
+                                        }
+
+                                        @if (ViewBag.Target != null)
+                                        {
+                                            <div class="g-cell g-label row-target">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M5 21V4" />
+                                                    <path d="M5 4c1.5-1 3-1 5 0s3.5 1 5 0v9c-1.5 1-3 1-5 0s-3.5-1-5 0" />
+                                                </svg>
+                                                Целевой аванс
+                                            </div>
+                                            @foreach (var item in Model?.PrepaymentPlans)
+                                            {
+                                                <div class="g-cell g-input-cell row-target">
+                                                    <input class="g-input cost-format"
+                                                           type="text" inputmode="decimal"
+                                                           placeholder="0,00" 
+                                                           data-row="target"                                                           
+                                                           asp-for="@Model.PrepaymentPlans[index].TargetValue"
+                                                           data-col="@index">
+                                                </div>
+                                                index++;
+                                            }
+                                            index = 0;
+
+                                            @* <div class="g-cell g-label row-worked">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="9" />
+                                                    <polyline points="8 12.5 10.5 15 16 9" />
+                                                </svg>
+                                                Отработка целевого
+                                            </div>
+
+                                            @foreach (var item in Model?.PrepaymentPlans)
+                                            {
+                                                <div class="g-cell g-input-cell row-worked">
+                                                    <input class="g-input cost-format"
+                                                           type="text"
+                                                           inputmode="decimal"
+                                                           placeholder="0,00"
+                                                           data-row="worked"                                                           
+                                                           asp-for="@Model.PrepaymentPlans[index].WorkingOutValue"
+                                                           data-col="@index">
+                                                </div>
+                                                index++;
+                                            }
+                                            index = 0; *@
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-label" style="padding: 2px 40px 5px;">Итоговые суммы за весь период</div>
+                    <div style="display: flex;gap: 20px;padding: 2px 40px 16px;white-space: nowrap;">
+                        
                             @if (ViewBag.Current != null)
                             {
-                                <tr>
-                                    <th>Текущие авансы:</th>
-                                    @foreach (var item in Model.PrepaymentPlans)
-                                    {
-                                        if (Model.PrepaymentPlans[index].CurrentValue != null && Model.PrepaymentPlans[index].CurrentValue != 0)
-                                        {
-                                            <td><input name="PrepaymentPlans[@index].CurrentValue" value="@Model.PrepaymentPlans[index].CurrentValue" type="text" class="form-control cost" /></td>
-                                        }
-                                        else
-                                        {
-                                            <td><input name="PrepaymentPlans[@index].CurrentValue" type="text" class="form-control cost" /></td>
-                                        }
-                                        index++;
-                                    }
-                                    @{
-                                        index = 0;
-                                    }
-                                </tr>
+                                <div class="summary-item current">
+                                    <span class="k">Текущий:</span>
+                                    <span class="v zero">
+                                        <span id="sumCurrent">0,00</span>
+                                        <span>@contract?.Сurrency</span>
+                                    </span>
+                                </div>
                             }
                             @if (ViewBag.Target != null)
                             {
-                                <tr>
-                                    <th>Целевые авансы</th>
-                                    @foreach (var item in Model.PrepaymentPlans)
-                                    {
-                                        if (Model.PrepaymentPlans[index].TargetValue != null && Model.PrepaymentPlans[index].TargetValue != 0)
-                                        {
-                                            <td><input name="PrepaymentPlans[@index].TargetValue" value="@Model.PrepaymentPlans[index].TargetValue" type="text" class="target form-control cost" /></td>
-                                        }
-                                        else
-                                        {
-                                            <td><input name="PrepaymentPlans[@index].TargetValue" type="text" class="target form-control cost" /></td>
-                                        }
-                                        index++;
-                                    }
-                                    @{
-                                        index = 0;
-                                    }
-                                </tr>
-                                <tr>
-                                    <th>Отработка целевых авансов</th>
-                                    @foreach (var item in Model.PrepaymentPlans)
-                                    {
-                                        if (Model.PrepaymentPlans[index].WorkingOutValue != null && Model.PrepaymentPlans[index].WorkingOutValue != 0)
-                                        {
-                                            <td><input name="PrepaymentPlans[@index].WorkingOutValue" value="@Model.PrepaymentPlans[index].WorkingOutValue" type="text" class="targetWork form-control cost" /></td>
-                                        }
-                                        else
-                                        {
-                                            <td><input name="PrepaymentPlans[@index].WorkingOutValue" type="text" class="targetWork form-control cost" /></td>
-                                        }
-                                        index++;
-                                    }
-                                    @{
-                                        index = 0;
-                                    }
-                                </tr>
+                                <div class="summary-item target">
+                                    <span class="k">Целевой:</span>
+                                    <span class="v">
+                                        <span id="sumTarget">0,00</span>
+                                        <span>@contract?.Сurrency</span>
+                                    </span>
+                                </div>
+                               @*  <div class="summary-item worked">
+                                <span class="k" style="width: min-content;">Отработка целевого:</span>
+                                    <span class="v">
+                                        <span id="sumWorked">0,00</span>
+                                        <span>@contract?.Сurrency</span>
+                                    </span>
+
+                                </div> *@
+                                @* <div class="summary-item diff">
+                                    <span class="k">Разница:</span>
+                                    <span class="v zero" id="sumDiff">0,00</span>
+                                </div> *@
                             }
-                            <input asp-for="@Model.AmendmentId" hidden />
-                            <input asp-for="@Model.ContractId" hidden />
-                            <input asp-for="@Model.IsChange" hidden />
-                            <input asp-for="@Model.ChangePrepaymentId" hidden />
-                        </table>
+                        </div>
+                    
+                    @*  {{-- ══ ФУТЕР ══ --}} *@
+                    <div class="org-footer" style="padding:10px 16px 14px;">
+
+                        <a asp-controller="Prepayments"
+                           asp-action="GetByContractId"
+                           asp-route-contractId=@(backId > 0 ? @backId : null)
+                           asp-route-returnContractId="@ViewBag.returnContractId"
+                               class="md3-btn md3-btn-ghost" style="padding:6px 14px; font-size:12px;">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                    <path d="M19 12H5M12 5l-7 7 7 7"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Отмена
+                            </a>
+                        <div class="org-footer-spacer"></div>
+                            <button type="submit" class="md3-btn md3-primary-btn" style="padding:6px 16px; font-size:12px;">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M17 21v-8H7v8M7 3v5h8"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Сохранить
+                            </button>
+                       
+                        
                     </div>
-                    <div class="form-group mt-3 result_block">
-                        @if (ViewBag.Target != null)
-                        {
-
-                            var target = Model.PrepaymentPlans.Sum(x => x.TargetValue);
-                            var workTarget = Model.PrepaymentPlans.Sum(x => x.WorkingOutValue);
-                            var result = target - workTarget;
-                            <div class="input_block--result">
-                                <div class="input-group">
-                                    <span class="input-group-text">Целевой:</span>
-
-                                    <input class="input_result" id="sumTarget" value="@target?.ToString("N2")" readonly />
-                                </div>
-                                <div class="input-group">
-                                    <span class="input-group-text">Отработка целевого:</span>
-                                    <input class="input_result" id="sumTargetWork" value="@workTarget?.ToString("N2")" readonly />
-                                </div>
-                                <div class="input-group">
-                                    <span class="input-group-text">Разница </span>
-                                    <input class=" input_result" id="result" value="@result?.ToString("N2")" readonly />
-                                </div>
-
-                            </div>
-                        }
-                        <span id="text_error" class="text_error"></span>
-
-                        <input type="submit" value="Создать" id="createButton" class="btn btn-primary" />
-
-                    </div>
-
                 </form>
+@* 
+                <!-- ================= Excel import wizard ================= -->
+                <div class="wizard-scrim" id="wizardScrim">
+                    <div class="wizard" role="dialog" aria-modal="true">
+                        <div class="wizard-header">
+                            <div class="dlg-icon"></div>
+                            <div class="wizard-title">Импорт авансов из Excel</div>
+                            <a class="close-btn" id="closeWizardBtn" aria-label="Закрыть"></a>
+                        </div>
+
+                        <div class="wizard-steps" id="wizardSteps">
+                            <div class="wstep active" data-step="1"><div class="num">1</div><div class="lbl">Шаблон</div><div class="line"></div></div>
+                            <div class="wstep" data-step="2"><div class="num">2</div><div class="lbl">Загрузка</div><div class="line"></div></div>                            
+                        </div>
+
+                        <div class="wizard-body">
+
+                            <div class="wpanel active" data-panel="1">
+                                <div class="wcard">
+                                    <h4>Скачайте шаблон файла</h4>
+                                    <p>Чтобы данные корректно распознались, используйте наш шаблон .xlsx — в нём уже подписаны столбцы «Период», «Текущий аванс», «Целевой аванс», «Отработка целевого». Заполните его и переходите к загрузке.</p>
+                                </div>
+                                <div style="margin-top:14px">
+                                    <button class="btn btn-outlined">Скачать шаблон .xlsx</button>
+                                </div>
+                            </div>
+
+                            <div class="wpanel" data-panel="2">
+                                <div class="dropzone" id="dropzone">
+                                    <span class="msi">cloud_upload</span>
+                                    <div class="dz-title">Перетащите файл сюда или нажмите, чтобы выбрать</div>
+                                    <div class="dz-sub">Поддерживаются файлы .xlsx, .xls до 10 МБ</div>
+                                </div>
+                                <div class="file-picked" id="filePicked" style="display:none">
+                                    <span class="msi">description</span>
+                                    <div class="fp-name">Авансы_ЖК_Заря_2026.xlsx</div>
+                                    <button class="fp-remove" id="fileRemove"><span class="msi">close</span></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="wizard-footer">
+                            <button class="btn btn-text" id="wizBack" disabled>Назад</button>
+                            <div class="spacer"></div>
+                            <button class="btn btn-filled" id="wizNext">Далее</button>
+                        </div>
+                    </div>
+                </div> *@
             </div>
         </div>
     </div>
@@ -201,58 +831,115 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script src="~/js/cost-formatter.js"></script>
     <script>
-        $(function ($) {
-            var allCost = $(".cost")
-            for (let el of allCost) {
-                digits_float(el)
-            }
-            $('body').on('input', '.cost', function (e) {
-                digits_float(this);
-            });
-        });
-        $('body').on('input', '.target', function (e) {
-            digits_float(this);
-            check();
-        });
-        $('body').on('input', '.targetWork', function (e) {
-            digits_float(this);
-            check();
-        });
+       
 
-        function check() {
-            let btn = document.getElementById("createButton");
+                /* ---- number helpers ---- */
 
-            let target = $(".target");
-            let targetWork = $(".targetWork");
-            let sumTarget = 0;
-            let sumTargetWork = 0;
-            let result = 0;
-            for (let item of target) {
-                const regExp = /,/g;
-                let num = item.value.replaceAll(' ', '').replace(regExp, '.')
-                sumTarget += +num;
-            }
-            for (let item of targetWork) {
-                const regExp = /,/g;
-                let num = item.value.replaceAll(' ', '').replace(regExp, '.')
-                sumTargetWork += +num;
-            }
-            sumTarget = Math.round(sumTarget * 100) / 100;
-            sumTargetWork = Math.round(sumTargetWork * 100) / 100;
-            result = sumTarget - sumTargetWork;
-            if (result === 0) {
-                $("#result").focus(function () { $(this).addClass("focused") });
-                btn.removeAttribute('disabled')
-                $('#text_error').text('')
-            } else {
-                btn.setAttribute('disabled', true)
-                $('#text_error').text('Сумма не сходится!')
-            }
-
-            $("#sumTarget").val(sumTarget);
-            $("#sumTargetWork").val(sumTargetWork);
-            $("#result").val(result.toFixed(2));
+                const grid = document.querySelector('.periods-grid');
+        function parseNum(v){
+          const n = parseFloat(String(v ?? '0').replace(/\s/g,'').replace(',', '.'));
+          return isNaN(n) ? 0 : n;
         }
+        function fmt(n){
+          return n.toLocaleString('ru-RU', {minimumFractionDigits:2, maximumFractionDigits:2});
+        }
+
+        /* ---- core summary calculation ----
+           Суммирует все поля в каждой из трёх строк (Текущий / Целевой / Отработка)
+           по всем отрисованным периодам и пишет итоги + разницу в summary-bar. */
+        function updateSummary(){
+          let current = 0, target = 0, worked = 0;
+
+          grid.querySelectorAll('.g-input[data-row="current"]').forEach(i => current += parseNum(i.value));
+          grid.querySelectorAll('.g-input[data-row="target"]').forEach(i => target += parseNum(i.value));
+          // grid.querySelectorAll('.g-input[data-row="worked"]').forEach(i => worked += parseNum(i.value));
+
+          document.getElementById('sumCurrent').textContent = fmt(current);
+          document.getElementById('sumTarget').textContent = fmt(target);
+          // document.getElementById('sumWorked').textContent = fmt(worked);
+
+          // const diff = target - worked;
+          // const diffEl = document.getElementById('sumDiff');
+          // diffEl.textContent = fmt(diff);
+          // diffEl.classList.toggle('zero', diff === 0);
+        }
+
+        /* Делегирование: один слушатель на контейнере ловит input с любого поля,
+           включая появившиеся позже (например, после смены числа периодов) */
+        grid.addEventListener('input', (e) => {
+          if (e.target.classList.contains('g-input')) updateSummary();
+        });
+
+        /* Пересчёт сразу при загрузке страницы */
+        window.addEventListener('DOMContentLoaded', updateSummary);
+
+        /* Для программного заполнения полей (например, после импорта из Excel) —
+           input.value = ... в JS НЕ генерирует событие 'input', поэтому обычный
+           слушатель его не поймает; эта функция заполняет ячейки и сама
+           пересчитывает суммы сразу после заполнения. */
+        function fillPeriodValues(data){
+          ['current','target'].forEach(row => {
+            const inputs = grid.querySelectorAll(`.g-input[data-row="${row}"]`);
+            (data[row] || []).forEach((val, idx) => {
+              if (inputs[idx]) inputs[idx].value = val;
+            });
+          });
+          updateSummary();
+        }
+
+
+
+        // /* ===================== Import wizard ===================== */
+        // const wizardScrim = document.getElementById('wizardScrim');
+        // let currentStep = 1;
+        // const totalSteps = 4;
+
+        // function openWizard(){
+        //   currentStep = 1;
+        //   updateWizard();
+        //   wizardScrim.classList.add('open');
+        // }
+        // function closeWizard(){ wizardScrim.classList.remove('open'); }
+
+        // function updateWizard(){
+        //   document.querySelectorAll('.wstep').forEach(el => {
+        //     const step = parseInt(el.dataset.step, 10);
+        //     el.classList.toggle('active', step === currentStep);
+        //     el.classList.toggle('done', step < currentStep);
+        //   });
+        //   document.querySelectorAll('.wpanel').forEach(el => {
+        //     el.classList.toggle('active', parseInt(el.dataset.panel, 10) === currentStep);
+        //   });
+        //   document.getElementById('wizBack').disabled = currentStep === 1;
+        //   const nextBtn = document.getElementById('wizNext');
+        //   nextBtn.innerHTML = currentStep === totalSteps
+        //     ? '<span class="msi">check</span>Импортировать'
+        //     : 'Далее';
+        // }
+
+        // document.getElementById('openWizardBtn').addEventListener('click', openWizard);
+        // document.getElementById('closeWizardBtn').addEventListener('click', closeWizard);
+        // document.getElementById('wizardScrim').addEventListener('click', (e) => {
+        //   if(e.target === wizardScrim) closeWizard();
+        // });
+
+        // document.getElementById('wizBack').addEventListener('click', () => {
+        //   if(currentStep > 1){ currentStep--; updateWizard(); }
+        // });
+        // document.getElementById('wizNext').addEventListener('click', () => {
+        //   if(currentStep < totalSteps){ currentStep++; updateWizard(); }
+        //   else { closeWizard(); /* would trigger actual import/apply here */ }
+        // });
+
+        // document.getElementById('dropzone').addEventListener('click', () => {
+        //   document.getElementById('dropzone').style.display = 'none';
+        //   document.getElementById('filePicked').style.display = 'flex';
+        // });
+        // document.getElementById('fileRemove').addEventListener('click', () => {
+        //   document.getElementById('dropzone').style.display = 'block';
+        //   document.getElementById('filePicked').style.display = 'none';
+        // });
     </script>
 }

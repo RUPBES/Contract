@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace MvcLayer.Models
 {
-    public class PrepaymentViewModel
+    public class PrepaymentViewModelOld
     {
         public int Id { get; set; }       
 
@@ -43,9 +43,9 @@ namespace MvcLayer.Models
         [DisplayName("По факту?")]
         public bool? IsFact { get; set; }
 
-        public  PrepaymentViewModel Prepayment { get; set; }
+        public  PrepaymentViewModelOld Prepayment { get; set; }
         public  ContractViewModel Contract { get; set; }
-        public  List<PrepaymentViewModel> InverseChangePrepayment { get; set; } = new List<PrepaymentViewModel>();
+        public  List<PrepaymentViewModelOld> InverseChangePrepayment { get; set; } = new List<PrepaymentViewModelOld>();
         public  List<PrepaymentAmendmentDTO> PrepaymentAmendments { get; set; } = new List<PrepaymentAmendmentDTO>();
         public List<PrepaymentFactDTO> PrepaymentFacts { get; set; } = new List<PrepaymentFactDTO>();
         public List<PrepaymentPlanDTO> PrepaymentPlans { get; set; } = new List<PrepaymentPlanDTO>();

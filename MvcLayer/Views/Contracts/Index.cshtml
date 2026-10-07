@@ -5,8 +5,7 @@
 @inject IHttpContextUserProvider HttpHelper
 
 @{
-    var permissions = HttpHelper.GetUserPermissions();
-    // var actionMethod = isEngineering is true ? "Engineerings" : "Index";
+    var permissions = HttpHelper.GetUserPermissions();   
     ViewData["Title"] = "Список договоров";
 }
 
@@ -103,18 +102,21 @@
             <path d="M4 17h16" />
         </symbol>
     </svg>
+    <link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/table-elements-list.css" asp-append-version="true" />    
+
     <div>
-        <div class="header-view">
+        <div class="header-view" style="margin-top: 30px;">
             <h1 class="list_agreement">@ViewData["Title"]</h1>
 
             <div class="box-btn">
-                <div class="btn btn-warning reset-btn btn-ctr" style="display:none !important">Сбросить фильтры</div>
-                <button type="button" class="btn btn-primary btn-ctr filtering-contract_btn">
+                <div class="btn btn-warning reset-btn" style="display:none !important">Сбросить фильтры</div>
+                <button type="button" class="btn btn-primary  filtering-contract_btn">
                     <img class="icon" src="~/icons/funnel.svg" />Фильтр
                 </button>
                 @if (permissions is { IsCreator: true } && permissions.GroupeName.Contains(Constants.GRP_CONTRACT))
                 {
-                    <button type="button" class="btn btn-success btn-ctr " onclick="location.href='@Url.Action("Create", "Contracts")?isEngineering=@(ViewBag.IsEngineering ?? false)'">
+                    <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Contracts")?isEngineering=@(ViewBag.IsEngineering ?? false)'">
                         <img class="icon" src="~/icons/plus-circle.svg" />Новый договор
                     </button>
                 }
@@ -124,6 +126,7 @@
 
         <!-- контейнер для таблицы, фильтрации, сортировки id="contractTable"-->
         <div id="contractTable">
+
             <!-- Форма поиска -->
             <div class="search-container">
                 <div class="search-form-wrapper" style="display: none;">
@@ -139,95 +142,22 @@
                             <svg viewBox="0 0 24 24" width="16" height="16">
                                 <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                             </svg>
-                        </button>
-                        @*<div class="md3-input-hint">
-                        Используйте * для поиска по маске
-                    </div>*@
+                        </button>                       
                     </div>
                 </div>
             </div>
 
             <!-- Таблица договоров -->
-            <div class="full-width">
-                <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="cotractTableId">
-                    <thead>
-                        <tr class="tr-head-main-table">
-                            <th>
-                                <div class="inline-center-blocks-in-th">
-                                    <span class="table_span-numberanddate">
-                                        Номер и дата договора
-                                    </span>
-                                    <div class="inline-block-icons">
-                                        <div class="sort-btn" data-content-sort="number">
-                                            <span class="column-sorter-up" title="Сортировка по возрастанию">
-                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                                    <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
-                                                </svg>
-                                            </span>
-                                            <span class="column-sorter-down" title="Сортировка по убыванию">
-                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                                    <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
-                                                </svg>
-                                            </span>
-                                        </div>
-                                        <div class="icon-sm search_icon search_img_btn" data-content-search="number" title="Поиск по номеру договора" alt="Поиск договора по номеру"></div>
-                                    </div>
-                                </div>
-                            </th>
-                            <th>
-                                <div class="inline-center-blocks-in-th">
-                                    <span class="table_span-nameobject">
-                                        Наименование объекта
-                                    </span>
-                                    <div class="inline-block-icons">
-                                        <div class="sort-btn" data-content-sort="nameObject">
-                                            <span class="column-sorter-up" title="Сортировка по возрастанию">
-                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                                    <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
-                                                </svg>
-                                            </span>
-                                            <span class="column-sorter-down" title="Сортировка по убыванию">
-                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                                    <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
-                                                </svg>
-                                            </span>
-                                        </div>
-                                        <div class="icon-sm search_icon search_img_btn" data-content-search="nameObject" title="Поиск объекта" alt="Поиск объекта"></div>
-                                    </div>
-                                </div>
-                            </th>
-                            <th>
-                                <div class="inline-center-blocks-in-th">
-                                    <span class="table_span-customer">
-                                        Заказчик
-                                    </span>
-                                    <div class="inline-block-icons">
-                                        <div class="sort-btn" data-content-sort="client">
-                                            <span class="column-sorter-up" title="Сортировка по возрастанию">
-                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                                    <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
-                                                </svg>
-                                            </span>
-                                            <span class="column-sorter-down" title="Сортировка по убыванию">
-                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                                    <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
-                                                </svg>
-                                            </span>
-                                        </div>
-                                        <div class="icon-sm search_icon search_img_btn" data-content-search="client" title="Поиск заказчика" alt="Поиск заказчика"></div>
-
-                                    </div>
-                                </div>
-                            </th>
-                            @if (ViewBag?.IsEngineering != true)
-                            {
-                                <th>
-                                    <div class="inline-center-blocks-in-th">
-                                        <span class="table_span-contractor">
-                                            <span>Генподрядчик</span>
-                                        </span>
+            <div class="table-wrap">
+                <div class="table-scroll">
+                    <table id="cotractTableId">
+                        <thead>
+                            <tr>
+                                <th style="width:120px;">
+                                    <div class="th-inner">
+                                        <span>№ и дата</span>
                                         <div class="inline-block-icons">
-                                            <div class="sort-btn" data-content-sort="general">
+                                            <div class="sort-btn" data-content-sort="number">
                                                 <span class="column-sorter-up" title="Сортировка по возрастанию">
                                                     <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                                                         <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
@@ -239,26 +169,85 @@
                                                     </svg>
                                                 </span>
                                             </div>
-                                            <div class="icon-sm search_icon search_img_btn" data-content-search="general" title="Поиск генподрядчика" alt="Поиск генподрядчика"></div>
+                                            <div class="icon-sm search_icon search_img_btn" data-content-search="number" title="Поиск по номеру договора" alt="Поиск договора по номеру" style="filter: contrast(0.25);"></div>
                                         </div>
                                     </div>
                                 </th>
-                            }
-                            <th><span class="table_span-deadlines"> Cроки   </span></th>
-                            <th><span class="table_span-conditions">    Условия оплаты              </span></th>
-                            @* <th><span class="table_span-currency">      Валюта                      </span></th> *@
-                            <th><span class="table_span-work">  @(ViewBag?.IsEngineering is true ? "Условия формирования договорной цены, %" : "Виды работ по договору") </span></th>
-                            <th><span class="table_span-contractprice"> Всего по договору с НДС </span></th>
-                            <th><span class="table_span-realization">   Выполнено на 01.01 тек. года</span></th>
-                            <th><span class="table_span-remains">       Остаток                     </span></th>
-                            <th><span class="table_span-volume">        Объем на текущий год        </span></th>
-                            <th><span class="table_span-action-main">   Дейст-вия  </span></th>
-                        </tr>
-                    </thead>
-                    <tbody class="table_tbody">
-                    </tbody>
-                </table>
+                                <th style="width:270px;">
+                                    <div class="th-inner">
+                                        <span>Наименование объекта</span>
+                                        <div class="inline-block-icons">
+                                            <div class="sort-btn" data-content-sort="nameObject">
+                                                <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                                    </svg>
+                                                </span>
+                                                <span class="column-sorter-down" title="Сортировка по убыванию">
+                                                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                            <div class="icon-sm search_icon search_img_btn" data-content-search="nameObject" title="Поиск объекта" alt="Поиск объекта" style="filter: contrast(0.25);"></div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th style="width:160px;">
+                                    <div class="th-inner">
+                                        <span>Заказчик</span>
+                                        <div class="inline-block-icons">
+                                            <div class="sort-btn" data-content-sort="client">
+                                                <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                                    </svg>
+                                                </span>
+                                                <span class="column-sorter-down" title="Сортировка по убыванию">
+                                                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                            <div class="icon-sm search_icon search_img_btn" data-content-search="client" title="Поиск заказчика" alt="Поиск заказчика" style="filter: contrast(0.25);"></div>
+                                        </div>
+                                    </div>
+                                </th>
+                                @if (ViewBag?.IsEngineering != true)
+                                {
+                                    <th style="width:160px;">
+                                        <div class="th-inner">
+                                            <span>Генподрядчик</span>
+                                            <div class="inline-block-icons">
+                                                <div class="sort-btn" data-content-sort="general">
+                                                    <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                            <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                                        </svg>
+                                                    </span>
+                                                    <span class="column-sorter-down" title="Сортировка по убыванию">
+                                                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                            <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" /> 
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <div class="icon-sm search_icon search_img_btn" data-content-search="general" title="Поиск генподрядчика" alt="Поиск генподрядчика" style="filter: contrast(0.25);"></div>
+                                            </div>
+                                        </div>
+                                    </th>
+                                }
+                                <th style="width:100px;">Сроки</th>
+                                <th style="width:190px;">Оплата / Работы</th>
+                                <th style="width:204px;">Финансы</th>
+                                <th  style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="table_tbody">
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
             <div class="footer-page">
                 <!-- Pagination block -->
                 <ul class="panel-pagination">

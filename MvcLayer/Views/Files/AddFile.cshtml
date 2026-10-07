@@ -16,7 +16,8 @@
             <div class="dm-modal" style="width:800px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a asp-controller="@ViewBag.redirectController" asp-action="@ViewBag.redirectAction" asp-route-id="@backId" class="close-btn"></a>
+                    @*<a asp-controller="@ViewBag.redirectController" asp-action="@ViewBag.redirectAction" asp-route-id="@backId" class="close-btn"></a>*@
+                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                 </div>
                 <hr class="modal-line" />
                 <form method="post" enctype="multipart/form-data" >
@@ -25,7 +26,7 @@
                     <input name=fileCategory value=@ViewBag.fileCategory hidden />
                     <input name=entityId value=@ViewBag.entityId hidden />
                     <input name=contractId value=@ViewBag.contractId hidden />
-                    <input name=returnContractId value=@ViewBag.returnContractId hidden />
+                    <input name="returnContractId" value=@ViewBag.returnContractId hidden />
                     <div id="example" style="min-width:400px; max-width: 800px;">
                         <div class="demo-section" style="flex-direction:column;">
                             <input name="files" id="files" type="file" aria-label="files" multiple="multiple" />

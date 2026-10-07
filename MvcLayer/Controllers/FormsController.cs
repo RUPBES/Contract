@@ -38,11 +38,6 @@ public class FormsController : Controller
         _additionalTermService = additionalTermService;
     }
 
-    //public ActionResult Index()
-    //{
-    //    return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.GetAll()));
-    //}
-
     public IActionResult GetByContractId(int id, bool isEngineering, int returnContractId = 0, DateTime? chosePeriod = null)
     {
         if (id < 1)
@@ -51,100 +46,104 @@ public class FormsController : Controller
         }
         var ob = _contractService.GetById(id);
 
-
         if (ob.IsEngineering == true || isEngineering == true)
         {
             ViewBag.IsEngineering = isEngineering;
         }
-          
+
         ViewData["contractId"] = id;
         ViewData["returnContractId"] = returnContractId;
-        if (chosePeriod is not null && chosePeriod != default)
-        {
-            return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.Find(x =>
-            x.ContractId == id &&
-            x.Period?.Year == chosePeriod?.Year &&
-            x.Period?.Month == chosePeriod?.Month &&
-            x.IsOwnForces != true)));
-        }
-        else
-        {
-            return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.Find(x => x.ContractId == id && x.IsOwnForces != true)));
-        }
 
-    }
-
-    [Route("/archive/Forms")]
-    public IActionResult GetArchByContractId(int contractId, bool isEngineering, int returnContractId = 0)
-    {
-        if (contractId < 1)
-        {
-            return RedirectToAction("IndexArch", "Contracts");
-        }
-        var contract = _contractService.GetById(contractId, useArchiveData:true);
-
-
-        if (contract.IsEngineering == true || isEngineering == true)
-        {
-            ViewBag.IsEngineering = isEngineering;
-        }
-
-        ViewData["contractId"] = contractId;
-        ViewData["returnContractId"] = returnContractId;
-
-        var forms = _formService.Find(x => x.ContractId == contractId && x.IsOwnForces != true, useArchiveData:true);
-        
-        
-        if (forms != null && forms.Count() != 0)
-        {
-            return View(_mapper.Map<IEnumerable<FormViewModel>>(forms));
-        }
-        else
-        {
-            returnContractId = returnContractId == 0 ? contractId : returnContractId;
-            NotificationHelper.SetNotification(TempData, "Справок о стоимости выполненных работ нет", NotificationType.Warning);
-            return RedirectToAction("DetailsArch", "Contracts", new { id = returnContractId });
-        }
-    }
-
-    public IActionResult GetPeriod(int id, int returnContractId = 0)
-    {
-        var period = _scopeWork.GetScopeWorkPeriodRange(id);
-        ViewData["returnContractId"] = returnContractId;
-        ViewData["id"] = id;
+        var period = SetPeriodData(id);
         if (period is null)
         {
             NotificationHelper.SetNotification(TempData, "Заполните объем работ", NotificationType.Warning);
             var urlReturn = returnContractId == 0 ? id : returnContractId;
             return RedirectToAction("Details", "Contracts", new { id = urlReturn });
         }
-        var periodChoose = new PeriodChooseViewModel
-        {
-            ContractId = id,
-            PeriodStart = period.Value.Item1,
-            PeriodEnd = period.Value.Item2,
-        };
 
-        DateTime startDate = period.Value.Item1;
+        ViewData["PeriodRange"] = period;
+        ViewBag.ChosePeriod = chosePeriod;
 
-        while (startDate <= period?.Item2)
+        if (chosePeriod is not null && chosePeriod != default)
         {
-            periodChoose.ListDates.Add(startDate);
-            startDate = startDate.AddMonths(1);
+            return View(_mapper.Map<FormViewModel>(
+                _formService
+                    .Find(x => x.ContractId == id &&
+                        x.Period?.Year == chosePeriod?.Year &&
+                        x.Period?.Month == chosePeriod?.Month &&
+                        x.IsOwnForces != true)
+                    .FirstOrDefault()));
         }
-        return View(periodChoose);
+        else
+        {
+            return View(_mapper.Map<FormViewModel>(
+                _formService
+                    .Find(x => x.ContractId == id &&
+                        x.Period?.Year == period.PeriodStart.Year &&
+                        x.Period?.Month == period.PeriodStart.Month &&
+                        x.IsOwnForces != true)
+                    .FirstOrDefault()));
+        }
+
     }
 
-    public IActionResult ChoosePeriod(int contractId, int returnContractId = 0)
+    [Route("/archive/Forms")]
+    public IActionResult GetArchByContractId(int contractId, bool isEngineering, int returnContractId = 0, DateTime? chosePeriod = null)
+    {
+        if (contractId < 1)
+        {
+            return RedirectToAction("IndexArch", "Contracts");
+        }
+
+        var contract = _contractService.GetById(contractId, useArchiveData: true);
+
+        ViewBag.IsEngineering = isEngineering;
+        ViewData["contractId"] = contractId;
+        ViewData["returnContractId"] = returnContractId;
+
+
+        var period = SetPeriodData(contractId, useArchiveData: true);
+        if (period is null)
+        {
+            NotificationHelper.SetNotification(TempData, "Заполните объем работ", NotificationType.Warning);
+            var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+            return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+        }
+
+        ViewData["PeriodRange"] = period;
+        ViewBag.ChosePeriod = chosePeriod;
+
+        if (chosePeriod is not null && chosePeriod != default)
+        {
+            return View(_mapper.Map<FormViewModel>(
+                _formService
+                    .Find(x => x.ContractId == contractId &&
+                        x.Period?.Year == chosePeriod?.Year &&
+                        x.Period?.Month == chosePeriod?.Month &&
+                        x.IsOwnForces != true, useArchiveData: true)
+                    .FirstOrDefault()));
+        }
+        else
+        {
+            return View(_mapper.Map<FormViewModel>(
+                _formService
+                    .Find(x => x.ContractId == contractId &&
+                        x.Period?.Year == period.PeriodStart.Year &&
+                        x.Period?.Month == period.PeriodStart.Month &&
+                        x.IsOwnForces != true, useArchiveData: true)
+                    .FirstOrDefault()));
+        }
+    }
+
+    [Authorize(Policy = "CreatePolicy")]
+    [HttpGet]
+    public ActionResult Create(int contractId, int returnContractId = 0)
     {
         if (contractId > 0)
         {
-           
             // по объему работ, берем начало и окончание периода
-            var period = _scopeWork.GetScopeWorkPeriodRange(contractId);
-            //todo: ЗДЕСЬ по СОГЛАСОВАНИЮ СРОКОВ изменяется срок окончания #1!
-            var periodAgreement = _additionalTermService.Find(x => x.ContractId == contractId).LastOrDefault();
-                       
+            var period = _contractService.GetFullPeriodRange(contractId);// _scopeWork.GetScopeWorkPeriodRange(contractId);
 
             if (period is null)
             {
@@ -152,46 +151,44 @@ public class FormsController : Controller
                 var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                 return RedirectToAction("Details", "Contracts", new { id = urlReturn });
             }
-            var periodChoose = new PeriodChooseViewModel
+
+            var list = _formService.GetFreeForms(contractId);
+
+            if (!list.Any())
             {
-                ContractId = contractId,
-                PeriodStart = period.Value.Item1,
-                PeriodEnd = (periodAgreement?.DueDate != null ) ?  periodAgreement.DueDate.Value : period.Value.Item2,
-            };
+                NotificationHelper.SetNotification(TempData, "Нет свободного периода для заполнения справки С3-а", NotificationType.Warning);
+                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+            }
+
+            var contract = _contractService.GetById(contractId);
+
+            ViewBag.Periods = list;
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
-            return View(periodChoose);
-        }
-        return View();
-    }
+            ViewData["IsEngin"] = contract?.IsEngineering == true ? true : false;
 
-    [Authorize(Policy = "CreatePolicy")]
-    public ActionResult CreateForm(PeriodChooseViewModel model, int contractId = 0, int? returnContractId = 0)
-    {
-        ViewData["contractId"] = contractId;
-        ViewData["returnContractId"] = returnContractId;
-        var contract = _contractService.GetById(contractId);
-        if (contract?.IsEngineering == true)
-        {
-            ViewData["IsEngin"] = true;
-        }
 
-        if (contract?.PaymentСonditionsAvans != null && contract?.PaymentСonditionsAvans?.Contains("Без авансов") == true)
-        {
-            ViewData["NoPrep"] = "true";
-        }
-        else
-        {
-            if (contract?.PaymentСonditionsAvans != null && contract?.PaymentСonditionsAvans?.Contains("текущего аванса") == true)
+            if (contract?.PaymentСonditionsAvans?.Contains("Без авансов") == true)
             {
-                ViewData["Current"] = "true";
+                ViewData["NoPrep"] = true;
             }
-            if (contract?.PaymentСonditionsAvans != null && contract?.PaymentСonditionsAvans?.Contains("целевого аванса") == true)
+            else
             {
-                ViewData["Target"] = "true";
+                ViewData["NoPrep"] = false;
+                if (contract?.PaymentСonditionsAvans?.Contains("текущего аванса") == true)
+                {
+                    ViewData["Current"] = true;
+                }
+                if (contract?.PaymentСonditionsAvans?.Contains("целевого аванса") == true)
+                {
+                    ViewData["Target"] = true;
+                }
             }
+
+            return View(new FormViewModel { ContractId = contractId });
         }
-        return View("AddForm", new FormViewModel { Period = model.ChoosePeriod, ContractId = model.ContractId });
+        return RedirectToAction("Details", "Contracts", new { id = returnContractId == 0 ? contractId : returnContractId });
     }
 
     [HttpPost]
@@ -254,7 +251,7 @@ public class FormsController : Controller
         catch
         {
             NotificationHelper.SetNotification(TempData, "Ошибка добавления", NotificationType.Error);
-            return RedirectToAction(nameof(ChoosePeriod), new { contractId = formViewModel.ContractId, returnContractId = returnContractId });
+            return RedirectToAction("Details", "Contracts", new { id = returnContractId == 0 ? formViewModel.ContractId : returnContractId });
         }
     }
 
@@ -262,25 +259,28 @@ public class FormsController : Controller
     public ActionResult Edit(int id, int contractId, int returnContractId = 0)
     {
         var contract = _contractService.GetById(contractId);
-        if (contract.IsEngineering == true)
-            ViewData["IsEngin"] = true;
-        if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
+
+        if (contract.IsEngineering == true) ViewData["IsEngin"] = true;
+        ViewData["contractId"] = contractId;
+        ViewData["returnContractId"] = returnContractId;
+
+        if (contract?.PaymentСonditionsAvans?.Contains("Без авансов") is true)
         {
-            ViewData["NoPrep"] = "true";
+            ViewData["NoPrep"] = true;
         }
         else
         {
-            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("текущего аванса"))
+            ViewData["NoPrep"] = false;
+            if (contract?.PaymentСonditionsAvans?.Contains("текущего аванса") is true)
             {
-                ViewData["Current"] = "true";
+                ViewData["Current"] = true;
             }
-            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+            if (contract?.PaymentСonditionsAvans?.Contains("целевого аванса") is true)
             {
-                ViewData["Target"] = "true";
+                ViewData["Target"] = true;
             }
         }
-        ViewData["contractId"] = contractId;
-        ViewData["returnContractId"] = returnContractId;
+
         var answerDTO = _formService.GetById(id);
         var answer = _mapper.Map<FormViewModel>(_formService.GetById(id));
         answer.CostStatisticReportOfContractor = answerDTO.CostStatisticReportOfContractor;
@@ -358,7 +358,7 @@ public class FormsController : Controller
     }
 
     [Authorize(Policy = "DeletePolicy")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, int contractId, int returnContractId = 0, bool isEngineering = false)
     {
         if (id == 0)
         {
@@ -368,6 +368,7 @@ public class FormsController : Controller
 
         try
         {
+
             var removingForm = _formService.GetById(id);
             foreach (var item in _fileService.GetAttachedFiles(id, Folder.Form3C))
             {
@@ -395,7 +396,7 @@ public class FormsController : Controller
                 }
             }
 
-            
+
             var prep = _prepFact.GetLastPrepayment(removingForm.ContractId ?? 0);
 
             if (prep != null)
@@ -405,12 +406,12 @@ public class FormsController : Controller
             }
 
             NotificationHelper.SetNotification(TempData, $"Справка С3-а за {removingForm?.Period?.ToShortDateString()} удалена", NotificationType.Info);
-            return await Task.FromResult<IActionResult>(Ok());
+            return await Task.FromResult<IActionResult>(RedirectToAction(nameof(GetByContractId), new { id = contractId, isEngineering = isEngineering, returnContractId = returnContractId }));
         }
         catch
         {
             NotificationHelper.SetNotification(TempData, "Не удалось удалить cправку С3-а", NotificationType.Error);
-            return await Task.FromResult<IActionResult>(BadRequest());
+            return await Task.FromResult<IActionResult>(RedirectToAction("Index", "Contracts"));
         }
     }
 
@@ -441,7 +442,7 @@ public class FormsController : Controller
         viewForm.TotalCostToBePaid = form.SmrContractCost + form.SmrNdsCost + form.AdditionalContractCost + form.AdditionalNdsCost +
             form.PnrContractCost + form.PnrNdsCost + form.EquipmentContractCost + form.EquipmentNdsCost + form.OtherExpensesCost +
             form.MaterialCost + form.GenServiceCost - form.OffsetCurrentPrepayment - form.OffsetTargetPrepayment - form.Reserve;
-        
+
         viewForm.Period = ChoosePeriod;
         viewForm.ContractId = contractId;
         ViewData["contractId"] = contractId;
@@ -466,88 +467,37 @@ public class FormsController : Controller
                 ViewData["Target"] = "true";
             }
         }
-        return View("AddForm", viewForm);
-    }
-
-    [Authorize(Policy = "EditPolicy")]
-    public ActionResult EditByFile(string path, int page, int id, int contractId, int returnContractId = 0)
-    {
-        var currentForm = _formService.GetById(id);
-        var form = _pars.Pars_C3A(path, page);
-        FileInfo fileInf = new FileInfo(path);
-        if (fileInf.Exists)
-        {
-            fileInf.Delete();
-        }
-
-        currentForm.SmrCost = form.SmrCost;
-        currentForm.PnrCost = form.PnrCost;
-        currentForm.EquipmentCost = form.EquipmentCost;
-        currentForm.OtherExpensesCost = form.OtherExpensesCost;
-        currentForm.AdditionalCost = form.AdditionalCost;
-        currentForm.MaterialCost = form.MaterialCost;
-        currentForm.GenServiceCost = form.GenServiceCost;
-        currentForm.OffsetCurrentPrepayment = form.OffsetCurrentPrepayment;
-        currentForm.OffsetTargetPrepayment = form.OffsetTargetPrepayment;
-
-        ViewData["contractId"] = contractId;
-        ViewData["returnContractId"] = returnContractId;
-
-        var contract = _contractService.GetById(contractId);
-        if (contract.IsEngineering == true)
-            ViewData["IsEngin"] = true;
-
-        if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
-        {
-            ViewData["NoPrep"] = "true";
-        }
-        else
-        {
-            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("текущего аванса"))
-            {
-                ViewData["Current"] = "true";
-            }
-            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("целевого аванса"))
-            {
-                ViewData["Target"] = "true";
-            }
-        }
-        return View("Edit", _mapper.Map<FormViewModel>(currentForm));
+        return View("Create", viewForm);
     }
 
 
+    /*
+     
+     */
 
-    //todo: переделать начальные View с выбором метода на этот!!
-    [Authorize(Policy = "EditPolicy")]
-    public ActionResult SelectInputMethod(int id, int contractId, int returnContractId = 0)
+
+    private PeriodChooseViewModel? SetPeriodData(int contractId, bool useArchiveData = false)
     {
-        var period = _scopeWork.GetScopeWorkPeriodRange(contractId);
+        var period = _contractService.GetFullPeriodRange(contractId, useArchiveData);
 
         if (period is null)
         {
-            NotificationHelper.SetNotification(TempData, "Заполните объем работ", NotificationType.Warning);
-            var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-            return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+            return null;
         }
+
         var periodChoose = new PeriodChooseViewModel
         {
             ContractId = contractId,
-            PeriodStart = period.Value.Item1,
-            PeriodEnd = period.Value.Item2,
+            PeriodStart = period.Value.Start,
+            PeriodEnd = period.Value.End // (periodAgreement?.DueDate != null) ? periodAgreement.DueDate.Value : period.Value.Item2,
         };
+        DateTime startDate = period.Value.Item1;
 
-        ViewData["formId"] = id;
-        ViewData["contractId"] = contractId;
-        ViewData["returnContractId"] = returnContractId;
-        return View(periodChoose);
-    }
-
-    [Authorize(Policy = "EditPolicy")]
-    public ActionResult ChooseMethodEdit(int id, int contractId, int returnContractId = 0)
-    {
-        ViewData["formId"] = id;
-        ViewData["contractId"] = contractId;
-        ViewData["returnContractId"] = returnContractId;
-        return View();
+        while (startDate <= period?.Item2)
+        {
+            periodChoose.ListDates.Add(startDate);
+            startDate = startDate.AddMonths(1);
+        }
+        return periodChoose;
     }
 }

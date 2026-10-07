@@ -2,199 +2,321 @@
 @using BusinessLayer.Interfaces.Shared
 @model MvcLayer.Models.ScopeWorkViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
-@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService ScopeWork
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scopes
 @inject IHttpContextUserProvider HttpHelper
-
 
 @{
     var permissions = HttpHelper.GetUserPermissions();
     var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
 
-    if (ViewBag.IsEngin == true)
-    {
-        ViewData["Title"] = "Объем услуг";
-    }
-    else
-    {
-        ViewData["Title"] = "Объем работ";
-    }
-    var actionReturn = ViewBag.IsEngin == true ? "Engineerings" : null;
-    var contractId = ViewBag.contractId;
-    int backId = 0;
-    if (ViewBag.returnContractId == 0)
-        backId = ViewBag.contractId;
-    else backId = ViewBag.returnContractId;
+    ViewData["Title"] = ViewBag.IsEngin == true
+        ? "Объем услуг"
+        : "Объем работ";
+    var actionReturn = ViewBag.IsEngin == true
+        ? "Engineerings"
+        : null;
+    var amendment = Scopes.GetAmendmentByScopeId(Model?.Id??0);
+
+    int backId = ViewBag.returnContractId == 0
+        ? (int)ViewBag.contractId
+        : (int)ViewBag.returnContractId;
+
+    var contract = Model?.ContractId is > 0
+        ? Contract.GetById((int)Model?.ContractId)
+        : null;
+  
 }
 
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
+<style>
+    .dm-modal {
+        width: min(90vw, 1600px) !important;
+        max-width: 1600px !important;
+    }
+</style>
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
             <div class="dm-modal">
-                <div class="top-modal-block">
-                    <div>
-                        <label class="my-modal-title">@ViewData["Title"]</label>
-                        @{
-                            var amendment = ScopeWork.GetAmendmentByScopeId(Model.Id);
-                            if (amendment != null)
-                            {
-                                    <span style="font-weight:bold">@amendment.Number от @amendment?.Date?.ToString("dd MMMM yyyy")</span>
-                            }
-                        }
-                        @if (permissions?.IsEditor == true && isGRP_Contract)
-                        {
+                <div class="am-wrap">
+                    <!-- Шапка -->
+                    <div class="am-header">
+                        <span class="am-header-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                            </svg>
+                        </span>
+                        <div class="am-header-info">
+                            <h1 class="am-header-title">
+                                @ViewData["Title"]
+                                @if (contract != null)
+                                {
+                                    <span> по договору <span style="color:var(--md3-primary);">№@contract.Number</span></span>
+                                }
 
-                            <div id="DivEdit" class="icon edit" title="Редактировать">
-                                <a asp-action="Edit" asp-route-id="@Model.Id" asp-route-contractId="@Model.ContractId"
-                                   asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                            </h1>
+                            @if (contract?.NameObject != null)
+                            {
+                                <div class="am-header-sub">@contract.NameObject</div>
+                            }
+                        </div>
+                        <div class="am-header-actions">
+                            @if (backId > 0)
+                            {
+                                <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn" aria-label="Закрыть"></a>
+                            }
+                            else
+                            {
+                                <a asp-controller="Contracts" asp-action="@actionReturn" class="close-btn" aria-label="Закрыть"></a>
+                            }
+                        </div>
+                    </div>
+                    <!-- Панель инструментов -->
+                    @if (permissions.IsCreator && isGRP_Contract)
+                    {
+                        <div class="am-toolbar">
+                            <div class="am-toolbar-actions">
+                                <a asp-action="Create" asp-controller="ScopeWorks" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId" class="am-btn am-btn-primary md3-btn--tonal" title="Добавить дополнительное соглашение">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19" />
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                    </svg>
+                                    <span>Добавить</span>
+                                </a>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Карточка -->
+                    <div class="am-card">
+                        @if (Model?.SWCosts?.Any() == true)
+                        {
+                            <div class="am-table-scroll">
+                                <table class="am-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-8per-110max">
+                                                @Html.DisplayNameFor(model => model.Period)
+                                            </th>
+                                            @if (ViewBag.IsEngin == false)
+                                            {
+                                                <th class="col-5per-50max"> @Html.DisplayNameFor(model => model.CostNds)</th>
+                                                <th class="col-5per-50max">@Html.DisplayNameFor(model => model.SmrCost)</th>
+                                                <th class="col-5per-50max">
+                                                    @Html.DisplayNameFor(model => model.PnrCost)
+                                                </th>
+                                                <th class="col-5per-50max">@Html.DisplayNameFor(m => m.AdditionalCost)</th>
+                                                <th class="col-5per-50max">
+                                                    @Html.DisplayNameFor(model => model.EquipmentCost)
+                                                </th>
+                                                <th class="col-5per-50max">
+                                                    @Html.DisplayNameFor(model => model.OtherExpensesCost)
+                                                </th>
+                                                <th class="col-5per-50max">
+                                                    @Html.DisplayNameFor(model => model.CostNoNds)
+                                                </th>
+                                                <th class="col-5per-50max">
+                                                    @Html.DisplayNameFor(model => model.MaterialCost)
+                                                </th>
+                                                <th class="col-5per-50max">
+                                                    @Html.DisplayNameFor(model => model.GenServiceCost)
+                                                </th>
+                                            }
+                                            else
+                                            {
+                                                <th>
+                                                    Объем услуг
+                                                </th>
+                                            }
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.SWCosts.OrderBy(x => x.Period))
+                                        {
+                                            <tr>
+                                                <!-- Номер и дата -->
+                                                <td class="col-8per-110max">
+                                                    <div class="am-num">@item.Period?.ToString("MMMM yyyy")</div>
+                                                    @*  <div class="am-date-sub">
+                                                        от 
+                                                    </div> *@
+                                                </td>
+                                                @if (ViewBag.IsEngin == false)
+                                                {
+                                                    <!-- Всего по договору с НДС -->
+                                                    <td class="col-5per-50max">
+                                                        @item.CostNds?.ToString("N2")
+                                                    </td>
+
+                                                    <!-- Неизменная цена СМР -->
+                                                    <td class="col-5per-50max">
+                                                        <span class="am-price">
+                                                            @item.SmrCost?.ToString("N2")
+
+                                                        </span>
+                                                    </td>
+
+                                                    <!-- ПНР -->
+                                                    <td class="col-5per-50max">
+                                                        <span class="am-date-val">
+                                                            @item.PnrCost?.ToString("N2")
+                                                        </span>
+                                                    </td>
+
+                                                    <!-- Доп. работы -->
+                                                    <td class="col-5per-50max">
+                                                        <span class="am-date-val">
+                                                            @item.AdditionalCost?.ToString("N2")
+                                                        </span>
+                                                    </td>
+
+                                                    <!-- Оборудование генподрядчика -->
+                                                    <td class="col-5per-50max">
+                                                        <span class="am-date-val">
+                                                            @item.EquipmentCost?.ToString("N2")
+
+                                                        </span>
+                                                    </td>
+
+                                                    <!-- Прочие работы и услуги -->
+                                                    <td class="col-5per-50max">
+                                                        @item.OtherExpensesCost?.ToString("N2")
+                                                    </td>
+
+                                                    <!-- Всего по договору без НДС (справочно) -->
+                                                    <td class="col-5per-50max">
+                                                        @item.CostNoNds?.ToString("N2")
+
+                                                    </td>
+
+                                                    <!-- Материалы генподрядчика -->
+                                                    <td class=" col-5per-50max">
+                                                        <div class="am-actions-cell">
+                                                            @item.MaterialCost?.ToString("N2")
+
+                                                        </div>
+                                                    </td>
+                                                    <!-- Сумма услуг генподрядчика -->
+                                                    <td class="col-5per-50max">
+                                                        <div class="am-actions-cell">
+                                                            @item.GenServiceCost?.ToString("N2")
+
+
+                                                        </div>
+                                                    </td>
+                                                }
+                                                else
+                                                {
+                                                    <td class="text-end">
+                                                        @item.SmrCost?.ToString("N2")
+                                                    </td>
+                                                }
+
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Подвал с итогами -->
+                            <div class="am-footer-row">
+                                <span class="am-footer-badge count">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="8" y1="6" x2="21" y2="6" />
+                                        <line x1="8" y1="12" x2="21" y2="12" />
+                                        <line x1="8" y1="18" x2="21" y2="18" />
+                                        <line x1="3" y1="6" x2="3.01" y2="6" />
+                                        <line x1="3" y1="12" x2="3.01" y2="12" />
+                                        <line x1="3" y1="18" x2="3.01" y2="18" />
+                                    </svg>
+                                    Периоды: @Model.SWCosts.Count()
+                                </span>
+                                @if (amendment?.ContractPrice is > 0 || contract?.ContractPrice is > 0)
+                                {
+                                    <span class="am-footer-badge total">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="12" y1="1" x2="12" y2="23" />
+                                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                        </svg>
+                                        Актуальная стоимость @(amendment?.ContractPrice is > 0 ? "согласно доп.соглашения" : "согласно договора"): @(amendment?.ContractPrice is > 0 ? amendment?.ContractPrice?.ToString("N2") : contract?.ContractPrice?.ToString("N2")) @contract?.Сurrency
+                                    </span>
+                                }
+                                @if ((permissions?.IsEditor == true && isGRP_Contract) || amendment != null)
+                                {
+                                    <span class="am-footer-badge ">
+                                        Действия:
+                                        @if (permissions?.IsEditor == true && isGRP_Contract)
+                                        {
+                                            <div id="DivEdit" class="icon edit" title="Редактировать" style="height: 16px;width: 16px;">
+                                                <a asp-action="Edit" asp-route-id="@Model.Id" asp-route-contractId="@Model.ContractId"
+                                                   asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                            </div>
+                                        }
+                                        @if (amendment != null)
+                                        {
+                                            <div id="DivDelete" class="icon delete" title="Удалить актуальную версию объема работ">
+                                                <a onclick="deleteScope(@Model.Id)"></a>
+                                            </div>
+                                        }
+
+                                    </span>
+                                    @*   @if (amendment != null && permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
+                                    {
+                                        <span class="icon delete" title="Удалить объем работ" style="height: 16px;width: 16px;">
+                                            <a asp-action="Delete"
+                                               asp-route-id="@Model.Id"  
+                                               asp-controller="ScopeWorks"
+                                               class="modal-link"
+                                               data-message="Объем работ будет удален. Продолжить?"></a>
+                                        </span>
+                                    } *@
+                                }
+
                             </div>
                         }
-                        @if (amendment != null)
+                        else
                         {
-                            <div id="DivDelete" class="icon delete" title="Удалить">
-                                <a onclick="deleteScope(@Model.Id)"></a>
+                            <!-- Пустое состояние -->
+                            <div class="am-empty">
+                                <svg class="am-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <line x1="9" y1="13" x2="15" y2="13" />
+                                </svg>
+                                <p class="am-empty-text">Заполненные объемы работ отсутствуют</p>
                             </div>
                         }
                     </div>
-                    @if (backId > 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
-                    }
-                    @if (backId == 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="@actionReturn" class="close-btn"></a>
-                    }
-                </div>
-                <hr class="modal-line" />
-
-                <div class="modal-overflow-70">
-                    <table class="table table-striped table-main table-hover ">
-                        <thead>
-                            <tr>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.Period)
-                                </th>
-                                @if (ViewBag.IsEngin == false)
-                                {
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.CostNds)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.SmrCost)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.PnrCost)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.AdditionalCost)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.EquipmentCost)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.OtherExpensesCost)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.CostNoNds)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.MaterialCost)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.GenServiceCost)
-                                    </th>
-                                }
-                                else
-                                {
-                                    <th>
-                                        Объем услуг
-                                    </th>
-                                }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.SWCosts.OrderBy(x => x.Period))
-                            {
-                                <tr>
-                                    <td>
-                                        @item.Period?.ToString("MMMM yyyy")
-                                    </td>
-                                    @if (ViewBag.IsEngin == false)
-                                    {
-
-                                        <td class="text-end">
-                                            @item.CostNds?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.SmrCost?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.PnrCost?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.AdditionalCost?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.EquipmentCost?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.OtherExpensesCost?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.CostNoNds?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.MaterialCost?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.GenServiceCost?.ToString("N2")
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td class="text-end">
-                                            @item.SmrCost?.ToString("N2")
-                                        </td>
-                                    }
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
     </div>
 </div>
-@section Scripts {
 
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script>
         function deleteScope(id) {
             $.ajax({
-                type: 'POST',
-                url: '@Url.Action("ShowDeleteMessage", "Home")',
-                contentType: "application/html; charset=utf-8",
-                dataType: 'html',
+                type: 'GET',
+                url: '@Url.Action("Delete", "ScopeWorks")',
+                data: { id: id },
                 success: function (result) {
-                    $('#dialogContent').html(result);
-                    $('#modDialog').modal({ backdrop: false });
-                    $('#modDialog').modal('show');
-
-                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete');
-                    elementDeleteButton[0].addEventListener('click', () => {
-                        $.ajax({
-                            type: 'GET',
-                            url: '@Url.Action("Delete", "ScopeWorks")',
-                            data: { id: id },
-                            success: function (result) {
-                                window.location.reload();
-                            },
-                            error: function (result) {
-                                window.location.reload();
-                            }
-                        });
-                    });
+                    window.location.reload();
                 },
                 error: function (result) {
-                    // alert("Ошибка отображения");
+                    window.location.reload();
                 }
             });
         }

@@ -744,7 +744,8 @@
                                                             {
                                                                 var name = $"{Converter.ToProcedureType((int)item)}";
                                                                 int n = (int)item;
-                                                                var proc = Model?.SelectionProcedures?[0].TypeProcedure;
+                                                                @*var proc = Model?.SelectionProcedures?[0].TypeProcedure;*@
+                                                                var proc = Model?.SelectionProcedures?.FirstOrDefault()?.TypeProcedure;
                                                                 bool ch = (proc != null && proc.Equals(name, StringComparison.OrdinalIgnoreCase))
                                                                 || (proc == null && n == 0);
                                                                 <label class="wz-opt @(ch ? "sel" : "")" onclick="selectOpt(this)">

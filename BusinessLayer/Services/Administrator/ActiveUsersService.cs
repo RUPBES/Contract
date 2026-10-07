@@ -17,6 +17,7 @@ using OfficeOpenXml.Style;
 using System.Diagnostics.Contracts;
 using System.Drawing;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace BusinessLayer.Services.Administrator
 {
@@ -168,6 +169,23 @@ namespace BusinessLayer.Services.Administrator
             var logs = await _contract.Logs.GetAllAsync();
             return _mapper.Map<IEnumerable<LogDTO>>(logs);
         }
+
+        public async Task SetLastVisitAsync(string userId,string userName, DateOnly today, DateTime now)
+        {
+            var updated = await _contract.UserDailyVisits.UpdateLastVisitAsync(v => v.UserId == userId && v.Date == today, now);
+            if (updated == 0)
+            {
+                _contract.UserDailyVisits.Create(new()
+                {
+                    UserId = userId,
+                    UserName = userName,
+                    Date = today,
+                    FirstVisitUtc = now,
+                    LastVisitUtc = now,
+                });
+            }
+        }
+
 
 
 

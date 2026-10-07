@@ -4,6 +4,7 @@ using DatabaseLayer.Interfaces.EntityFramework;
 using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 using DatabaseLayer.Repositories.ARCHIVE;
+using DatabaseLayer.RepositoriesEF.ARCHIVE;
 
 namespace DatabaseLayer.UOW
 {
@@ -12,6 +13,8 @@ namespace DatabaseLayer.UOW
         #region valueRepo
         private readonly ContractsArchiveContext _context;
                         
+        private AdditionalTermArchiveRepo additionalTermRepository;
+        private AdditionalTermFileArchiveRepo additionalTermFileRepository;
         private AddressArchiveRepo addressRepository;
         private ActArchiveRepo actRepository;
         private ActFileArchiveRepo actFileRepository;
@@ -109,6 +112,28 @@ namespace DatabaseLayer.UOW
 
         #region tables
 
+        public IReadonlyRepoEF<AdditionalTerm> AdditionalTerms
+        {
+            get
+            {
+                if (additionalTermRepository is null)
+                {
+                    additionalTermRepository = new AdditionalTermArchiveRepo(_context);
+                }
+                return additionalTermRepository;
+            }
+        }
+        public IReadonlyRepoEF<AdditionalTermFile> AdditionalTermFiles
+        {
+            get
+            {
+                if (additionalTermFileRepository is null)
+                {
+                    additionalTermFileRepository = new AdditionalTermFileArchiveRepo(_context);
+                }
+                return additionalTermFileRepository;
+            }
+        }
         public IReadonlyRepoEF<SlctnProcedureFile> SlctnProcedureFiles
         {
             get

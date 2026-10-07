@@ -48,6 +48,10 @@ namespace MvcLayer.Controllers
             {
                 return Redirect($@"~/Files/GetByContractId/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}&returnContractId={returnContractId}");
             }
+            else if (redirectAction.Equals("AddFile", StringComparison.OrdinalIgnoreCase) && redirectController.Equals("Files", StringComparison.OrdinalIgnoreCase))
+            {
+                return Redirect($@"~/Files/GetByContractId/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}&contractId={contractId}&returnContractId={returnContractId}");
+            }
             else
             {
                 return Redirect($@"~/{redirectController}/{redirectAction}/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}&returnContractId={returnContractId}");
@@ -56,12 +60,13 @@ namespace MvcLayer.Controllers
 
         [HttpGet]
         [Route("/archive/Files")]
-        public ActionResult GetArchByContractId(int id, Folder fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
+        public ActionResult GetArchByContractId(int id, Folder fileCategory,string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
+           
             ViewBag.redirectAction = redirectAction;
             ViewBag.redirectController = redirectController;
             ViewBag.entityId = id;
-            ViewBag.returnContractId = contractId;
+            ViewBag.returnContractId = returnContractId;
             var files = _file.GetAttachedFiles(id, fileCategory, useArchiveData: true).ToList();
             return View(files);
         }
@@ -77,9 +82,9 @@ namespace MvcLayer.Controllers
             var files = _file.GetAttachedFiles(id, fileCategory).ToList();
             return View(files);
         }
-            
+
         [Authorize(Policy = "DeletePolicy")]
-        public ActionResult Delete(int id, Folder fileCategory, string? redirectAction = null, string? redirectController = null, int? contractId = null)
+        public ActionResult Delete(int id, Folder fileCategory, string? redirectAction = null, string? redirectController = null, int? contractId = null, int returnContractId = 0)
         {
             try
             {
@@ -90,10 +95,10 @@ namespace MvcLayer.Controllers
                 {
                     if (fileCategory == Folder.SelectionProcedures)
                     {
-                        return Redirect($@"~/{redirectController}/{redirectAction}?contractId={contractId}");
+                        return Redirect($@"~/{redirectController}/{redirectAction}?contractId={contractId}&returnContractId={returnContractId}");
 
                     }
-                    return Redirect($@"~/{redirectController}/{redirectAction}/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}");
+                    return Redirect($@"~/{redirectController}/{redirectAction}/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}&contractId={contractId}&returnContractId={returnContractId}");
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -143,7 +148,7 @@ namespace MvcLayer.Controllers
         public ActionResult OpenExcelByPath(string filePath)
         {
             if (string.IsNullOrEmpty(filePath))
-            {               
+            {
                 var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
                 var fsResult = new FileStreamResult(fileStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
                 return fsResult;

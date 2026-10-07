@@ -1,6 +1,7 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -44,7 +45,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<ContractOrganization> Find(Func<ContractOrganization, bool> predicate)
         {
-            return _context.ContractOrganizations.Where(predicate).ToList();
+            return _context.ContractOrganizations.Include(x=>x.Organization).Where(predicate).ToList();
         }
 
         public IEnumerable<ContractOrganization> GetAll()

@@ -1,436 +1,926 @@
 ﻿@model MvcLayer.Models.FormViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
 @{
-    ViewData["Title"] = "Редактирование";
     int backId = 0;
-    if ((int)ViewData["returnContractId"] == 0)
-        backId = (int)ViewData["contractId"];
-    else backId = (int)ViewData["returnContractId"];
-    var filter = new DateOnly(Model.Period.Value.Year, Model.Period.Value.Month, 1);
+    bool isEng = ViewBag.IsEngin is true ? true : false;
+
+    ViewData["Title"] = isEng
+        ? "Добавить справку о стоимости выполненных работ"
+        : "Добавить справку о стоимости акта оказанных услуг";
+
+    backId = (int)ViewData["returnContractId"] == 0
+        ? (int)ViewData["contractId"]
+        : (int)ViewData["returnContractId"];
+
+    var currency = Contract.GetById((Model?.ContractId ?? 0)).Сurrency;
 }
+
+<link rel="stylesheet" href="~/css/wizzard-view.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
 <style>
-    legend {
-        margin-bottom: 0px;
+    .selectize-dropdown-content {
+        max-height: 78px !important;
     }
 
-    .form-group {
-        text-align: right;
+    .org-section-badge.edit-bdg {
+        margin: 0 0 7px 0px;
     }
 
-    
-    .first_level_text {
-        font-size: 1.2rem !important;
-        font-weight: 700 !important;
-        letter-spacing: 1.2px;
+    .wz-ta[disabled] {
+        background-color: #f5f5f5;
+        color: #888;
+        cursor: not-allowed;
     }
 
-    .second_level_text {
-        font-size: 0.99rem !important;
-        font-weight: 660 !important;
+    /* Базовый стиль поля суммы */
+    .total-amount-input {
+        transition: color 0.2s ease;
+        font-weight: 600;
+        color: var(--md3-create);
     }
 
-    .text_about_label {
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #918e8e;
+        /* Отрицательное значение — красный текст */
+        .total-amount-input.is-negative {
+            color: #e53e3e; /* можно заменить на ваш акцентный красный */
+        }
+
+        /* Анимация при обновлении значения (пульс + fade) */
+        .total-amount-input.is-updating {
+            animation: amount-pulse 0.5s ease;
+        }
+
+    @@keyframes amount-pulse {
+        0% {
+            opacity: 0.4;
+            transform: scale(0.97);
+            background-color: rgba(255, 214, 0, 0.15); /* лёгкая подсветка при изменении */
+        }
+
+        50% {
+            opacity: 1;
+            transform: scale(1.03);
+        }
+
+        100% {
+            opacity: 1;
+            transform: scale(1);
+            background-color: transparent;
+        }
     }
 
-    fieldset.border {
-        border-color: #527ba4 !important;
+    .sum-row {
+        gap: 10px;
+    }
+
+    a:hover {
+        color: var(--md3-primary-mid);
     }
 </style>
 
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="width:850px;">
+            <div class="dm-modal" style="max-width:1100px;">
                 <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (backId != null && backId > 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
-                    }
-                    @if (backId == null || backId == 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
-                    }
                 </div>
-                <hr class="modal-line">
-                <form asp-action="Edit" asp-route-returnContractId="@ViewBag.returnContractId" method="post" class="row" enctype="multipart/form-data">
-                    <input asp-for="ContractId" value="@Model.ContractId" hidden />
-                    <input asp-for="Id" value="@Model.Id" hidden />
-                    <input name="DateSigning" type="datetime" value="@Model.DateSigning" hidden />
-                    <input name="Period" type="datetime" value="@Model.Period" hidden />
 
-                    <div class="col">
-                        @if (ViewBag.IsEngin == null)
+                <!-- ══ ЗАГОЛОВОК ══ -->
+                <div class="wz">
+                    <div class="wz-head">
+                        <span class="wz-head-icon">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                        </span>
+                        <h1>@ViewData["Title"]</h1>
+                        @if (backId > 0)
                         {
-
-                            <fieldset class="border rounded-1 p-3">
-                                <legend class="float-none w-auto px-3">
-                                    <div class="form-group">
-                                        <label asp-for="SmrCost" class="control-label first_level_text"></label>
-                                        @if (Model.SmrCost != null)
-                                        {
-                                            <input name="SmrCost" type="text" value="@Model.SmrCost" class="form-control smr-summary" readonly />
-                                        }
-                                        else
-                                        {
-                                            <input name="SmrCost" type="text" class="form-control smr-summary" readonly />
-                                        }
-                                        <span asp-validation-for="SmrCost" class="text-danger"></span>
-                                    </div>
-                                </legend>
-                                <label class="text_about_label">В том числе:</label>
-                                <br />
-                                <div class="form-group">
-                                    <label asp-for="SmrContractCost" class="control-label second_level_text"></label>
-                                    @if (Model.SmrContractCost != null)
-                                    {
-                                        <input name="SmrContractCost" type="text" value="@Model.SmrContractCost" class="form-control smr-cost" />
-                                    }
-                                    else
-                                    {
-                                        <input name="SmrContractCost" type="text" class="form-control smr-cost" />
-                                    }
-                                    <span asp-validation-for="SmrContractCost" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="SmrNdsCost" class="control-label second_level_text"></label>
-                                    @if (Model.SmrNdsCost != null)
-                                    {
-                                        <input name="SmrNdsCost" type="text" value="@Model.SmrNdsCost" class="form-control smr-cost" />
-                                    }
-                                    else
-                                    {
-                                        <input name="SmrNdsCost" type="text" class="form-control smr-cost" />
-                                    }
-                                    <span asp-validation-for="SmrNdsCost" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="AdditionalContractCost" class="control-label second_level_text"></label>
-                                    @if (Model.AdditionalContractCost != null)
-                                    {
-                                        <input name="AdditionalContractCost" type="text" value="@Model.AdditionalContractCost" class="form-control smr-cost" />
-                                    }
-                                    else
-                                    {
-                                        <input name="AdditionalContractCost" type="text" class="form-control smr-cost" />
-                                    }
-                                    <span asp-validation-for="AdditionalContractCost" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="AdditionalNdsCost" class="control-label second_level_text"></label>
-                                    @if (Model.AdditionalNdsCost != null)
-                                    {
-                                        <input name="AdditionalNdsCost" type="text" value="@Model.AdditionalNdsCost" class="form-control smr-cost" />
-                                    }
-                                    else
-                                    {
-                                        <input name="AdditionalNdsCost" type="text" class="form-control smr-cost" />
-                                    }
-                                    <span asp-validation-for="AdditionalNdsCost" class="text-danger"></span>
-                                </div>
-                            </fieldset>
+                            <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn" aria-label="Закрыть"></a>
                         }
                         else
                         {
-                            <div class="form-group">
-                                <label class="control-label">Объем работ</label>
-                                @if (Model.SmrCost != null)
-                                {
-                                    <input name="SmrCost" type="text" value="@Model.SmrCost" class="form-control cost" />
-                                }
-                                else
-                                {
-                                    <input name="SmrCost" type="text" class="form-control cost" />
-                                }
-                                <span asp-validation-for="SmrCost" class="text-danger"></span>
-                            </div>
+                            <a asp-controller="Contracts" asp-action="" class="close-btn" aria-label="Закрыть"></a>
                         }
-                        @*ПНР*@
-                        @if (ViewBag.IsEngin == null)
-                        {
-                            <fieldset class="border rounded-1 p-3">
-                                <legend class="float-none w-auto px-3">
-                                    <div class="form-group">
-                                        <label asp-for="PnrCost" class="control-label first_level_text"></label>
-                                        @if (Model.PnrCost != null)
-                                        {
-                                            <input name="PnrCost" type="text" value="@Model.PnrCost" class="form-control  pnr-summary" readonly />
-                                        }
-                                        else
-                                        {
-                                            <input name="PnrCost" type="text" class="form-control  pnr-summary" readonly />
-                                        }
-                                        <span asp-validation-for="PnrCost" class="text-danger"></span>
+                    </div>
+                    
+                    <!-- ══ STEPPER ══ -->
+                    <div class="wz-stepper" id="wzStepper">
+                        <div class="wz-step active" data-step="1">
+                            <div class="wz-step-dot">1</div>
+                            <div class="wz-step-lbl">Сроки и стоимость СМР</div>
+                        </div>
+                        <div class="wz-step" data-step="2">
+                            <div class="wz-step-dot">2</div>
+                            <div class="wz-step-lbl">Стоимость ПНР и оборудования</div>
+                        </div>
+                        <div class="wz-step" data-step="3">
+                            <div class="wz-step-dot">3</div>
+                            <div class="wz-step-lbl">Удержания</div>
+                        </div>
+                        <div class="wz-step" data-step="4">
+                            <div class="wz-step-dot">4</div>
+                            <div class="wz-step-lbl">Подтверждение</div>
+                        </div>
+                    </div>
+
+                    <!-- ══ ФОРМА ══ -->
+                    <form asp-action="Edit" asp-controller="Forms" method="post" asp-route-returnContractId="@ViewBag.returnContractId" id="MainForm"
+                          enctype="multipart/form-data" novalidate>
+                        <input asp-for="ContractId" value="@Model.ContractId" hidden />
+                        <input asp-for="IsOwnForces" value="@Model.IsOwnForces" hidden />
+                        <input asp-for="Period"  hidden />
+
+                        <!-- ═══════════════════════════════════════
+                             КАРТОЧКА — фиксированный контейнер
+                        ═══════════════════════════════════════ -->
+                        <div class="wz-card-outer">
+
+                            <!-- Шапка (меняется только текст) -->
+                            <div class="wz-card-hdr">
+                                <span class="wz-card-hdr-icon" id="hdrIcon">
+                                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line x1="12" y1="8" x2="12" y2="12" />
+                                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                                    </svg>
+                                </span>
+                                <span class="wz-card-hdr-title" id="hdrTitle">Стоимость строительно-монтажных и пуско-наладочных работ</span>
+                                <span class="wz-card-hdr-badge" id="hdrBadge">Шаг 1 из 4</span>
+                            </div>
+
+                            <!-- Слайдер -->
+                            <div class="wz-slides-wrap">
+                                <div class="wz-slides" id="wzSlides">
+
+                                    <!-- ═══ СЛАЙД 1: СМР+ПНР ═══ -->
+                                    <div class="wz-slide">
+                                        <div class="org-section">
+                                            <div class="org-section-header">
+                                                <span class="org-section-badge edit-bdg bdg-xl">
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <circle cx="12" cy="12" r="10" />
+                                                        <polyline points="12 6 12 12 16 14" />
+                                                    </svg>
+                                                    Сроки и файл справки
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Сроки -->
+                                        <div class="wz-fs">
+                                            <div class="wz-fs-body g2">                                               
+
+                                                <!-- Период -->
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">Период заполнения справки </label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                                                            </svg>
+                                                        </span>
+                                                        <input type="text" class="wz-in" value="@Model.Period?.ToString("MMMM yyyy")" id="DateDC" disabled />
+                                                    </div>
+                                                </div>
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">@Html.DisplayNameFor(x => x.DateSigning) <span class="required-star">*</span></label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="DateSigning" type="text" class="wz-in" required value="@Model?.DateSigning?.ToString("dd MMMM yyyy")"
+                                                               id="DateSigning"  />
+                                                    </div>
+                                                </div>                                                
+                                            </div>
+                                        </div>
+                                        <!-- SMR badge -->
+                                        <div class="org-section">
+                                            <div class="org-section-header">
+                                                <span class="org-section-badge edit-bdg bdg-xl" style="width:inherit;">
+                                                    <span class="wz-iw-ic">
+                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="10" />
+                                                            <path d="M15.5 8H9l3.8 4L9 16h6.5" />
+                                                        </svg>
+                                                    </span>
+                                                    @Html.DisplayNameFor(x => x.SmrCost)
+                                                    <input name="SmrCost" type="text" value="@Model?.SmrCost" class="md3-input-summary-cost smr-summary" readonly /> @currency?.ToUpper()
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <!-- SMR -->
+                                        <div class="wz-fs">
+                                            <div class="wz-fs-body g2">
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">@Html.DisplayNameFor(x => x.SmrContractCost)</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="SmrContractCost" value="@Model.SmrContractCost" type="text"
+                                                               class="wz-in smr-cost not-null-summ" id="SmrContrtCost" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+                                                <!-- Цена -->
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">@Html.DisplayNameFor(x => x.SmrNdsCost)</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="SmrNdsCost" value="@Model.SmrNdsCost" type="text"
+                                                               class="wz-in smr-cost not-null-summ" id="SmrNdsCost" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+                                                <!-- Цена -->
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">@Html.DisplayNameFor(x => x.AdditionalContractCost)</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="AdditionalContractCost" value="@Model.AdditionalContractCost" type="text"
+                                                               class="wz-in smr-cost not-null-summ" id="AdditionalContractCost" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+                                                <!-- Цена -->
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">@Html.DisplayNameFor(x => x.AdditionalNdsCost)</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="AdditionalNdsCost" value="@Model.AdditionalNdsCost" type="text"
+                                                               class="wz-in smr-cost not-null-summ" id="AdditionalNdsCost" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </legend>
-                                <label class="text_about_label">В том числе:</label>
-                                <br />
-                                <div class="form-group">
-                                    <label asp-for="PnrContractCost" class="control-label second_level_text"></label>
-                                    @if (Model.PnrContractCost != null)
-                                    {
-                                        <input name="PnrContractCost" type="text" value="@Model.PnrContractCost" class="form-control pnr-cost" />
-                                    }
-                                    else
-                                    {
-                                        <input name="PnrContractCost" type="text" class="form-control pnr-cost" />
-                                    }
-                                    <span asp-validation-for="PnrContractCost" class="text-danger"></span>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="PnrNdsCost" class="control-label second_level_text"></label>
-                                    @if (Model.PnrNdsCost != null)
-                                    {
-                                        <input name="PnrNdsCost" type="text" value="@Model.PnrNdsCost" class="form-control pnr-cost" />
-                                    }
-                                    else
-                                    {
-                                        <input name="PnrNdsCost" type="text" class="form-control pnr-cost" />
-                                    }
-                                    <span asp-validation-for="PnrCost" class="text-danger"></span>
-                                </div>
-                            </fieldset>
-                        }
-                    </div>
-                    <div class="col">
-                        @*Период*@
-                        <div class="form-group">
-                            <label asp-for="Period" class="control-label"></label>
-                            <input type="text" value="@Model.Period?.ToString("MMMM yyyy")" class="form-control" disabled />
-                        </div>
 
-                        @*Дата подписания*@
-                        <div class="form-group">
-                            <label asp-for="DateSigning" class="control-label"></label>
-                            <input  value="@Model.DateSigning?.ToString("dd MMMM yyyy")" class="form-control" disabled />
-                            <span asp-validation-for="DateSigning" class="text-danger"></span>
-                        </div>
+                                    <!-- ═══ СЛАЙД 2: ОБорудование+Другие ═══ -->
+                                    <div class="wz-slide">
+                                        <!-- Fieldset PNR badge -->
+                                        <div class="org-section">
+                                            <div class="org-section-header">
+                                                <span class="org-section-badge edit-bdg bdg-xl">
+                                                    <span class="wz-iw-ic">
+                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="10" />
+                                                            <path d="M15.5 8H9l3.8 4L9 16h6.5" />
+                                                        </svg>
+                                                    </span>
+                                                    @Html.DisplayNameFor(x => x.PnrCost)
+                                                    <input name="PnrCost" type="text" value="@Model?.PnrCost" class="md3-input-summary-cost pnr-summary" readonly /> @currency?.ToUpper()
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <!-- Fieldset PNR -->
+                                        <div class="wz-fs">
+                                            <div class="wz-fs-body g2">
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">Пуско-наладочные работы (без НДС)</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="PnrContractCost" value="@Model?.PnrContractCost" type="text"
+                                                               class="wz-in pnr-cost not-null-summ" id="PnrContrtCost" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">@Html.DisplayNameFor(x => x.PnrNdsCost)</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="PnrNdsCost" value="@Model?.PnrNdsCost" type="text"
+                                                               class="wz-in pnr-cost not-null-summ" id="PnrNdsCost" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Fieldset  -->
+                                        <div class="org-section">
+                                            <div class="org-section-header">
+                                                <span class="org-section-badge edit-bdg bdg-xl" style="white-space: nowrap;">
+                                                    <span class="wz-iw-ic">
+                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="10" />
+                                                            <path d="M15.5 8H9l3.8 4L9 16h6.5" />
+                                                        </svg>
+                                                    </span>
+                                                    @Html.DisplayNameFor(x => x.EquipmentCost)
+                                                    <input name="EquipmentCost" type="text" value="@Model?.EquipmentCost" class="md3-input-summary-cost equipment-summary" readonly />@currency?.ToUpper()
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="wz-fs">
+                                            <div class="wz-fs-body g3">
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">@Html.DisplayNameFor(x => x.EquipmentContractCost)</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="EquipmentContractCost" value="@Model?.EquipmentContractCost" type="text"
+                                                               class="wz-in equipment-cost not-null-summ" id="EquipmentContrtCost" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl"><br />@Html.DisplayNameFor(x => x.EquipmentNdsCost)</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="EquipmentNdsCost" value="@Model?.EquipmentNdsCost" type="text"
+                                                               class="wz-in equipment-cost not-null-summ" id="EquipmentNdsCost" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">@Html.DisplayNameFor(x => x.EquipmentClientCost)</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="EquipmentClientCost" value="@Model?.EquipmentClientCost" type="text"
+                                                               class="wz-in equipment-cost not-null-summ" id="EquipmentClientCost" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        @*Оборудование*@
-                        <fieldset class="border rounded-1 p-3">
-                            <legend class="float-none w-auto px-3">
-                                <div class="form-group">
-                                    <label asp-for="EquipmentCost" class="control-label first_level_text"></label>
-                                    @if (Model.EquipmentCost != null)
-                                    {
-                                        <input name="EquipmentCost" type="text" value="@Model.EquipmentCost" class="form-control equipment-summary" readonly />
-                                    }
-                                    else
-                                    {
-                                        <input name="EquipmentCost" type="text" class="form-control equipment-summary" readonly />
-                                    }
-                                    <span asp-validation-for="EquipmentCost" class="text-danger"></span>
-                                </div>
-                            </legend>
-                            <label class="text_about_label">В том числе:</label>
-                            <br />
-                            <div class="form-group">
-                                <label asp-for="EquipmentContractCost" class="control-label second_level_text">Цена оборудования без НДС</label>
-                                @if (Model.EquipmentContractCost != null)
-                                {
-                                    <input name="EquipmentContractCost" type="text" value="@Model.EquipmentContractCost" class="form-control equipment-cost" />
-                                }
-                                else
-                                {
-                                    <input name="EquipmentContractCost" type="text" class="form-control equipment-cost" />
-                                }
-                                <span asp-validation-for="EquipmentContractCost" class="text-danger"></span>
+                                    <!-- ═══ СЛАЙД 3: Удержания ═══ -->
+                                    <div class="wz-slide">
+                                        <!--   -->
+                                        <div class="org-section">
+                                            <div class="org-section-header">
+                                                <span class="org-section-badge edit-bdg bdg-xl">
+                                                    <span class="wz-iw-ic">
+                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="10" />
+                                                            <path d="M15.5 8H9l3.8 4L9 16h6.5" />
+                                                        </svg>
+                                                    </span>
+                                                    Удержания
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="wz-fs">
+                                            <div class="wz-fs-body g3" style="gap: 0 10px;padding: 5px 12px;">
+                                                @if (ViewData["NoPrep"] is bool noPrep && noPrep != true)
+                                                {
+                                                    @if (ViewData["Current"] is bool current && current == true)
+                                                    {
+                                                        @*Авансы текущие*@
+                                                        <div class="wz-field">
+                                                            <label class="wz-lbl">@Html.DisplayNameFor(x => x.OffsetCurrentPrepayment)</label>
+                                                            <div class="wz-iw">
+                                                                <span class="wz-iw-ic">
+                                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <circle cx="12" cy="12" r="10" />
+                                                                        <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                        <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                        <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                                    </svg>
+                                                                </span>
+                                                                <input asp-for="OffsetCurrentPrepayment" value="@Model?.OffsetCurrentPrepayment" type="text"
+                                                                       class="wz-in current-prepayment-cost not-null-summ" id="CurPrepayment" placeholder="0.00" />
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    @if (ViewData["Target"] is bool target && target == true)
+                                                    {
+                                                        @*Авансы целевые*@                                                
+                                                                            <div class="wz-field">
+                                                            <label class="wz-lbl">@Html.DisplayNameFor(x => x.OffsetTargetPrepayment)</label>
+                                                            <div class="wz-iw">
+                                                                <span class="wz-iw-ic">
+                                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <circle cx="12" cy="12" r="10" />
+                                                                        <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                        <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                        <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                                    </svg>
+                                                                </span>
+                                                                <input asp-for="OffsetTargetPrepayment" value="@Model?.OffsetTargetPrepayment" type="text"
+                                                                       class="wz-in target-prepayment-cost not-null-summ" id="TarPrepayment" placeholder="0.00" />
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">@Html.DisplayNameFor(x => x.OtherExpensesCost)</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="OtherExpensesCost" value="@Model?.OtherExpensesCost" type="text"
+                                                               class="wz-in other-cost not-null-summ" id="OthrExpsCost" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">@Html.DisplayNameFor(x => x.OtherExpensesNdsCost)</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="OtherExpensesNdsCost" value="@Model?.OtherExpensesNdsCost" type="text"
+                                                               class="wz-in other-cost not-null-summ" id="OthrExpsNdsCost" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+
+                                                @*Материалы подрядчика*@
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">Материалы генподрядчика</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="MaterialCost" value="@Model?.MaterialCost" type="text"
+                                                               class="wz-in gen-material-cost not-null-summ" id="MaterialCost" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+
+                                                @*Услуги генподряда подрядчика*@
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">Ген.услуги</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="GenServiceCost" value="@Model?.GenServiceCost" type="text"
+                                                               class="wz-in gen-service-cost not-null-summ" id="GenSrvcCst" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+
+                                                @*Резервирование средств*@
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">Резервирование средств</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="Reserve" value="@Model?.Reserve" type="text"
+                                                               class="wz-in reserve-cost not-null-summ" id="Rsrv" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Fieldset Справочные данные -->
+                                        <div class="org-section">
+                                            <div class="org-section-header">
+                                                <span class="org-section-badge edit-bdg bdg-xl" style="white-space: nowrap;">
+                                                    <span class="wz-iw-ic">
+                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="10" />
+                                                            <path d="M15.5 8H9l3.8 4L9 16h6.5" />
+                                                        </svg>
+                                                    </span>
+                                                    Удержания (Справочно)
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="wz-fs">
+                                            <div class="wz-fs-body g3" style="padding: 0px 12px;">
+                                                @*Отчисления в фонд строительной отрасли*@
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">Отчисления в фонд строитроительной отрасли</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="CostToConstructionIndustryFund" value="@Model?.CostToConstructionIndustryFund" type="text"
+                                                               class="wz-in cost not-null-summ" id="ToIndustryFund" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">Стоимость работ для статист.отчетности подрядчика</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="CostStatisticReportOfContractor" value="@Model?.CostStatisticReportOfContractor" type="text"
+                                                               class="wz-in cost not-null-summ" id="StstcRprtOfCntrctr" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+                                                @*Материалы заказчика*@
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl"><br />Материалы заказчика </label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                                <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                                <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="MaterialClientCost" value="@Model?.MaterialClientCost" type="text"
+                                                               class="wz-in cost not-null-summ" id="MtrlClntCst" placeholder="0.00" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ═══ СЛАЙД 4: Сводка ═══ -->
+                                    <div class="wz-slide">
+                                        <div class="sum-banner">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 8 12 12 14 14" />
+                                            </svg>
+                                            Проверьте данные перед сохранением. Поля отмеченные звездочкой, обязательны для заполнения. Нажмите «Изменить» для возврата к нужному шагу.
+                                        </div>
+                                        <div class="sum-grid" id="sumGrid"></div>
+                                    </div>
+
+                                </div><!-- /wz-slides -->
+                            </div><!-- /wz-slides-wrap -->
+                            <!-- ══ ФУТЕР ══ -->
+                            <div class="wz-footer">
+                                <button type="button" class="wz-btn wz-btn-ghost" id="btnBack" style="display:none;" onclick="wzBack()">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+                                    Назад
+                                </button>
+                                <a href="@Url.Action("Index")" class="wz-btn wz-btn-ghost" id="btnCancel">Отмена</a>
+                                <span class="wz-footer-spacer"></span>
+
+                                <span style="display: flex;row-gap: 0px;font-weight: 600;border-radius: 5px;padding: 5px 20px;box-shadow: 0px 0px 5px 0px var(--md3-create);">
+                                    К оплате:
+                                    <input type="text" value="@Model?.TotalCostToBePaid" class="md3-input-summary-cost total-sum total-amount-input" readonly style="max-width: 120px;" />
+                                    @currency?.ToUpper()
+                                </span>
+                                <span class="wz-footer-spacer"></span>
+                                <span class="wz-footer-step" id="footerStep">Шаг 1 из 4</span>
+                                <button type="button" class="wz-btn wz-btn-next" id="btnNext" onclick="wzNext()">
+                                    Далее
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                                </button>
+                                <button type="submit" class="wz-btn wz-btn-save" id="btnSave" style="display:none;" id="subBtn">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                                    Сохранить договор
+                                </button>
                             </div>
-                            <div class="form-group">
-                                <label asp-for="EquipmentNdsCost" class="control-label second_level_text">Сумма НДС</label>
-                                @if (Model.EquipmentNdsCost != null)
-                                {
-                                    <input name="EquipmentNdsCost" type="text" value="@Model.EquipmentNdsCost" class="form-control equipment-cost" />
-                                }
-                                else
-                                {
-                                    <input name="EquipmentNdsCost" type="text" class="form-control equipment-cost" />
-                                }
-                                <span asp-validation-for="EquipmentNdsCost" class="text-danger"></span>
-                            </div>
-                            <div class="form-group">
-                                <label asp-for="EquipmentClientCost" class="control-label second_level_text"></label>
-                                @if (Model.EquipmentClientCost != null)
-                                {
-                                    <input name="EquipmentClientCost" type="text" value="@Model.EquipmentClientCost" class="form-control cost" />
-                                }
-                                else
-                                {
-                                    <input name="EquipmentClientCost" type="text" class="form-control cost" />
-                                }
-                                <span asp-validation-for="EquipmentClientCost" class="text-danger"></span>
-                            </div>
-                        </fieldset>
-                        @*Прочие*@
-                        <div class="form-group">
-                            <label asp-for="OtherExpensesCost" class="control-label"></label>
-                            @if (Model.OtherExpensesCost != null)
-                            {
-                                <input name="OtherExpensesCost" type="text" value="@Model.OtherExpensesCost" class="form-control other-cost" />
-                            }
-                            else
-                            {
-                                <input name="OtherExpensesCost" type="text" class="form-control other-cost" />
-                            }
-                            <span asp-validation-for="OtherExpensesCost" class="text-danger"></span>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="OtherExpensesNdsCost" class="control-label"></label>
-                            @if (Model.OtherExpensesNdsCost != null)
-                            {
-                                <input name="OtherExpensesNdsCost" type="text" value="@Model.OtherExpensesNdsCost" class="form-control cost" />
-                            }
-                            else
-                            {
-                                <input name="OtherExpensesNdsCost" type="text" class="form-control cost" />
-                            }
-                            <span asp-validation-for="OtherExpensesNdsCost" class="text-danger"></span>
-                        </div>
-                    </div>
-                    <div class="col">
-                        @*Авансы текущие*@
-                        @if (ViewBag.Current != null)
-                        {
-                            <div class="form-group">
-                                <label class="control-label">Зачет текущего аванса</label>
-                                @if (Model.OffsetCurrentPrepayment != null)
-                                {
-                                    <input name="OffsetCurrentPrepayment" type="text" value="@Model.OffsetCurrentPrepayment" class="form-control current-prepayment-cost" />
-                                }
-                                else
-                                {
-                                    <input name="OffsetCurrentPrepayment" type="text" class="form-control current-prepayment-cost" />
-                                }
-                                <span asp-validation-for="OffsetCurrentPrepayment" class="text-danger"></span>
-                            </div>
-                        }
-
-                        @*Авансы целевые*@
-                        @if (ViewBag.Target != null)
-                        {
-                            <div class="form-group">
-                                <label class="control-label">Зачет целевого аванса</label>
-                                @if (Model.OffsetTargetPrepayment != null)
-                                {
-                                    <input name="OffsetTargetPrepayment" type="text" value="@Model.OffsetTargetPrepayment" class="form-control target-prepayment-cost" />
-                                }
-                                else
-                                {
-                                    <input name="OffsetTargetPrepayment" type="text" class="form-control target-prepayment-cost" />
-                                }
-                                <span asp-validation-for="OffsetTargetPrepayment" class="text-danger"></span>
-                            </div>
-                        }
-
-                        @*Материалы подрядчика*@
-                        <div class="form-group">
-                            <label asp-for="MaterialCost" class="control-label"></label>
-                            @if (Model.MaterialCost != null)
-                            {
-                                <input name="MaterialCost" type="text" value="@Model.MaterialCost" class="form-control gen-material-cost" />
-                            }
-                            else
-                            {
-                                <input name="MaterialCost" type="text" class="form-control gen-material-cost" />
-                            }
-                            <span asp-validation-for="MaterialCost" class="text-danger"></span>
-                        </div>
-
-                        @*Услуги генподряда подрядчика*@
-                        <div class="form-group">
-                            <label asp-for="GenServiceCost" class="control-label"></label>
-                            @if (Model.GenServiceCost != null)
-                            {
-                                <input name="GenServiceCost" type="text" value="@Model.GenServiceCost" class="form-control gen-service-cost" />
-                            }
-                            else
-                            {
-                                <input name="GenServiceCost" type="text" class="form-control gen-service-cost" />
-                            }
-                            <span asp-validation-for="GenServiceCost" class="text-danger"></span>
-                        </div>
-
-                        @*Отчисления в фонд строительной отрасли*@
-                        <div class="form-group">
-                            <label asp-for="CostToConstructionIndustryFund" class="control-label"></label>
-                            @if (Model.CostToConstructionIndustryFund != null)
-                            {
-                                <input name="CostToConstructionIndustryFund" type="text" value="@Model.CostToConstructionIndustryFund" class="form-control cost" />
-                            }
-                            else
-                            {
-                                <input name="CostToConstructionIndustryFund" type="text" class="form-control cost" />
-                            }
-                            <span asp-validation-for="CostToConstructionIndustryFund" class="text-danger"></span>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="CostStatisticReportOfContractor" class="control-label"></label>
-                            @if (Model.CostStatisticReportOfContractor != null)
-                            {
-                                <input name="CostStatisticReportOfContractor" type="text" value="@Model.CostStatisticReportOfContractor" class="form-control cost" />
-                            }
-                            else
-                            {
-                                <input name="CostStatisticReportOfContractor" type="text" class="form-control cost" />
-                            }
-                            <span asp-validation-for="CostStatisticReportOfContractor" class="text-danger"></span>
-                        </div>
-
-                        @*Материалы заказчика*@
-                        <div class="form-group">
-                            <label asp-for="MaterialClientCost" class="control-label"></label>
-                            @if (Model.MaterialClientCost != null)
-                            {
-                                <input name="MaterialClientCost" type="text" value="@Model.MaterialClientCost" class="form-control cost" />
-                            }
-                            else
-                            {
-                                <input name="MaterialClientCost" type="text" class="form-control cost" />
-                            }
-                            <span asp-validation-for="MaterialClientCost" class="text-danger"></span>
-                        </div>
-
-                        @*Резервирование средств*@
-                        <div class="form-group">
-                            <label asp-for="Reserve" class="control-label"></label>
-                            @if (Model.Reserve != null)
-                            {
-                                <input name="Reserve" type="text" value="@Model.Reserve" class="form-control reserve-cost" />
-                            }
-                            else
-                            {
-                                <input name="Reserve" type="text" class="form-control reserve-cost" />
-                            }
-                            <span asp-validation-for="Reserve" class="text-danger"></span>
-                        </div>
-
-                        <div class="form-group">
-                            <label asp-for="TotalCostToBePaid" class="control-label"></label>
-                            @if (Model.TotalCostToBePaid != null)
-                            {
-                                <input type="text" value="@Model.TotalCostToBePaid" class="form-control total-sum" readonly />
-                            }
-                            else
-                            {
-                                <input type="text" class="form-control total-sum" readonly />
-                            }
-                            <span asp-validation-for="CostStatisticReportOfContractor" class="text-danger"></span>
-                        </div>
-
-                    </div>
-                    <div class="form-group mt-3">
-                        <input type="submit" value="Редактировать" class="btn btn-primary" />
-                    </div>
-                </form>
+                        </div><!-- /wz-card-outer -->
+                    </form>
+                </div><!-- /wz -->
             </div>
         </div>
     </div>
 </div>
+
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <script>
+           /* ══════════════════════════════════
+              СОСТОЯНИЕ WIZARD
+           ══════════════════════════════════ */
+           const TOTAL = 4;
+           let cur = 1;
+
+           const HDR_DATA = {
+               1: { title: 'Сроки и стоимость СМР',            badge: 'Шаг 1 из 4' },
+               2: { title: 'Стоимость ПНР и оборудования',     badge: 'Шаг 2 из 4' },
+               3: { title: 'Удержания',                        badge: 'Шаг 3 из 4' },
+               4: { title: 'Подтверждение',                    badge: 'Шаг 4 из 4' },
+           };
+
+           function gotoStep(n) {
+               if (n < 1 || n > TOTAL) return;
+
+               const slides   = document.getElementById('wzSlides');
+               const offset   = (n - 1) * 100;
+               slides.style.transform = `translateX(-${offset}%)`;
+               cur = n;
+
+               /* шапка */
+               document.getElementById('hdrTitle').textContent = HDR_DATA[n].title;
+               document.getElementById('hdrBadge').textContent = HDR_DATA[n].badge;
+               document.getElementById('footerStep').textContent = `Шаг ${n} из ${TOTAL}`;
+
+               /* кнопки */
+               document.getElementById('btnBack').style.display  = n > 1  ? '' : 'none';
+               document.getElementById('btnNext').style.display  = n < TOTAL ? '' : 'none';
+               document.getElementById('btnSave').style.display  = n === TOTAL ? '' : 'none';
+               document.getElementById('btnCancel').style.display= n === 1 ? '' : 'none';
+
+               /* stepper */
+               document.querySelectorAll('.wz-step').forEach(el => {
+                   const s = +el.dataset.step;
+                   el.classList.toggle('active', s === n);
+                   el.classList.toggle('done',   s < n);
+               });
+
+               /* сводка */
+               if (n === TOTAL) buildSummary();
+           }
+
+           function wzNext() { gotoStep(cur + 1); }
+           function wzBack() { gotoStep(cur - 1); }
+
+           /* ══════════════════════════════════
+              ОПЦИИ
+           ══════════════════════════════════ */
+           function selectOpt(lbl) {
+               const inp = lbl.querySelector('input[type=radio]');
+               if (!inp) return;
+               document.querySelectorAll(`input[name="${inp.name}"]`).forEach(r => {
+                   r.closest('.wz-opt')?.classList.remove('sel');
+               });
+               lbl.classList.add('sel');
+           }
+
+           function toggleCheckOpt(lbl) {
+               const cb = lbl.querySelector('input[type=checkbox]');
+               if (!cb) return;
+               setTimeout(() => lbl.classList.toggle('sel', cb.checked), 0);
+           }
+
+           /* показать поле дней при выборе расчёта */
+           document.querySelectorAll('.checkChoise').forEach(r => {
+               r.addEventListener('change', () => {
+                   document.getElementById('payDaysWrap').style.display = 'block';
+               });
+           });
+
+           /* ══════════════════════════════════
+              СВОДКА
+           ══════════════════════════════════ */
+           function tv(sel) {
+               const el = document.querySelector(sel);
+               if (!el) return '—';
+               if (el.tagName === 'SELECT') return el.options[el.selectedIndex]?.text || '—';
+               if (el.type === 'checkbox') return el.checked ? 'Да' : 'Нет';
+               return el.value?.trim() || '—';
+           }
+
+           function radioTxt(name) {
+               const r = document.querySelector(`input[name="${name}"]:checked`);
+               return r?.closest('.wz-opt-lbl')?.textContent?.trim()
+                   || r?.closest('.wz-opt')?.querySelector('.wz-opt-lbl')?.textContent?.trim()
+                   || r?.value || '—';
+           }
+
+           function cbTxt(name) {
+               const arr = [...document.querySelectorAll(`input[name="${name}"]:checked`)]
+                   .map(el => el.closest('.wz-opt')?.querySelector('.wz-opt-lbl')?.textContent?.trim() || el.value);
+               return arr.length ? arr.join(', ') : '—';
+           }
+
+           function secHtml(title, stepN, rows) {
+               const r = rows.map(([k, v]) =>
+                   `<div class="sum-row">
+                       <span class="sum-k">${k}</span>
+                       <span class="sum-v short-text ${v==='—'?'empty':''}"
+                       title="${v}"
+                       >${v}</span>
+                    </div>`).join('');
+               return `<div class="wz-summary-section sum-sec">
+                   <div class="sum-sec-hdr">
+                       ${title}
+                       <a href="#" onclick="gotoStep(${stepN});return false;">Изменить</a>
+                   </div>
+                   ${r}
+               </div>`;
+           }
+
+           function buildSummary() {
+               let html = '';
+
+               html += secHtml('Сроки и СМР', 1, [
+                   ['Период заполнения <span class="required-star">*</span>', tv('#DateDC')],
+                   ['Дата подписания <span class="required-star">*</span>', tv('#DateSigning')],                  
+                   ['Неизменная цена', tv('#SmrContrtCost')], 
+                   ['Сумма НДС договорной цены', tv('#SmrNdsCost')], 
+                   ['Дополнительые работы', tv('#AdditionalContractCost')],
+               ['НДС доп.работ', tv('#AdditionalNdsCost')],
+               ]);
+
+            html += secHtml('Удержания', 3, [
+                ...(!('@ViewBag.NoPrep' === 'True') ? [
+                    ...('@ViewBag.Current' === 'True' ? [['Зачет текущего аванса', tv('#CurPrepayment')]] : []),
+                    ...('@ViewBag.Target'  === 'True' ? [['Зачет целевого аванса', tv('#TarPrepayment')]]  : []),
+                    ] : []),
+
+               // ['Зачет текущего аванса',tv('#CurPrepayment') ],
+               // ['Зачет целевого аванса', tv('#TarPrepayment')],
+               ['Стоимость прочих работ', tv('#OthrExpsCost')],
+               ['Сумма НДС прочих работ', tv('#OthrExpsNdsCost')],
+               ['Материалы генподрядчика', tv('#MaterialCost')],
+               ['Ген.услуги', tv('#GenSrvcCst')],
+               ['Резервирование средств', tv('#Rsrv')],
+
+           ]);
+
+               html += secHtml('ПНР и Оборудование', 2, [
+                   ['ПНР (без НДС)',tv('#PnrContrtCost') || '—' ],
+                   ['Сумма НДС для ПНР', tv('#PnrNdsCost')],
+                   ['Контрактная цена оборудования', tv('#EquipmentContrtCost')],
+                   ['Сумма НДС оборудования', tv('#EquipmentNdsCost')],
+                   ['Стоимость оборудования заказчика', tv('#EquipmentClientCost')],
+
+               ]);
+
+
+         html += secHtml('Удержания (справочно)', 3, [
+
+            ['Отчисления в фонд строитроительной отрасли', tv('#ToIndustryFund')],
+            ['Стоимость работ для статист.отчетности подрядчика', tv('#StstcRprtOfCntrctr')],
+            ['Материалы заказчика', tv('#MtrlClntCst')],
+
+        ]);
+
+
+               document.getElementById('sumGrid').innerHTML = html;
+           }
+
+           /* ══════════════════════════════════
+              ИНИЦИАЛИЗАЦИЯ
+           ══════════════════════════════════ */
+           gotoStep(1);
+    </script>
+    <script>
+                //обновляет сумму к оплате!
+                               (function () {
+                         const SELECTOR = '.total-amount-input';
+                         const ANIMATION_DURATION = 500; // мс, должно совпадать с CSS-анимацией
+
+                         // Универсальная функция применения стилей/анимации
+                         function applyUpdateEffects(inputEl) {
+                           const rawValue = inputEl.value.replace(/\s/g, '').replace(',', '.');
+                           const numericValue = parseFloat(rawValue);
+
+                           // Цвет для отрицательного значения
+                           inputEl.classList.toggle('is-negative', !isNaN(numericValue) && numericValue < 0);
+
+                           // Перезапуск анимации
+                           inputEl.classList.remove('is-updating');
+                           void inputEl.offsetWidth; // форсируем reflow
+                           inputEl.classList.add('is-updating');
+
+                           clearTimeout(inputEl._updateTimeout);
+                           inputEl._updateTimeout = setTimeout(() => {
+                             inputEl.classList.remove('is-updating');
+                           }, ANIMATION_DURATION);
+                         }
+
+                         // Перехват программного изменения .value (когда сумму меняет JS, а не пользователь)
+                         function watchValueChanges(inputEl) {
+                           const prototype = Object.getPrototypeOf(inputEl);
+                           const nativeDescriptor = Object.getOwnPropertyDescriptor(prototype, 'value');
+
+                           Object.defineProperty(inputEl, 'value', {
+                             get() {
+                               return nativeDescriptor.get.call(this);
+                             },
+                             set(newVal) {
+                               const oldVal = nativeDescriptor.get.call(this);
+                               nativeDescriptor.set.call(this, newVal);
+                               if (oldVal !== newVal) {
+                                 applyUpdateEffects(this);
+                               }
+                             },
+                             configurable: true
+                           });
+                         }
+
+                         // Инициализация для всех текущих полей с нужным классом
+                         function initAll() {
+                           document.querySelectorAll(SELECTOR).forEach((el) => {
+                             if (el._watched) return; // избегаем повторной инициализации
+                             el._watched = true;
+
+                             watchValueChanges(el);
+
+                             // На случай, если пользователь тоже может вводить сумму вручную
+                             el.addEventListener('input', () => applyUpdateEffects(el));
+                           });
+                         }
+
+                         // Наблюдаем за DOM — вдруг поле появится позже (динамический рендер)
+                         const observer = new MutationObserver(() => initAll());
+                         observer.observe(document.body, { childList: true, subtree: true });
+
+                         // Первичный запуск
+                         initAll();
+                       })();
+
+                       // let minDate = $('#min').val();
+
+                       $("#DateSigning").datepicker({
+                           format: "d MM yyyy",
+                           language: "ru",
+                           // startDate: minDate,
+                           calendarWeeks: true,
+                           autoclose: true,
+                           keyboardNavigation: false,
+                           assumeNearbyYear: true,
+                           toggleActive: true,
+                           todayHighlight: true
+                       });
+
+                document.querySelectorAll('.not-null-summ').forEach((elem) => {
+          elem.addEventListener('blur', function () {
+            if (this.value.trim() === '') {
+              this.value = '0';
+            }
+          });
+        });
+
+    </script>
+    <script src="~/js/cost-formatter.js"></script>
 }

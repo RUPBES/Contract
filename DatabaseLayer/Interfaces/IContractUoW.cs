@@ -44,7 +44,8 @@ namespace DatabaseLayer.Interfaces
         IPageRepository<Organization> Organizations { get; }
         IRepository<Phone> Phones { get; }
         IRepository<Payment> Payments { get; }
-        IRepository<Prepayment> Prepayments { get; }
+         IRepository<Prepayment> Prepayments { get; }
+        IRepository<PrepaymentReceived> PrepaymentReceiveds { get; }
         IRepository<PrepaymentFact> PrepaymentFacts { get; }
         IRepository<PrepaymentPlan> PrepaymentPlans { get; }
         IRepository<PrepaymentTake> PrepaymentTakes { get; }
@@ -65,6 +66,7 @@ namespace DatabaseLayer.Interfaces
         IRepository<Log> Logs { get; }
         IReleaseNoteRepository ReleaseNotes { get; }
         IRepository<ReleaseNoteFile> ReleaseNoteFiles { get; }
+        IUserDailyVisitRepository UserDailyVisits { get; }
 
         void Save();
     }

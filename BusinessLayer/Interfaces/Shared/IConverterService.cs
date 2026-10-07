@@ -17,6 +17,7 @@
         string ToRussianMethodName(string name);
         string ToRussianNameSpace(string name);
         string ToRussianContractProps(string name);
+        string GetIconNames(string type);
 
     }
 }

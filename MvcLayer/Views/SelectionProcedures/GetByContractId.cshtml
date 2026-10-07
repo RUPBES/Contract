@@ -11,133 +11,190 @@
 @{
     var permissions = HttpHelper.GetUserPermissions();
     var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
-    var contract = Model?.ContractId > 0 ? Contract.GetById((int)Model?.ContractId) : null;
     ViewData["Title"] = "Процедура выбора";
+
+    var contract = Model?.ContractId > 0
+        ? Contract.GetById((int)Model?.ContractId)
+        : null;
+    int backId = ViewBag.returnContractId == 0 ? (int)ViewBag.contractId : (int)ViewBag.returnContractId;
     string redirectAction = "GetByContractId";
     string redirectController = "SelectionProcedures";
 }
+<style>
+    .dm-modal {
+        width: min(90vw, 1600px) !important;
+        max-width: 1600px !important;
+    }
+</style>
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
 
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
             <div class="dm-modal">
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"] по договору @contract?.Number</label>
-                    @if (@contract?.Id != null && @contract?.Id > 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id" class="close-btn"></a>
-                    }
-                    @if (@contract?.Id == null || @contract?.Id == 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
-                    }
-                </div>
-                <hr class="modal-line" />
-                <table class="table table-striped table-bordered table-main">
-                    <thead>
-                        <tr>
-                            <th rowspan="2">
-                                @Html.DisplayNameFor(model => model.TypeProcedure)
-                            </th>
-                            <th class="text-center" colspan="2">
-                                Cроки проведения
-                            </th>
-                            <th rowspan="2">
-                                @Html.DisplayNameFor(model => model.Name)
-                            </th>
-                            <th rowspan="2">
-                                @Html.DisplayNameFor(model => model.StartPrice)
-                            </th>
-                            <th rowspan="2">
-                                @Html.DisplayNameFor(model => model.AcceptancePrice)
-                            </th>
-                            <th rowspan="2">
-                                Снижение
-                            </th>
-                            <th rowspan="2">
-                                @Html.DisplayNameFor(model => model.AcceptanceNumber),
-                                @Html.DisplayNameFor(model => model.DateAcceptance)
-                            </th>
-                            <th rowspan="2">Файлы</th>
-                            <th rowspan="2"></th>
-                        </tr>
-                        <tr>
-                            <th>
-                                @Html.DisplayNameFor(model => model.DateBegin)
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.DateEnd)
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @*  @foreach (var item in Model)
-                        { *@
-                        <tr>
-                            <td>
-                                @Html.DisplayFor(modelItem => Model.TypeProcedure)
-                            </td>
-                            <td>
-                                @Model.DateBegin?.ToShortDateString()
-                            </td>
-                            <td>
-                                @Model.DateEnd?.ToShortDateString()
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => Model.Name)
-                            </td>
-                            <td class="text-end">
-                                @Convert.ToDecimal(Model.StartPrice).ToString("N2")
-                            </td>
-                            <td class="text-end">
-                                @Convert.ToDecimal(Model.AcceptancePrice).ToString("N2")
-                            </td>
-                            <td class="text-end">
-                                @{
-                                    var discont = Convert.ToDecimal(Model.StartPrice) - Convert.ToDecimal(Model.AcceptancePrice);
-                                }
-                                @discont.ToString("N2")
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => Model.AcceptanceNumber)
-                                @if (@Model.DateAcceptance != null)
+                <div class="am-wrap">
+                    <!-- Шапка -->
+                    <div class="am-header">
+                        <span class="am-header-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                            </svg>
+                        </span>
+                        <div class="am-header-info">
+                            <h1 class="am-header-title">
+                                @ViewData["Title"]
+                                @if (contract != null)
                                 {
-                                    <span>
-                                        от
-                                    </span>
-                                    @Model.DateAcceptance?.ToShortDateString()
+                                    <span> по договору <span style="color:var(--md3-primary);">№@contract.Number</span></span>
                                 }
-                            </td>
-                            <td>
+                            </h1>
+                            @if (contract?.NameObject != null)
+                            {
+                                <div class="am-header-sub">@contract.NameObject</div>
+                            }
+                        </div>
+                        <div class="am-header-actions">
+                            @if (backId is > 0)
+                            {
+                                <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn" aria-label="Закрыть"></a>
+                            }
+                            else
+                            {
+                                <a asp-controller="Contracts" asp-action="" class="close-btn" aria-label="Закрыть"></a>
+                            }
+                        </div>
+                    </div>
 
-                                @foreach (FileDTO item2 in Files.GetAttachedFiles(Model.Id, Folder.SelectionProcedures))
-                                {
-                                    <div>
-                                        <a href="~/Files/OpenFile?id=@item2.Id&fileType=@item2.FileType" target="_blank">@item2.FileName</a>
-                                        @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)
-                                        {
-                                            
-                                                <a asp-controller="Files" asp-action="Delete" asp-route-id="@item2.Id"
-                                                   asp-route-redirectAction="@redirectAction"
-                                                   asp-route-redirectController="@redirectController"
-                                                   asp-route-fileCategory="@Folder.SelectionProcedures"
-                                                   asp-route-contractId="@Model.ContractId"
-                                                   title="Удалить файл"
-                                                   class="modal-link del-btn"
-                                               data-message="Прикрепленный файл будет удален. Продолжить?">×</a>
-                                            
-                                        }
-                                    </div>
-                                }
-                            </td>
-                            <td>
-                                @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
-                                {
-                                    <span class="icon edit" title="Редактировать процедуру выбора">
-                                        <a asp-action="Edit" asp-route-id="@Model.Id" asp-route-contractId="@Model.ContractId"></a>
-                                    </span>
-                                }
-                              @*   @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
+                    <!-- Карточка -->
+                    <div class="am-card">
+                        <div class="am-table-scroll">
+                            <table class="am-table">
+                                <thead>
+                                    <!-- Строка 1: основные колонки + объединённый «Сроки» -->
+                                    <tr>
+                                        <th class="col-5per-50max" rowspan="2">
+                                            @Html.DisplayNameFor(model => model.TypeProcedure)
+                                        </th>
+                                        <th class="col-6per-67max" colspan="2">
+                                            Cроки проведения
+                                        </th>
+                                        <th class="col-22per-160min" rowspan="2">
+                                            @Html.DisplayNameFor(model => model.Name)
+                                        </th>
+                                        <th class="col-6per-67max" rowspan="2">
+                                            @Html.DisplayNameFor(model => model.StartPrice)
+                                        </th>
+                                        <th class="col-6per-67max" rowspan="2">
+                                            @Html.DisplayNameFor(model => model.AcceptancePrice)
+                                        </th>
+                                        <th class="col-6per-67max" rowspan="2">
+                                            Снижение
+                                        </th>
+                                        <th class="col-6per-67max" rowspan="2">
+                                            @Html.DisplayNameFor(model => model.AcceptanceNumber)
+                                        </th>
+                                        <th class="col-4per-120max" rowspan="2">Файлы</th>
+                                        <th class="am-col-actions col-2per-50max" rowspan="2"></th>
+                                    </tr>
+                                    <!-- Строка 2: подгруппа «выполнения работ» -->
+                                    <tr>
+                                        <th class="col-6per-67max">
+                                            начало
+                                        </th>
+                                        <th class="col-5per-67max" style="border-right: 1px solid var(--md3-outline);">
+                                            окончание
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="col-5per-50max">
+                                            <div class="am-num"> @Html.DisplayFor(modelItem => Model.TypeProcedure)</div>
+                                        </td>
+                                        <td class="col-6per-67max am-col-date">
+                                            <span class="am-date-val">
+                                                @Model?.DateBegin?.ToString("dd MMM yyyy")
+                                            </span>
+                                        </td>
+                                        <td class="col-6per-67max am-col-date">
+                                            <span class="am-date-val">
+                                                @Model?.DateEnd?.ToString("dd MMM yyyy")
+                                            </span>
+                                        </td>
+                                        <td class="col-22per-160min">
+                                            @Html.DisplayFor(m => Model.Name)
+                                        </td>
+                                        <td class="am-col-price col-6per-67max responsive-text">
+                                            <span class="am-price">
+                                                @(decimal.TryParse(Model?.StartPrice, out var startPrice)
+                                                                                                ? startPrice.ToString("N2")
+                                                                                                : "0,00")
+                                            </span>
+                                        </td>
+                                        <td class="am-col-price col-6per-67max responsive-text">
+                                            <span class="am-price">
+                                                @(decimal.TryParse(Model?.AcceptancePrice, out var acceptPrice)
+                                                                                                ? acceptPrice.ToString("N2")
+                                                                                                : "0,00")
+                                            </span>
+                                        </td>
+                                        <td class="col-6per-67max am-col-price responsive-text">
+                                            <span class="am-price">
+                                                @((startPrice - acceptPrice).ToString("N2"))
+                                            </span>
+                                        </td>
+                                        <td class="col-6per-67max">
+                                            <div class="am-num"> @Html.DisplayFor(modelItem => Model.AcceptanceNumber)</div>
+                                            @if (Model.DateAcceptance.HasValue)
+                                            {
+                                                <div class="am-date-sub ">
+                                                    от  @Model.DateAcceptance?.ToString("dd MMM yyyy")
+                                                </div>
+                                            }
+                                        </td>
+                                        <!-- Файлы -->
+                                        <td class="col-4per-120max">
+                                            @foreach (FileDTO item2 in Files.GetAttachedFiles(Model.Id, Folder.SelectionProcedures))
+                                            {
+                                                <div class="am-file-row">
+                                                    <a href="~/Files/OpenFile?id=@item2.Id&fileType=@item2.FileType"
+                                                       title="@item2.FileName"
+                                                       class="am-file-link"
+                                                       target="_blank">@item2.FileName</a>
+                                                    @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)
+                                                    {
+                                                        <a asp-controller="Files" asp-action="Delete" asp-route-id="@item2.Id"
+                                                           asp-route-redirectAction="@redirectAction"
+                                                           asp-route-redirectController="@redirectController"
+                                                           asp-route-fileCategory="@Folder.SelectionProcedures"
+                                                           asp-route-contractId="@Model.ContractId"
+                                                           asp-route-returnContractId="@ViewBag.returnContractId"
+                                                           title="Удалить файл"
+                                                           class="modal-link am-file-del"
+                                                           data-message="Прикрепленный файл будет удален. Продолжить?">×</a>
+                                                    }
+                                                </div>
+                                            }
+                                        </td>
+
+                                        <!-- Действия -->
+                                        <td class="am-col-actions col-2per-50max">
+                                            <div class="am-actions-cell">
+                                                @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
+                                                {
+                                                    <span class="icon edit" title="Редактировать процедуру выбора">
+                                                        <a asp-action="Edit"
+                                                           asp-route-id="@Model.Id"
+                                                           asp-route-contractId="@Model.ContractId"
+                                                           asp-route-returnContractId="@ViewBag.returnContractId">
+                                                        </a>
+                                                    </span>
+                                                }
+                                                @*   @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                 {
                                     <span class="icon delete" title="Удалить процедуру выбора">
                                         <a asp-action="Delete"
@@ -148,11 +205,15 @@
                                         </a>
                                     </span>
                                 } *@
-                            </td>
-                        </tr>
-                        @* } *@
-                    </tbody>
-                </table>
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

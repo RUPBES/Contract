@@ -1,495 +1,529 @@
-﻿@model PrepaymentStatementViewModel
+﻿@model BusinessLayer.Models.Extra.PrepaymentScheduleDTO
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
-@inject BusinessLayer.Interfaces.ContractInterfaces.IPrepaymentService Prepayment
-@inject BusinessLayer.Interfaces.ContractInterfaces.IPrepaymentFactService PrepFact
-@inject BusinessLayer.Interfaces.ContractInterfaces.IPrepaymentPlanService PrepPlan
-@using BusinessLayer.Helpers;
-@using MvcLayer.Models;
-@using MvcLayer.Models.Reports;
-
-<style>
-
-    td, tr {
-        min-width: 105px;
-    }
-
-
-    .form_period {
-        display: flex;
-        margin-bottom: 1%;
-    }
-
-    .period_input {
-        width: 15.5%;
-        margin-right: 1%;
-    }
-
-    .input-group-text {
-        font-weight: 600;
-    }
-
-
-    .td-pointer {
-        cursor: pointer;
-        background-color: #73d5e9 !important;
-        border-color: #73d5e9 !important;
-        box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px !important;
-        border-radius: 5px !important;
-        transition-property: background-color;
-        transition-duration: 0.5s;
-    }
-
-        .td-pointer:hover {
-            background-color: #1bcbef !important;
-            border-color: #1bcbef !important;
-        }
-</style>
 
 @{
-    ViewData["Title"] = $"Ведомость использования авансов";
-    var contractId = ViewBag.contractId;
-    int backId = 0;
-    
-    if (ViewBag.returnContractId == 0)
-        backId = ViewBag.contractId;
-    else backId = ViewBag.returnContractId;
+    ViewData["Title"] = "Авансы";
 
-    Model.listSmrWithAvans = Model?.listSmrWithAvans?.OrderBy(x => x.Period).ToList();
-    var countSmr = 2 + Model?.listSmrWithAvans?.Count * 2;
+    var contract = ViewBag.contractId is > 0
+        ? Contract.GetById(ViewBag.contractId, useArchiveData: true)
+        : null;
 
-    var miniRow = 0;
-    var maxRow = 1;
-    if (ViewData["Current"] != null)
-    {
-        miniRow++;
-        maxRow += 2;
-    }
-    if (ViewData["Target"] != null)
-    {
-        miniRow++;
-        maxRow += 2;
-    }
+    int backId = ViewBag.returnContractId == 0
+        ? ViewBag.contractId
+        : ViewBag.returnContractId;
+
+    var actionReturn = ViewBag.IsEngineering == true
+        ? "EngineeringsArch"
+        : "IndexArch";
+
+    var countPeriods = Model?.Periods?.Count;
+    var countPeriodForms = Model?.Periods?.Where(x => x.FactTarget.HasValue || x.FactCurrent.HasValue)?.Count();
 }
+
+<style>
+    .dm-modal {
+        width: min(90vw, 1600px) !important;
+        max-width: 1600px !important;
+    }
+</style>
+<link rel="stylesheet" href="~/css/prepayment-details-md3.css" asp-append-version="true" />
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+    <!-- more_vert -->
+    <symbol id="ic-more-vert" viewBox="0 0 24 24">
+        <circle cx="12" cy="5" r="2.2" fill="#555" />
+        <circle cx="12" cy="12" r="2.2" fill="#555" />
+        <circle cx="12" cy="19" r="2.2" fill="#555" />
+    </symbol>
+
+    <symbol id="ic-add" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M12 8v8"></path>
+        <path d="M8 12h8"></path>
+    </symbol>
+
+    <!-- edit -->
+    <symbol id="ic-edit" viewBox="0 0 24 24">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+    </symbol>
+
+    <!-- info -->
+    <symbol id="ic-info" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <circle cx="12" cy="8" r="1"></circle>
+    </symbol>
+
+    <!-- delete -->
+    <symbol id="ic-delete" viewBox="0 0 24 24">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6l-1 14H6L5 6"></path>
+        <line x1="10" y1="11" x2="10" y2="17"></line>
+        <line x1="14" y1="11" x2="14" y2="17"></line>
+        <path d="M9 6V4h6v2"></path>
+    </symbol>
+</svg>
 
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
             <div class="dm-modal">
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (backId > 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="DetailsArch" asp-route-id="@backId" class="close-btn"></a>
-                    }
-                    @if (backId == 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="IndexArch" class="close-btn"></a>
-                    }
-                </div>
-                <hr class="modal-line">
-                <form asp-action="GetArchByContractId" class="form_period">
-                    <label class="input-group-text" for="start">Начало:</label>
-
-                    <input id="DateBeginWork" class="form-control period_input" asp-for="startPeriod"
-                           value="@Model?.startPeriod?.ToString("MMMM yyyy")" type="text" required />
-                    <label class="input-group-text" for="end">Конец:</label>
-
-                    <input id="DateEndWork" class="form-control period_input" asp-for="endPeriod"
-                           value="@Model?.endPeriod?.ToString("MMMM yyyy")" type="text" required />
-                    <input name="contractId" value="@ViewBag.contractId" hidden />
-                    <input asp-for="NameAmendment" hidden />
-                    <input asp-for="Client" hidden />
-                    <input asp-for="NameObject" hidden />
-                    <input asp-for="minStartPeriod" hidden />
-                    <input asp-for="maxEndPeriod" hidden />
-                    <input asp-for="TheoryCurrent" hidden />
-                    <input asp-for="TheoryTarget" hidden />
-                    <input asp-for="TargetRepaid" hidden />
-                    <input asp-for="TargetReceived" hidden />
-                    <input name="returnContractId" value="@ViewBag.returnContractId" hidden />
-                    <button class="btn btn-warning" type="submit"> выбрать период</button>
-                </form>
-               @*  <form id="Amendment" asp-action="GetByContractIdWithAmendments">
-                    <input id="anotherStart" asp-for="startPeriod" type="text" hidden />
-                    <input id="anotherEnd" asp-for="endPeriod" type="text" hidden />
-                    <input name="contractId" value="@ViewBag.contractId" hidden />
-                    <input asp-for="NameAmendment" hidden />
-                    <input asp-for="Client" hidden />
-                    <input asp-for="NameObject" hidden />
-                    <input asp-for="minStartPeriod" hidden />
-                    <input asp-for="maxEndPeriod" hidden />
-                    <input asp-for="TheoryCurrent" hidden />
-                    <input asp-for="TheoryTarget" hidden />
-                    <input asp-for="TargetRepaid" hidden />
-                    <input asp-for="TargetReceived" hidden />
-                    <input name="returnContractId" value="@ViewBag.returnContractId" hidden />
-                </form> *@
-                <div style="max-height:auto; max-width:80vw; overflow:scroll">
-                    <table class="table table-bordered table-main table-main-short table-hover">
-                        <thead>
-                            <tr>
-                                <th rowspan="3">
-                                    <span>Объект</span>
-                                </th>
-                                <th rowspan="3">
-                                    <span>Заказчик</span>
-                                </th>
-                                <th rowspan="2" colspan="2">
-                                    <span>Всего по договору аванса</span>
-                                </th>
-                                <th colspan="3">
-                                    <span>Целевой аванс, руб.</span>
-                                </th>
-                                <th>
-                                    <span></span>
-                                </th>
-                                <th colspan="@countSmr">
-                                    <span>СМР и Погашение аванса по месяцам, согласно графикам платежей к договору</span>
-                                </th>
-                            </tr>
-                            <tr>
-                                <th rowspan="2">
-                                    <span>Получено</span>
-                                </th>
-                                <th rowspan="2">
-                                    <span>Погашено</span>
-                                </th>
-                                <th rowspan="2">
-                                    <span>Не погашено</span>
-                                </th>
-                                <th rowspan="2">
-                                    <span>Документ</span>
-                                </th>
-                                <th rowspan="2">
-                                    <span></span>
-                                </th>
-                                <th rowspan="2">
-                                    @if (ViewData["Amend"] != null)
-                                    {
-                                        <span>Согласно контракту</span>
-                                    }
-                                    else
-                                    {
-                                        <span>Согласно ДС @Model?.NameAmendment</span>
-                                    }
-                                </th>
-                                @foreach (var item in Model?.listSmrWithAvans)
+                <div class="am-wrap">
+                    <!-- Шапка -->
+                    <div class="am-header">
+                        <span class="am-header-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                            </svg>
+                        </span>
+                        <div class="am-header-info">
+                            <h1 class="am-header-title">
+                                @ViewData["Title"]
+                                @if (contract != null)
                                 {
-                                    <th colspan="2">
-                                        <span>@item.Period?.ToString("MMMM yyyy")</span>
-                                    </th>
+                                    <span> по договору № <span style="color:var(--md3-primary);">@contract.Number</span></span>
                                 }
-                            </tr>
-                            <tr>
-                                <th>
-                                    <span>Целевого</span>
-                                </th>
-                                <th>
-                                    <span>Текущего</span>
-                                </th>
-                                @foreach (var item in Model.listSmrWithAvans)
-                                {
-                                    <th>
-                                        <span>Стоимость работ по графику</span>
-                                    </th>
-                                    <th>
-                                        <span>Отработка аванса по графику</span>
-                                    </th>
-                                }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td rowspan="@maxRow">
-                                    <span>
-                                        @Model.NameObject
-                                    </span>
-                                </td>
-                                <td rowspan="@maxRow">
-                                    <span>
-                                        @Model.Client
-                                    </span>
-                                </td>
-                                <td class="text-end" rowspan="@maxRow">
-                                    <span>
-                                        @Model.TheoryTarget?.ToString("N2")
-                                    </span>
-                                </td>
-                                <td class="text-end" rowspan="@maxRow">
-                                    <span>
-                                        @Model.TheoryCurrent?.ToString("N2")
-                                    </span>
-                                </td>
-                                <td class="text-end" rowspan="@maxRow">
-                                    <span>
-                                        @Model.TargetReceived?.ToString("N2")
-                                    </span>
-                                </td>
-                                <td class="text-end" rowspan="@maxRow">
-                                    <span>
-                                        @Model.TargetRepaid?.ToString("N2")
-                                    </span>
-                                </td>
-                                <td class="text-end" rowspan="@maxRow">
-                                    <span>
-                                        @((Model.TargetReceived - Model.TargetRepaid)?.ToString("N2"))
-                                    </span>
-                                </td>
-                                @if (ViewData["Amend"] != null)
-                                {
-                                    <td rowspan="@miniRow">
-                                        <div>
-                                            <span class="btn-text">По контракту</span>
-                                        </div>
-                                    </td>
-                                }
-                                else
-                                {
-                                    <td class="td-pointer" onclick="ShowAmendment()" rowspan="@miniRow">
-                                        <div>
-                                            <span class="btn-text">ДС @Model.NameAmendment</span>
-                                        </div>
-                                    </td>
-                                }
-                                <td rowspan="@miniRow">
-                                    <span>
-                                        План
-                                    </span>
-                                </td>
-                                @if (ViewData["Target"] != null)
-                                {
-                                    <td>
-                                        <span>
-                                            Целевой
-                                        </span>
-                                    </td>
-                                }
-                                else
-                                {
-                                    <td>
-                                        <span>
-                                            Текущий
-                                        </span>
-                                    </td>
-                                }
-                                @foreach (var item in Model.listSmrWithAvans)
-                                {
-                                    <td class="text-end" rowspan="@miniRow">
-                                        <span>
-                                            @item.SmrPlan?.ToString("N2")
-                                        </span>
-                                    </td>
-                                    @if (ViewData["Target"] != null)
-                                    {
-                                        <td class="text-end">
-                                            <span>
-                                                @item.TargetPlan?.ToString("N2")
-                                            </span>
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td class="text-end">
-                                            <span>
-                                                @item.CurrentPlan?.ToString("N2")
-                                            </span>
-                                        </td>
-                                    }
-                                }
-                            </tr>
-                            @if (ViewData["Target"] != null && ViewData["Current"] != null)
+                            </h1>
+                            @if (contract?.NameObject != null)
                             {
-                                <tr>
-                                    <td>
-                                        <span>
-                                            Текущий
-                                        </span>
-                                    </td>
-                                    @foreach (var item in Model.listSmrWithAvans)
-                                    {
-                                        <td class="text-end">
-                                            <span>
-                                                @item.CurrentPlan?.ToString("N2")
-                                            </span>
-                                        </td>
-                                    }
-                                </tr>
+                                <div class="am-header-sub">
+                                    <span>@contract.NameObject</span>
+                                </div>
                             }
-                            <tr>
-                                <td rowspan="@miniRow">
-                                </td>
-                                <td rowspan="@miniRow">
-                                    <span>
-                                        Факт
-                                    </span>
-                                </td>
-                                @if (ViewData["Target"] != null)
-                                {
-                                    <td>
-                                        <span>
-                                            Целевой
-                                        </span>
-                                    </td>
-                                }
-                                else
-                                {
-                                    <td>
-                                        <span>
-                                            Текущий
-                                        </span>
-                                    </td>
-                                }
-                                @foreach (var item in Model.listSmrWithAvans)
-                                {
-                                    <td class="text-end" rowspan="@miniRow">
-                                        <span>
-                                            @item.SmrFact?.ToString("N2")
-                                        </span>
-                                    </td>
-                                    @if (ViewData["Target"] != null)
-                                    {
-                                        <td class="text-end">
-                                            <span>
-                                                @item.TargetFact?.ToString("N2")
-                                            </span>
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td class="text-end">
-                                            <span>
-                                                @item.CurrentFact?.ToString("N2")
-                                            </span>
-                                        </td>
-                                    }
-
-                                }
-                            </tr>
-                            @if (ViewData["Target"] != null && ViewData["Current"] != null)
+                        </div>
+                        <div class="am-header-actions">
+                            @if (backId > 0)
                             {
-                                <tr>
-                                    <td>
-                                        <span>
-                                            Текущий
-                                        </span>
-                                    </td>
-                                    @foreach (var item in Model.listSmrWithAvans)
-                                    {
-                                        <td class="text-end">
-                                            <span>
-                                                @item.CurrentFact?.ToString("N2")
-                                            </span>
-                                        </td>
-                                    }
-                                </tr>
+                                <a asp-controller="Contracts" asp-action="DetailsArch" asp-route-id="@backId" class="close-btn" aria-label="Закрыть"></a>
                             }
-                            <tr>
-                                <td colspan="3"></td>
-                                @foreach (var item in Model.listSmrWithAvans)
-                                {
-                                    var fileT = Model?.listFiles?.Where(x => DateComparer.IsSameYearAndMonth(x.date, item.Period))?.FirstOrDefault();
-                                    <td colspan="2" class="text-center">
-                                        @if (fileT is not null && fileT.file.Count() > 0)
+                            else
+                            {
+                                <a asp-controller="Contracts" asp-action="@actionReturn" class="close-btn" aria-label="Закрыть"></a>
+                            }
+                        </div>
+                    </div>
+                    
+                    <!-- Карточка -->
+                    @if (Model is not null)
+                    {
+                        <!-- Stat cards -->
+                        <div class="stats-row">
+                            <div class="stat-card current">
+                                <div class="stat-head"><span class="dot"></span>Текущий аванс</div>
+                                <div class="stat-grid">
+                                    <div class="stat-item total"><div class="k">Всего</div><div class="v">@Model?.CurrentSummary?.Total.ToString("N2")</div></div>
+                                    <div class="stat-item received"><div class="k">Получено</div><div class="v">@Model?.CurrentSummary?.Received.ToString("N2")</div></div>
+                                    <div class="stat-item settled"><div class="k">Отработано</div><div class="v">@Model?.CurrentSummary?.Settled.ToString("N2")</div></div>
+                                    <div class="stat-item unsettled"><div class="k">Не погашено</div><div class="v">@Model?.CurrentSummary?.Unsettled.ToString("N2")</div></div>
+                                </div>
+                            </div>
+                            <div class="stat-card target">
+                                <div class="stat-head"><span class="dot"></span>Целевой аванс</div>
+                                <div class="stat-grid">
+                                    <div class="stat-item total"><div class="k">Всего</div><div class="v">@Model?.TargetSummary?.Total.ToString("N2")</div></div>
+                                    <div class="stat-item received"><div class="k">Получено</div><div class="v">@Model?.TargetSummary?.Received.ToString("N2")</div></div>
+                                    <div class="stat-item settled"><div class="k">Отработано</div><div class="v">@Model?.TargetSummary?.Settled.ToString("N2")</div></div>
+                                    <div class="stat-item unsettled"><div class="k">Не погашено</div><div class="v">@Model?.TargetSummary?.Unsettled.ToString("N2")</div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contract-level toolbar (NOT per-period) -->
+                        <div class="contract-toolbar">
+                            <div class="history-toggle-row">
+                                <label class="switch">
+                                    <input type="checkbox" id="historyToggle">
+                                    <span class="switch-track"><span class="switch-thumb"></span></span>
+                                </label>
+                                <span class="switch-label">Показать историю по доп.соглашениям</span>
+                                <span class="switch-hint" id="dsCountHint"></span>
+                            </div>                            
+                        </div>
+                        <div class="grid-wrap">
+                            <div class="periods-grid" id="periodsGrid" style="height: 350px;">
+
+                                <div class="grid-row grid-head">
+                                    <div class="grp period-cell">Период</div>
+                                    <div class="grp g-plan">План (по последнему ДС)</div>
+                                    <div class="grp g-plan">Получено</div>
+                                    <div class="grp g-fact">Факт (по справке КС-3)</div>
+                                    <div class="grp"></div>
+                                </div>
+                                <div class="grid-row grid-sub">
+                                    <div class="cell period-cell"></div>
+                                    <div class="cell">Текущий</div>
+                                    <div class="cell">Целевой</div>
+                                    <div class="cell">Текущий</div>
+                                    <div class="cell">Целевой</div>
+                                    <div class="cell">Текущий</div>
+                                    <div class="cell">Целевой</div>
+                                    <div class="cell">Файлы</div>
+                                </div>
+
+                                <div id="periodsBody" style="max-height: 350px;overflow-y: auto;">
+                                    <!-- один блок на период, рендерится forEach() ниже -->
+                                    @foreach (var periodItem in Model?.Periods)
+                                    {
+                                        <div class="grid-row period-main">
+                                            <div class="cell period-cell">
+                                                <div class="period-name">@periodItem.Period.ToString("MMMM yyyy")</div>
+                                            </div>
+                                            <div class="cell val">
+                                                @(periodItem?.Versions?.LastOrDefault()?.CurrentAmount is not null
+                                                                                        ? periodItem?.Versions?.LastOrDefault()?.CurrentAmount.ToString("N2")
+                                                                                        : 0.ToString("N2"))
+                                                                                                       </div>
+                                                                                                       <div class="cell val">
+                                                @(periodItem?.Versions?.LastOrDefault()?.TargetAmount is not null
+                                                                                        ? periodItem?.Versions?.LastOrDefault()?.TargetAmount.ToString("N2")
+                                                                                        : 0.ToString("N2"))
+                                                                                                       </div>
+                                                                                                       <div class="cell val @(periodItem?.PrepFactCurrent == null ? "empty" : "")">
+                                                @(periodItem?.PrepFactCurrent is not null
+                                                                                        ? periodItem?.PrepFactCurrent?.ToString("N2")
+                                                                                        : 0.ToString("N2"))
+
+                                            </div>
+                                            <div class="cell val @(periodItem?.PrepFactTarget == null ? "empty" : "")">
+                                                @(periodItem?.PrepFactTarget is not null
+                                                                                        ? periodItem?.PrepFactTarget?.ToString("N2")
+                                                                                        : 0.ToString("N2"))
+                                                                                                       </div>
+                                                                                                       <div class="cell val @(periodItem?.FactCurrent == null ? "empty" : "")">
+                                                @(periodItem?.FactCurrent is not null
+                                                                                        ? periodItem?.FactCurrent?.ToString("N2")
+                                                                                        : 0.ToString("N2"))
+
+                                            </div>
+                                            <div class="cell val @(periodItem?.FactTarget == null ? "empty" : "")">
+                                                @(periodItem?.FactTarget is not null
+                                                                                        ? periodItem?.FactTarget?.ToString("N2")
+                                                                                        : 0.ToString("N2"))
+                                    </div>
+
+                                            <div class="cell files-cell">
+                                        @if (periodItem?.Files?.Count()! > 0)
+                                                {
+                                                    foreach (var file in periodItem?.Files)
+                                                    {
+                                                        <a class="file-chip" href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="val empty">—</span>
+                                                }
+                                            </div>
+                                        </div>
+                                        if (periodItem?.Versions.Count > 0 && !(periodItem?.Versions.Count == 1 && periodItem?.Versions?.FirstOrDefault()?.AmendmentId == 0))
                                         {
-                                            <a href="~/Files/OpenFile?id=@fileT?.file?.FirstOrDefault()?.Id&useArchiveData=true" target="_blank">@fileT?.date?.ToString("MMMM yy")</a>
+                                            <div class="version-history">
+                                                <div class="history-caption">
+                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                                        <path d="M3 3v5h5" />
+                                                        <path d="M12 7v5l4 2" />
+                                                    </svg>
+                                                    История плана — предыдущие версии [@periodItem?.Period.ToString("MMMM")]
+                                                </div>
+
+                                                @foreach (var item in periodItem?.Versions?.OrderByDescending(x => x.AmendmentId))
+                                                {
+                                                    <div class="v-row">
+                                                        <div class="cell period-cell">
+                                                            @if (item.AmendNumber is null && item.AmendmentId == 0)
+                                                            {
+                                                                <span class="msi">согласно договора</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="msi">по доп.соглашению №</span>
+                                                                <span><span class="v-label">@item.AmendNumber</span><span class="v-date"></span></span>
+                                                            }
+                                                        </div>
+                                                        <div class="cell plan-val">@item.CurrentAmount.ToString("N2")</div>
+                                                        <div class="cell plan-val">@item.TargetAmount.ToString("N2")</div>
+                                                        <div class="cell na"></div>
+                                                        <div class="cell na"></div>
+                                                        <div class="cell na"></div>
+                                                    </div>
+                                                }
+                                            </div>
                                         }
-                                    </td>
-                                }
-                            </tr>
-                        </tbody>
-                    </table>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        @* </div> *@
+
+                        <!-- Подвал с итогами -->
+                        <div class="am-footer-row">
+                            <span class="am-footer-badge count">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6" />
+                                    <line x1="8" y1="12" x2="21" y2="12" />
+                                    <line x1="8" y1="18" x2="21" y2="18" />
+                                    <line x1="3" y1="6" x2="3.01" y2="6" />
+                                    <line x1="3" y1="12" x2="3.01" y2="12" />
+                                    <line x1="3" y1="18" x2="3.01" y2="18" />
+                                </svg>
+                                Периодов:
+                                <strong style="margin-left:4px;">
+                                    @countPeriods
+                                </strong>
+                            </span>
+
+                            <span class="am-footer-badge total">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6" />
+                                    <line x1="8" y1="12" x2="21" y2="12" />
+                                    <line x1="8" y1="18" x2="21" y2="18" />
+                                    <line x1="3" y1="6" x2="3.01" y2="6" />
+                                    <line x1="3" y1="12" x2="3.01" y2="12" />
+                                    <line x1="3" y1="18" x2="3.01" y2="18" />
+                                </svg>
+                                Прикрепленных файлов справок С3-а:
+                                <strong style="margin-left:4px;">
+                                    @countPeriodForms
+                                </strong>
+                            </span>                            
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Пустое состояние -->
+                        <div class="am-empty">
+                            <svg class="am-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="9" y1="13" x2="15" y2="13" />
+                            </svg>
+                            <p class="am-empty-text">Заполненные авансы отсутствуют</p>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     </div>
 </div>
-<input id="Min" value="@Model?.minStartPeriod?.ToString("MM-yyyy")" hidden />
-<input id="Max" value="@Model?.maxEndPeriod?.ToString("MM-yyyy")" hidden />
 
 @section Scripts {
+
     <script>
-        let minDate = $('#Min').val();
-        let endDate = $('#Max').val();
-        let beginWork = document.querySelector("#DateBeginWork");
-        let endWork = document.querySelector("#DateEndWork");
-        let beginWorkVal = beginWork.value;
-        let endWorkVal = endWork.value;
-        $("#DateBeginWork").datepicker({
-            format: "MM yyyy",
-            startDate: minDate,
-            endDate: endDate,
-            language: "ru",
-            minViewMode: 1,
-            calendarWeeks: true,
-            autoclose: true,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true
-        }).on('changeDate', function () {
-            changeBeginWork()
-        });
-        $("#DateEndWork").datepicker({
-            format: "MM yyyy",
-            startDate: minDate,
-            endDate: endDate,
-            language: "ru",
-            minViewMode: 1,
-            calendarWeeks: true,
-            autoclose: true,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true
-        }).on('changeDate', function () {
-            changeEndWork()
+
+        // ===== глобальный переключатель истории по ДС (Вариант 3) =====
+        const periodsGrid = document.getElementById('periodsGrid');
+        const historyToggle = document.getElementById('historyToggle');
+        historyToggle.addEventListener('change', () => {
+          periodsGrid.classList.toggle('show-history', historyToggle.checked);
         });
 
-        function changeBeginWork() {
-            let dateBeg = $("#DateBeginWork").datepicker('getDate');
-            let dateEnd = $("#DateEndWork").datepicker('getDate');
-            if (dateBeg != null) {
-                if (dateBeg && (!dateEnd || dateBeg > dateEnd)) { $("#DateEndWork").datepicker('update', dateBeg); }
-            }
-        }
-        function changeEndWork() {
-            let dateBeg = $("#DateBeginWork").datepicker('getDate');
-            let dateEnd = $("#DateEndWork").datepicker('getDate');
-            if (dateEnd != null) {
-                if (dateEnd && (!dateBeg || dateEnd < dateBeg)) { $("#DateBeginWork").datepicker('update', dateEnd); }
-            }
-        }
-        beginWork.addEventListener('change', (e) => {
-            changeBeginWork()
-        });
-        endWork.addEventListener('change', (e) => {
-            changeEndWork()
-        });
 
-        $("#anotherStart").datepicker({
-            format: "MM yyyy",
-            language: "ru",
-            minViewMode: 1,
-            calendarWeeks: true,
-            autoclose: true,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true
+        document.querySelector('.close-btn').addEventListener('click', () => {
+          document.querySelector('.scrim').style.display = 'none';
         });
-        $("#anotherEnd").datepicker({
-            format: "MM yyyy",
-            language: "ru",
-            minViewMode: 1,
-            calendarWeeks: true,
-            autoclose: true,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true
-        });
-        function ShowAmendment() {
-            let valStart = $("#DateBeginWork").datepicker('getDate');
-            let valEnd = $("#DateEndWork").datepicker('getDate');
-            $("#anotherStart").datepicker('setDate', valStart);
-            $("#anotherEnd").datepicker('setDate', valEnd);
-            $("#Amendment").submit();
-        }
+    </script>
+    <script>
+        (function () {
+            // Защита от повторной инициализации, если скрипт случайно подключат дважды
+            if (window.__actionMenuInitialized) return;
+            window.__actionMenuInitialized = true;
+
+            function positionMenu(btn, menu) {
+                // Сначала показываем, чтобы получить реальные размеры
+                menu.style.visibility = 'hidden';
+                menu.style.display = 'block';
+
+                const btnRect = btn.getBoundingClientRect();
+                const menuWidth = menu.offsetWidth || 180;
+                const menuHeight = menu.offsetHeight || 250;
+                const vw = window.innerWidth;
+                const vh = window.innerHeight;
+                const gap = 4;
+
+                // position: fixed — координаты viewport, scrollY не нужен
+                let top = btnRect.bottom + gap;
+                let left = btnRect.right - menuWidth;
+
+                // Выходит за правый край — прижимаем
+                if (left < 8) left = 8;
+                if (left + menuWidth > vw - 8) left = vw - menuWidth - 8;
+
+                // Выходит за нижний край — открываем вверх
+                if (top + menuHeight > vh - 8) {
+                    top = btnRect.top - menuHeight - gap;
+                }
+                if (top < 8) top = 8;
+
+                menu.style.position = 'fixed';
+                menu.style.top = top + 'px';
+                menu.style.left = left + 'px';
+                menu.style.zIndex = '9999';
+                menu.style.visibility = '';
+                menu.style.display = '';
+            }
+
+            function positionSubmenu(wrap) {
+                const submenu = wrap.querySelector('.action-submenu');
+                if (!submenu) return;
+
+                const parentMenu = wrap.closest('.action-menu');
+                const itemEl = wrap.querySelector('.menu-item');
+                if (!itemEl || !parentMenu) return;
+
+                submenu.style.visibility = 'hidden';
+                submenu.style.display = 'block';
+
+                const parentRect = parentMenu.getBoundingClientRect();
+                const itemRect = itemEl.getBoundingClientRect();
+                const submenuWidth = submenu.offsetWidth || 180;
+                const submenuHeight = submenu.offsetHeight || 150;
+                const vw = window.innerWidth;
+                const vh = window.innerHeight;
+                const gap = 4;
+
+                // По умолчанию — правее родительского меню
+                let left = parentRect.right + gap;
+                let top = itemRect.top;
+
+                // Не помещается справа — открываем левее родительского меню
+                if (left + submenuWidth > vw - 8) {
+                    left = parentRect.left - submenuWidth - gap;
+                }
+
+                // Не помещается снизу — прижимаем к нижнему краю
+                if (top + submenuHeight > vh - 8) {
+                    top = vh - submenuHeight - 8;
+                }
+                if (top < 8) top = 8;
+
+                submenu.style.position = 'fixed';
+                submenu.style.top = top + 'px';
+                submenu.style.left = left + 'px';
+                submenu.style.zIndex = '10000';
+                submenu.style.visibility = '';
+                submenu.style.display = '';
+            }
+
+            function closeAll() {
+                document.querySelectorAll('.action-menu.open').forEach(function (m) {
+                    m.classList.remove('open');
+                    const btn = m.previousElementSibling;
+                    if (btn && btn.classList.contains('action-btn')) {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            const submenuTimers = new WeakMap();
+
+            // Открытие / закрытие меню + закрытие по клику вне меню — один общий обработчик,
+            // чтобы избежать конфликта порядка (stopPropagation здесь не нужен, т.к. оба случая
+            // обрабатываются внутри одной функции)
+            document.addEventListener('click', function (e) {
+                const btn = e.target.closest('.action-btn');
+
+                if (btn) {
+                    const menu = btn.nextElementSibling && btn.nextElementSibling.classList.contains('action-menu')
+                        ? btn.nextElementSibling
+                        : null;
+                    if (!menu) return;
+
+                    const isOpen = menu.classList.contains('open');
+                    closeAll();
+
+                    if (!isOpen) {
+                        menu.classList.add('open');
+                        btn.classList.add('active');
+                        positionMenu(btn, menu);
+                    }
+                    return;
+                }
+
+                // Клик вне кнопки-триггера — закрываем всё
+                // (клик внутри самого открытого меню по пункту тоже закроет его,
+                //  что обычно и требуется при переходе по ссылке)
+                closeAll();
+            });
+
+            // Позиционирование подменю при наведении (hover-intent с задержкой закрытия)
+            document.addEventListener('mouseout', function (e) {
+                const wrap = e.target.closest('.menu-item-wrap');
+                const submenuEl = e.target.closest('.action-submenu');
+
+                const target = wrap || submenuEl;
+                if (!target) return;
+
+                let submenu;
+                if (wrap) {
+                    submenu = wrap.querySelector('.action-submenu');
+                } else {
+                    submenu = submenuEl;
+                }
+                if (!submenu) return;
+
+                // Даём 100мс — если мышь зашла в submenu или wrap, отменяем закрытие
+                const timer = setTimeout(function () {
+                    submenu.style.display = 'none';
+                }, 100);
+
+                submenuTimers.set(submenu, timer);
+            });
+
+            document.addEventListener('mouseover', function (e) {
+                const wrap = e.target.closest('.menu-item-wrap');
+                const submenuEl = e.target.closest('.action-submenu');
+
+                let submenu;
+                if (wrap) {
+                    submenu = wrap.querySelector('.action-submenu');
+                } else if (submenuEl) {
+                    submenu = submenuEl;
+                }
+
+                if (submenu && submenuTimers.has(submenu)) {
+                    clearTimeout(submenuTimers.get(submenu));
+                    submenuTimers.delete(submenu);
+                }
+
+                if (!wrap) return;
+
+                const parentMenu = wrap.closest('.action-menu');
+                if (parentMenu) {
+                    parentMenu.querySelectorAll('.action-submenu').forEach(function (s) {
+                        if (s !== submenu) s.style.display = 'none';
+                    });
+                }
+
+                if (!submenu) return;
+                positionSubmenu(wrap);
+                submenu.style.visibility = 'visible';
+            });
+
+            // Закрытие по Escape
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') closeAll();
+            });
+
+            // Закрытие при прокрутке (любой элемент, capture чтобы поймать всё)
+            window.addEventListener('scroll', closeAll, { capture: true, passive: true });
+
+            // Перепозиционирование при ресайзе
+            window.addEventListener('resize', function () {
+                const openMenu = document.querySelector('.action-menu.open');
+                if (!openMenu) return;
+                const btn = openMenu.previousElementSibling;
+                if (btn && btn.classList.contains('action-btn')) positionMenu(btn, openMenu);
+            });
+        })();
     </script>
 }

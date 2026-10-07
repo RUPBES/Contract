@@ -1,0 +1,736 @@
+﻿:root {
+    --md3-radius-sm: 6px;
+    --md3-radius-md: 10px;
+    --md3-radius-lg: 16px;
+    --md3-shadow-1: 0 1px 3px rgba(26,86,164,.08), 0 1px 2px rgba(26,86,164,.06);
+    --md3-shadow-2: 0 4px 16px rgba(26,86,164,.10), 0 1px 4px rgba(26,86,164,.07);
+    --md3-transition: .18s cubic-bezier(.4,0,.2,1);
+    /* grid column ratios shared by header + rows: Период | План тек | План целев | Факт тек | Факт целев | Файлы */
+    --periods-grid-cols: 1.5fr 1fr 1fr 1fr 1fr 1fr 1fr 2fr;
+}
+
+.mono {
+    font-family: 'Roboto Mono', monospace
+}
+
+/* Info card */
+.info-card {
+    background: var(--md3-surface-2);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-lg);
+    padding: 10px 20px;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    column-gap: 10px;
+    margin-bottom: 10px;
+}
+
+.sub-info-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 10px;
+    margin-bottom: 10px;
+}
+
+.field-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: var(--md3-on-surface-low);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.field-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--md3-on-surface);
+}
+
+/* Stat cards */
+.stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.stat-card {
+    border-radius: var(--md3-radius-lg);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: var(--md3-surface);
+    border: 1px solid var(--md3-outline);
+    box-shadow: var(--md3-shadow-1);
+}
+
+.stat-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--md3-on-surface-med);
+}
+
+.dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%
+}
+
+.stat-card.target .dot {
+    background: var(--md3-primary)
+}
+
+.stat-card.current .dot {
+    background: var(--md3-indigo)
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+}
+
+.stat-item {
+    border-radius: var(--md3-radius-md);
+    padding: 2px 11px;
+    border: 1px solid var(--md3-outline);
+}
+
+    .stat-item .k {
+        font-size: 11px;
+        color: var(--md3-on-surface-low);
+        margin-bottom: 2px;
+    }
+
+    .stat-item .v {
+        font-size: 14px;
+        font-weight: 700;
+        font-family: 'Roboto Mono', monospace;
+    }
+
+    .stat-item.total {
+        background: var(--md3-surface-2);
+    }
+
+        .stat-item.total .v {
+            color: var(--md3-on-surface);
+            font-size: 15px;
+        }
+
+    .stat-item.received {
+        background: var(--md3-indigo-light);
+    }
+
+        .stat-item.received .v {
+            color: var(--md3-indigo);
+        }
+
+    .stat-item.settled {
+        background: var(--md3-gen-light);
+    }
+
+        .stat-item.settled .v {
+            color: var(--md3-gen);
+        }
+
+    .stat-item.unsettled {
+        background: var(--md3-warning-fill);
+    }
+
+        .stat-item.unsettled .v {
+            color: var(--md3-warning);
+        }
+
+/* Section label + legend */
+.section-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    color: var(--md3-on-surface-med);
+    margin: 4px 0 8px 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend {
+    display: flex;
+    gap: 30px;
+    margin-left: auto;
+    font-weight: 400;
+}
+
+    .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+        color: var(--md3-on-surface-med);
+    }
+
+    .legend i {
+        width: 20px;
+        height: 10px;
+        border-radius: 3px;
+        display: inline-block;
+    }
+
+i {
+    border: none;
+}
+
+.legend .l-plan i {
+    background: var(--md3-primary)
+}
+
+.legend .l-fact i {
+    background: var(--md3-gen)
+}
+
+/* ===== Contract-level toolbar (add/edit/delete — not per period) ===== */
+.contract-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: var(--md3-surface-2);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-md);
+    padding: 2px 14px;
+    margin-bottom: 10px;
+}
+
+.toolbar-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--md3-on-surface-med);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.toolbar-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: filter var(--md3-transition), background var(--md3-transition);
+}
+
+    .btn .msi {
+        font-size: 16px
+    }
+
+.btn-primary {
+    background: var(--md3-primary);
+    color: #fff;
+}
+
+    .btn-primary:hover {
+        filter: brightness(1.08);
+    }
+
+.btn-outline {
+    background: var(--md3-surface);
+    color: var(--md3-primary);
+    border-color: var(--md3-primary-mid);
+}
+
+    .btn-outline:hover {
+        background: var(--md3-primary-light);
+    }
+
+.btn-danger-outline {
+    background: var(--md3-surface);
+    color: var(--md3-danger);
+    border-color: #efc1bc;
+}
+
+    .btn-danger-outline:hover {
+        background: var(--md3-danger-light);
+    }
+
+.btn-gen-outline {
+    background: var(--md3-surface);
+    color: var(--md3-gen);
+    border-color: #a9dcc7;
+}
+
+    .btn-gen-outline:hover {
+        background: var(--md3-gen-light);
+    }
+
+/* ===== Section label + legend + history toggle ===== */
+.section-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    color: var(--md3-on-surface-med);
+    margin: 2px 0 8px 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+}
+
+.legend {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+    text-transform: none;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+    .chip .msi {
+        font-size: 14px
+    }
+
+    .chip.c-plan {
+        background: var(--md3-primary-light);
+        color: var(--md3-primary);
+    }
+
+    .chip.c-fact {
+        background: var(--md3-gen-light);
+        color: var(--md3-gen);
+    }
+
+.history-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    /* margin-bottom: 5px; */
+    padding: 0px 12px;
+    /*  background: var(--md3-surface-2);
+                            border: 1px solid var(--md3-outline);
+                            border-radius: var(--md3-radius-sm);
+                            max-width: fit-content; */
+}
+
+
+/* Группа иконок — план или получено */
+.toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Разделитель между группой "план" и группой "получено" */
+.toolbar-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--md3-outline);
+    margin: 0 2px;
+}
+
+/* Подпись перед иконками группы "Получено" */
+.toolbar-group-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--md3-on-surface-med);
+    margin-right: 2px;
+    user-select: none;
+    white-space: nowrap;
+}
+
+
+.switch {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+.switch-track {
+    position: absolute;
+    inset: 0;
+    background: var(--md3-outline-strong);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background var(--md3-transition);
+}
+
+.switch-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0,0,0,.25);
+    transition: transform var(--md3-transition);
+}
+
+.switch input:checked + .switch-track {
+    background: var(--md3-primary);
+}
+
+    .switch input:checked + .switch-track .switch-thumb {
+        transform: translateX(16px);
+    }
+
+.switch-label {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--md3-on-surface-med);
+}
+
+.switch-hint {
+    font-size: 11px;
+    color: var(--md3-on-surface-low);
+    margin-left: auto;
+}
+
+/* ===== Grid table (replaces <table>) ===== */
+.grid-wrap {
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-md);
+    overflow: hidden;
+}
+
+.grid-row {
+    display: grid;
+    grid-template-columns: var(--periods-grid-cols);
+}
+
+.grid-head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+    .grid-head .grp {
+        background: var(--md3-surface-2);
+        padding: 8px 10px 5px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--md3-outline);
+        text-align: center;
+        color: var(--md3-on-surface-low);
+    }
+
+        .grid-head .grp.period-cell {
+            text-align: left;
+        }
+
+        .grid-head .grp.g-plan {
+            grid-column: span 2;
+            color: var(--md3-primary);
+        }
+
+        .grid-head .grp.g-fact {
+            grid-column: span 2;
+            color: var(--md3-gen);
+        }
+
+.grid-sub {
+    position: sticky;
+    top: 29px;
+    z-index: 2;
+}
+
+    .grid-sub .cell {
+        background: var(--md3-surface-2);
+        text-align: center;
+        padding: 7px 10px;
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--md3-on-surface-low);
+        border-bottom: 1px solid var(--md3-outline);
+    }
+
+        .grid-sub .cell.period-cell {
+            text-align: left;
+        }
+
+.period-block {
+    border-bottom: 1px solid var(--md3-outline);
+}
+
+    .period-block:last-child {
+        border-bottom: none;
+    }
+
+    .period-block:hover .period-main {
+        background: var(--md3-surface-2);
+    }
+
+.period-main .cell {
+    padding: 10px;
+    font-size: 13px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+    .period-main .cell.period-cell {
+        text-align: left;
+        white-space: normal;
+    }
+
+.period-name {
+    font-weight: 600;
+}
+
+.clause {
+    font-size: 10.5px;
+    color: var(--md3-on-surface-low);
+    margin-top: 1px;
+}
+
+.val {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+    .val.empty {
+        color: var(--md3-on-surface-low);
+        /* font-family: 'Roboto', sans-serif; */
+        font-weight: 400;
+    }
+
+.files-cell {
+    display: flex;
+    justify-content: center;
+}
+
+.file-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 100%;
+    background: var(--md3-surface);
+    color: var(--md3-primary);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-sm);
+    padding: 5px 9px 5px 8px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--md3-transition), border-color var(--md3-transition);
+}
+
+    .file-chip:hover {
+        background: var(--md3-primary-light);
+        border-color: var(--md3-primary-mid);
+    }
+
+    .file-chip .msi {
+        font-size: 15px;
+    }
+
+    .file-chip span.fname {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 130px;
+    }
+
+/* history sub-block: hidden by default, all shown together via the single global toggle.
+                                                             Aligned to the SAME grid columns as the data rows, with values placed only under the
+                                                             Plan columns (Факт/Файлы columns stay empty) so it reads unambiguously as "план", not "факт". */
+.version-history {
+    display: none;
+    background: var(--md3-primary-light);
+    border-left: 3px solid var(--md3-primary);
+}
+
+.periods-grid.show-history .version-history {
+    display: block;
+}
+
+.version-history .history-caption {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px 2px 9px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--md3-primary);
+}
+
+    .version-history .history-caption .msi {
+        font-size: 13px;
+    }
+
+.version-history .v-row {
+    display: grid;
+    grid-template-columns: var(--periods-grid-cols);
+    align-items: center;
+}
+
+    .version-history .v-row .cell {
+        padding: 3px 10px;
+        text-align: center;
+    }
+
+        .version-history .v-row .cell.period-cell {
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--md3-primary);
+        }
+
+            .version-history .v-row .cell.period-cell .msi {
+                font-size: 13px;
+                opacity: .55;
+            }
+
+    .version-history .v-row .v-label {
+        font-weight: 600;
+        font-size: 11px;
+    }
+
+    .version-history .v-row .v-date {
+        font-size: 9.5px;
+        color: var(--md3-on-surface-low);
+        display: block;
+    }
+
+    .version-history .v-row .cell.plan-val {
+        font-family: 'Roboto Mono', monospace;
+        font-size: 11.5px;
+        color: var(--md3-primary);
+        font-weight: 600;
+    }
+
+    .version-history .v-row .cell.na {
+        color: var(--md3-outline-strong);
+        font-size: 11px;
+    }
+
+    .version-history .v-row:nth-child(2) {
+        opacity: .85;
+    }
+
+    .version-history .v-row:nth-child(3) {
+        opacity: .65;
+    }
+
+    .version-history .v-row:nth-child(4) {
+        opacity: .5;
+    }
+
+    .version-history .v-row:last-child .cell {
+        padding-bottom: 8px;
+    }
+
+/* ===== Totals footer ===== */
+.grid-foot {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background: var(--md3-surface-2);
+    border-top: 1px solid var(--md3-outline-strong);
+}
+
+    .grid-foot .caption {
+        padding: 6px 10px 0;
+        font-size: 9.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+    }
+
+        .grid-foot .caption.period-cell {
+            text-align: left;
+        }
+
+        .grid-foot .caption.g-plan {
+            grid-column: span 2;
+            text-align: center;
+            color: var(--md3-primary);
+        }
+
+        .grid-foot .caption.g-fact {
+            grid-column: span 2;
+            text-align: center;
+            color: var(--md3-gen);
+        }
+
+    .grid-foot .totals .cell {
+        padding: 11px 10px;
+        text-align: center;
+        font-size: 13.5px;
+        font-weight: 700;
+    }
+
+        .grid-foot .totals .cell.period-cell {
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--md3-on-surface-low);
+        }
+
+.pill-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--md3-outline);
+}
+
+@media (max-width:640px) {
+    .info-card, .stats-row {
+        grid-template-columns: 1fr
+    }
+
+    .dialog {
+        border-radius: 16px;
+        max-height: 94vh
+    }
+
+    :root {
+        --periods-grid-cols: 2fr 1fr 1fr 1fr 1fr 1.6fr;
+    }
+
+    .toolbar-actions .btn span:not(.msi) {
+        display: none
+    }
+}

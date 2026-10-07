@@ -11,6 +11,5 @@ namespace BusinessLayer.Enums
         NoPrepayment,
         CurrentPrepayment,
         TargetPrepayment
-
     }
 }

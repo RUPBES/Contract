@@ -1,0 +1,235 @@
+﻿/* ═══════════════════════════════════════════
+                                               PERIOD PICKER — компактная строка, MD3
+                                            ═══════════════════════════════════════════ */
+.pp-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: var(--md3-surface);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-md);
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+/* Иконка */
+.pp-icon {
+    color: var(--md3-on-surface-low);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+/* Стрелки */
+.pp-arrow {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--md3-outline);
+    background: transparent;
+    color: var(--md3-on-surface-med);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background var(--md3-transition), color var(--md3-transition), border-color var(--md3-transition);
+    padding: 0;
+}
+
+    .pp-arrow:hover:not(:disabled) {
+        background: var(--md3-primary-light);
+        color: var(--md3-primary);
+        border-color: var(--md3-primary-mid);
+    }
+
+    .pp-arrow:disabled {
+        opacity: .3;
+        cursor: default;
+    }
+
+/* Текущий месяц */
+.pp-current-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--md3-on-surface);
+    min-width: 130px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* Разделитель */
+.pp-sep {
+    width: 1px;
+    height: 18px;
+    background: var(--md3-outline);
+    flex-shrink: 0;
+    margin: 0 2px;
+}
+
+/* Быстрые месяцы (раскрывающийся попап) */
+.pp-quick-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.pp-quick-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: var(--md3-radius-sm);
+    border: 1px solid var(--md3-outline);
+    background: transparent;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--md3-on-surface-low);
+    cursor: pointer;
+    transition: background var(--md3-transition), color var(--md3-transition), border-color var(--md3-transition);
+}
+
+    .pp-quick-btn:hover {
+        background: var(--md3-primary-light);
+        color: var(--md3-primary);
+        border-color: var(--md3-primary-mid);
+    }
+
+/* Попап с сеткой месяцев */
+.pp-popup {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 100;
+    background: var(--md3-surface);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-md);
+    box-shadow: var(--md3-shadow-2);
+    padding: 10px;
+    width: 220px;
+    animation: ppPopIn .15s cubic-bezier(.4,0,.2,1);
+}
+
+    .pp-popup.pp-popup-open {
+        display: block;
+    }
+
+@@keyframes ppPopIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pp-popup-year {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    gap: 4px;
+}
+
+.pp-popup-year-val {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--md3-on-surface);
+}
+
+.pp-popup-year-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid var(--md3-outline);
+    background: transparent;
+    color: var(--md3-on-surface-med);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: background var(--md3-transition), color var(--md3-transition);
+}
+
+    .pp-popup-year-btn:hover:not(:disabled) {
+        background: var(--md3-primary-light);
+        color: var(--md3-primary);
+    }
+
+    .pp-popup-year-btn:disabled {
+        opacity: .3;
+        cursor: default;
+    }
+
+.pp-popup-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+}
+
+.pp-popup-month {
+    padding: 5px 2px;
+    border-radius: var(--md3-radius-sm);
+    border: 1px solid transparent;
+    background: transparent;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--md3-on-surface-med);
+    cursor: pointer;
+    text-align: center;
+    transition: background var(--md3-transition), color var(--md3-transition), border-color var(--md3-transition);
+}
+
+    .pp-popup-month:hover:not(:disabled) {
+        background: var(--md3-primary-light);
+        color: var(--md3-primary);
+        border-color: var(--md3-primary-mid);
+    }
+
+    .pp-popup-month.pp-m-selected {
+        background: var(--md3-primary);
+        color: #fff;
+        border-color: var(--md3-primary);
+    }
+
+    .pp-popup-month.pp-m-current:not(.pp-m-selected) {
+        border-color: var(--md3-primary-mid);
+        color: var(--md3-primary);
+    }
+
+    .pp-popup-month:disabled {
+        opacity: .3;
+        cursor: default;
+    }
+
+/* Кнопка применить */
+.pp-apply {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 14px;
+    border-radius: var(--md3-radius-sm);
+    border: none;
+    background: var(--md3-primary);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background var(--md3-transition), box-shadow var(--md3-transition);
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+    .pp-apply:hover {
+        background: #1446b0;
+        box-shadow: var(--md3-shadow-1);
+    }
+
+    .pp-apply:active {
+        transform: scale(.97);
+    }

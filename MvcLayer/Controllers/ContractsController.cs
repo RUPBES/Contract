@@ -16,7 +16,7 @@ namespace MvcLayer.Controllers;
 
 [Authorize(Policy = "ViewPolicy")]
 public class ContractsController : Controller
-{     
+{
     private readonly IVContractService _vContractService;
     private readonly IVContractEnginService _vContractEnginService;
     private readonly IAdditionalTermService _additionalTermService;
@@ -239,7 +239,7 @@ public class ContractsController : Controller
         {
             return await Task.FromResult<IActionResult>(RedirectToAction(nameof(CreateSubObj), new { Id = contractId, returnContractId = returnContractId }));
         }
-        return await Task.FromResult<IActionResult>(RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId, returnContractId = returnContractId }));
+        return await Task.FromResult<IActionResult>(RedirectToAction("Create", "ScopeWorks", new { contractId = contractId, returnContractId = returnContractId }));
     }
 
 
@@ -749,7 +749,7 @@ public class ContractsController : Controller
         }
 
         (DateTime? start, DateTime? end) periodRange = (null, null);
-       
+
         var contractPeriod = _amendmentService
             .Find(x => x.ContractId == id)
             .Select(s => new { s.DateBeginWork, s.DateEndWork })
@@ -862,10 +862,18 @@ public class ContractsController : Controller
 
             if (status.Equals("archive", StringComparison.OrdinalIgnoreCase))
             {
-                contract.IsArchive = true;
-                NotificationHelper.SetNotification(TempData, "Статус договора изменен. \n Договор будет перемещен в архив!", NotificationType.Info);
-                _contractService.Update(contract);
-                _contractService.MoveToArchive(contrId);
+                if (_contractService.HasCommissionAct(contrId))
+                {
+                    contract.IsArchive = true;
+                    NotificationHelper.SetNotification(TempData, "Статус договора изменен. \n Договор будет перемещен в архив!", NotificationType.Info);
+                    _contractService.Update(contract);
+                    _contractService.MoveToArchive(contrId);
+                }
+                else
+                {
+                    NotificationHelper.SetNotification(TempData, "Договор не может быть перемещен в архив! \n\n Не заполненен акт ввода!", NotificationType.Warning);
+                }
+
                 if (isEngineering)
                 {
                     return RedirectToAction(nameof(Engineerings));
@@ -918,7 +926,7 @@ public class ContractsController : Controller
             return BadRequest();
         }
 
-        var contract = _contractService.GetById(id.Value, useArchiveData: true);
+        var contract = _vContractService.GetById(id.Value, useArchiveData: true);
         if (contract == null)
         {
             return NotFound();

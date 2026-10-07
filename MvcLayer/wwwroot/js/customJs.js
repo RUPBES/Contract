@@ -114,12 +114,12 @@ function changeButtonType(buttonId, NumDCId) {
 }
 
 /** */
-$(document).ready(function () {
+//$(document).ready(function () {
 
-    datepickerNull("input.datepickersNull");
-    dateTimepicker("input.datetimepickers");
-    /*datepicker("input.datepickers");*/
-});
+//    //datepickerNull("input.datepickersNull");
+//    //dateTimepicker("input.datetimepickers");
+//    /*datepicker("input.datepickers");*/
+//});
 
 function paginationFunc(page_number, total_page) {
 

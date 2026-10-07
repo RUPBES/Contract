@@ -9,6 +9,7 @@ using DatabaseLayer.Repositories.PRO;
 using DatabaseLayer.Repositories.ViewRepo;
 using DatabaseLayer.RepositoriesEF;
 using DatabaseLayer.RepositoriesEF.Notes;
+using DatabaseLayer.RepositoriesEF.UserVisit;
 
 namespace DatabaseLayer.UOW
 {
@@ -39,6 +40,7 @@ namespace DatabaseLayer.UOW
 
         private PrepaymentPlanRepository prepaymentPlanRepository;
         private PrepaymentFactRepository prepaymentFactRepository;
+        private PrepaymentReceivedRepository prepaymentReceivedRepository;
         private PrepaymentTakeRepository prepaymentTakeRepository;
         private PrepaymentRepository prepaymentRepository;
         private PaymentRepository paymentRepository;
@@ -77,6 +79,7 @@ namespace DatabaseLayer.UOW
         private AbbreviationKindOfWorkRepository abbreviationKindOfWorkRepository;
         private ReleaseNoteRepository releaseNoteRepository;
         private ReleaseNoteFileRepository releaseFileNoteRepository;
+        private UserDailyVisitRepository userDailyVisitRepository;
 
         #endregion
         public ContractUoW()
@@ -84,6 +87,19 @@ namespace DatabaseLayer.UOW
             _context = new ContractsContext();
         }
 
+
+
+        public IUserDailyVisitRepository UserDailyVisits
+        {
+            get
+            {
+                if (userDailyVisitRepository is null)
+                {
+                    userDailyVisitRepository = new UserDailyVisitRepository(_context);
+                }
+                return userDailyVisitRepository;
+            }
+        }
 
 
         public IRepository<ReleaseNoteFile> ReleaseNoteFiles
@@ -290,6 +306,17 @@ namespace DatabaseLayer.UOW
                     prepaymentFactRepository = new PrepaymentFactRepository(_context);
                 }
                 return prepaymentFactRepository;
+            }
+        }
+        public IRepository<PrepaymentReceived> PrepaymentReceiveds
+        {
+            get
+            {
+                if (prepaymentReceivedRepository is null)
+                {
+                    prepaymentReceivedRepository = new PrepaymentReceivedRepository(_context);
+                }
+                return prepaymentReceivedRepository;
             }
         }
         public IRepository<PrepaymentTake> PrepaymentTakes
@@ -513,7 +540,7 @@ namespace DatabaseLayer.UOW
                 return fileRepository;
             }
         }
-        public IRepository<Prepayment> Prepayments
+        public  IRepository<Prepayment> Prepayments
         {
             get
             {

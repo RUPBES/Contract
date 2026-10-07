@@ -36,8 +36,9 @@ namespace MvcLayer.Controllers
         }
 
         [Route("/archive/Acts")]
-        public IActionResult GetArchByContractId(int id, int returnContractId = 0)
+        public IActionResult GetArchByContractId(int id, bool isEngineering, int returnContractId = 0)
         {
+            ViewBag.IsEngineering = isEngineering;
             ViewData["contractId"] = id;
             ViewData["returnContractId"] = returnContractId;
             return View(_mapper.Map<IEnumerable<ActViewModel>>(_actService.Find(x => x.ContractId == id, useArchiveData: true)));
@@ -120,7 +121,7 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "DeletePolicy")]
-        public ActionResult Delete(int id, int? contractId = null)
+        public ActionResult Delete(int id, int? contractId = null, int returnContractId = 0)
         {
             try
             {
@@ -134,7 +135,7 @@ namespace MvcLayer.Controllers
 
                 if (contractId is not null && contractId > 0)
                 {
-                    return RedirectToAction(nameof(GetByContractId), new { id = contractId });
+                    return RedirectToAction(nameof(GetByContractId), new { id = contractId, returnContractId = returnContractId });
                 }
                 else
                 {

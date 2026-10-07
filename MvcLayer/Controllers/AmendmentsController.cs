@@ -4,8 +4,6 @@ using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.ContractServices;
 using BusinessLayer.Models.KDO;
-using DatabaseLayer.Models.KDO;
-using DatabaseLayer.Models.PRO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
@@ -49,8 +47,9 @@ namespace MvcLayer.Controllers
 
         [HttpGet]
         [Route("/archive/Amendments")]
-        public ActionResult GetArchByContractId(int id, int returnContractId = 0)
+        public ActionResult GetArchByContractId(int id, bool isEngineering, int returnContractId = 0)
         {
+            ViewBag.IsEngineering = isEngineering;
             ViewData["contractId"] = id;
             ViewData["returnContractId"] = returnContractId;
 
@@ -165,12 +164,12 @@ namespace MvcLayer.Controllers
                         };
                         TempData["returnContractId"] = returnContractId;
                         TempData["contractId"] = amendment.ContractId;
-                        return RedirectToAction("Create/Period", "ScopeWorks", scopeWork);
+                        return RedirectToAction("Create", "ScopeWorks", scopeWork);
                     }
 
                     if (isPrepament || amendment.Type == "prepayment")
                     {
-                        return RedirectToAction("ChoosePeriod", "Prepayments", new { contractId = amendment.ContractId, returnContractId = returnContractId });
+                        return RedirectToAction("Create", "Prepayments", new { contractId = amendment.ContractId, returnContractId = returnContractId });
                     }
                 }
                 return RedirectToAction(nameof(GetByContractId), new { id = amendment.ContractId, returnContractId = returnContractId });
@@ -208,8 +207,12 @@ namespace MvcLayer.Controllers
                     return View();
                 }
             }
-            NotificationHelper.SetNotification(TempData, "Ошибка обновления доп.соглашение", NotificationType.Warning);
-            if (amendment.ContractId is not null && amendment.ContractId > 0)
+            else
+            {
+                NotificationHelper.SetNotification(TempData, "Ошибка обновления доп.соглашение", NotificationType.Warning);
+            }
+
+            if (amendment?.ContractId is > 0)
             {
                 return RedirectToAction(nameof(GetByContractId), new { id = amendment.ContractId, returnContractId = returnContractId });
             }
@@ -220,7 +223,7 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "DeletePolicy")]
-        public ActionResult Delete(int id, int? contractId = null)
+        public ActionResult Delete(int id, int? contractId = null, int returnContractId = 0)
         {
             try
             {
@@ -232,9 +235,9 @@ namespace MvcLayer.Controllers
                 _amendment.Delete(id);
                 NotificationHelper.SetNotification(TempData, "Доп.соглашение удалено", NotificationType.Info);
 
-                if (contractId is not null && contractId > 0)
+                if (contractId is > 0)
                 {
-                    return RedirectToAction(nameof(GetByContractId), new { id = contractId });
+                    return RedirectToAction(nameof(GetByContractId), new { id = contractId, returnContractId = returnContractId });
                 }
                 else
                 {

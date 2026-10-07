@@ -12,5 +12,6 @@ namespace BusinessLayer.Interfaces.Core
         Task<Dictionary<string, List<ActivityTimelinePoint>>> GetActivityTimelinePoints();
 
         Task<IEnumerable<LogDTO>> GetLogs();
+        Task SetLastVisitAsync(string userId,string userName, DateOnly today, DateTime now);
     }
 }

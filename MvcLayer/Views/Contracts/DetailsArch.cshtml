@@ -1,1029 +1,1277 @@
-﻿@using BusinessLayer.Enums;
+﻿@using System.Diagnostics
+@using BusinessLayer.Enums;
+@using BusinessLayer.Helpers
+@using BusinessLayer.Interfaces.Shared
 @model MvcLayer.Models.ContractViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IVContractService Contracts
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scopes
+@inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
+@inject BusinessLayer.Interfaces.ContractServices.IAdditionalTermService AdditionalTerm
 @inject BusinessLayer.Interfaces.ContractInterfaces.IArchiveService ArchiveService
-@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contracts
+@inject IHttpContextUserProvider HttpHelper
+@inject IConverterService Convertor
 
 @{
-    var branchAgreement = Contracts.GetSubsByType(Model.Id, ContractType.Agreement, useArchiveData:true);
+    var permissions = HttpHelper.GetUserPermissions();
+
+    var branchAgreement = Contracts.GetSubsByType(Model.Id, ContractType.Agreement, useArchiveData: true);
     var subContract = Contracts.GetSubsByType(Model.Id, ContractType.SubContract, useArchiveData: true);
     var subObjectsOfContract = Contracts.GetSubsByType(Model.Id, ContractType.MultipleContract, useArchiveData: true);
 
     var isEngineering = Model.IsEngineering == true ? true : false;
-    string redirectAction = "Details";
+    string redirectAction = "DetailsArch";
     string redirectController = "Contracts";
-    var titleScope = isEngineering ? "Объем услуг" : "Объем работ";
+    var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
 }
+<link rel="stylesheet" href="~/css/contract-details-md3.css" asp-append-version="true" />
 
-@section Table {
-    <style>
-        .dropdown-menu {
-            /*  max-height: 220px !important;
-                                                                                                                                overflow-y: scroll !important; */
-            z-index: 30 !important;
-        }
-
-        .table-main th {
-            top: 50px !important;
-        }
-
-        .text-center {
-            font-weight: bold;
-        }
-    </style>
-    @if ((Model.AgreementContractId != 0 && Model.AgreementContractId != null) ||
-        (Model.SubContractId != 0 && Model.SubContractId != null) ||
-            (Model.MultipleContractId != 0 && Model.MultipleContractId != null))
+<div class="page">
+    @if ((Model.AgreementContractId is > 0) || (Model.SubContractId is > 0) || (Model.MultipleContractId is > 0))
     {
         var ContractMainid = 0;
-        if (Model.AgreementContractId != 0 && Model.AgreementContractId != null) ContractMainid = (int)Model.AgreementContractId;
-        if (Model.SubContractId != 0 && Model.SubContractId != null) ContractMainid = (int)Model.SubContractId;
-        if (Model.MultipleContractId != 0 && Model.MultipleContractId != null) ContractMainid = (int)Model.MultipleContractId;
-        <span>
-            <a class="btn btn-info" asp-action="DetailsArch" asp-controller="Contracts" asp-route-id="@ContractMainid">Вернуться к договору генподряда</a>
-        </span>
+        if (Model.AgreementContractId is > 0) ContractMainid = (int)Model.AgreementContractId;
+        if (Model.SubContractId is > 0) ContractMainid = (int)Model.SubContractId;
+        if (Model.MultipleContractId is > 0) ContractMainid = (int)Model.MultipleContractId;
+
+        <br />
+        <a class="back-link" asp-action="DetailsArch" asp-controller="Contracts" asp-route-id="@ContractMainid">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6" /></svg>
+            Вернуться к генподрядному договору
+        </a>
+
+    }
+    else
+    {
+        <a class="restore-page-state back-link" href="/archive/Contracts@(isEngineering ? "/Engineerings" : "")">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6" /></svg>
+            Вернуться к списку
+        </a>
     }
 
-    <table class="table table-main-details table-bordered table-hover table-condensed" id="contractTable">
-        <thead>
-            <tr class="tr-head-main-table">
-                @*Действия по договору*@
-                <th>
-                    <span class="table_span-action">Действия по договору</span>
-                </th>
-                @*Процедура выбора*@
-                <th>
-                    <span class="table_span-select-procedure">Процедура выбора</span>
-                </th>
-                @*Отвественное лицо*@
-                <th>
-                    <span class="table_span-signer">Подписант договора, лицо ответственное за ведение договора</span>
-                </th>
-                @*Номер и дата договора*@
-                <th>
-                    <span class="table_span-numberanddate">Номер и дата договора</span>
-                </th>
-                @*Наименование объекта*@
-                <th>
-                    <span class="table_span-nameobject">Наименование объекта</span>
-                </th>
-                @*Источник финансирования*@
-                <th>
-                    <span class="table_span-fin-source">Источник финанси-рования</span>
-                </th>
-                @*Заказчик*@
-                <th>
-                    <span class="table_span-customer">Заказчик</span>
-                </th>
-                @if (!isEngineering)
-                {
-                    @*Генподрядчик*@
-                    <th>
-                        <span class="table_span-contractor">Генподрядчик (филиал-исп.)</span>
-                    </th>
-                    @*Субподрядчик (филиал-исполнитель по приказу)*@
-                    <th>
-                        <span class="table_span-subcontractor">Субподрядчик (филиал-исп.)</span>
-                    </th>
-                }
-                @*Cроки*@
-                <th>
-                    <span class="table_span-deadlines">Cроки</span>
-                </th>
-                @*Условия оплаты, без авансов тек. % цел.% отсрочка/в течение*@
-                <th>
-                    <span class="table_span-conditions">
-                        Условия оплаты, без авансов тек. %<br />
-                        цел.%<br />
-                        отсрочка/ в течение
-                    </span>
-                </th>
-                @*Виды работ по договору*@
-                <th>
+
+    <!-- ==================== ГЛАВНЫЙ ДОГОВОР ==================== -->
+    <div class="main-card">
+        <div class="main-card-top">
+            <div class="main-card-title-row">
+                <span class="main-num">№ @Model?.Number</span>
+                <span class="main-date">от @Model?.Date?.ToShortDateString()</span>
+            </div>
+            <div class="menu-wrap">
+                <button class="kebab-btn" onclick="toggleMenu(this)">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
+                </button>
+                <div class="action-menu">
+                    <div class="menu-header">Просмотр</div>
+                    <a class="menu-item" asp-action="OpenScopeArch" asp-route-id="@Model?.Id" asp-controller="Contracts">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                        </svg>
+                        @(isEngineering ? "График объема услуг" : "График объема работ")
+                    </a>
+                    <a class="menu-item" asp-action="GetArchByContractId" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model.Id">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                        </svg>
+                        @(isEngineering ? "Oбъем услуг" : "Oбъем работ")
+                    </a>
+                    <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Forms" asp-route-contractId="@Model?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model.Id">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="14" rx="2" />
+                            <path d="M3 9h18" />
+                        </svg>
+                        Акты оказанных услуг
+                    </a>
+                    <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Prepayments" asp-route-contractId="@Model?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model.Id">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                        Авансы
+                    </a>
+                    <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Amendments" asp-route-id="@Model?.Id" asp-route-isEngineering="@isEngineering"  asp-route-returnContractId="@Model.Id">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11l3 3L22 4" />
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                        </svg>
+                        Дополнительные соглашения
+                    </a>
                     @if (!isEngineering)
-
                     {
-                        <span class="table_span-work">Виды работ по договору</span>
+                        @* <a class="menu-item" asp-action="GetByContractId" asp-controller="AdditionalTerm" asp-route-id="@Model?.Id">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" />
+                                <path d="M3 9h18M9 21V9" />
+                            </svg>
+                            Продление сроков исполнения обязательств по договору
+                        </a> *@
+                        <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Acts" asp-route-id="@Model?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model.Id">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" />
+                                <path d="M3 9h18M9 21V9" />
+                            </svg>
+                            Акт приостановки/возобновления
+                        </a>
                     }
-                    @if (isEngineering)
 
+                    <a class="menu-item" asp-action="GetArchByContractId" asp-controller="CommissionActs" asp-route-id="@Model?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model.Id">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 6L9 17l-5-5" />
+                        </svg>
+                        Акт ввода
+                    </a>
+                    <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Correspondences" asp-route-id="@Model?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model.Id">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                        Переписка с заказчиком
+                    </a>
+                    <a class="menu-item" asp-action="GetArchByContractId" asp-controller="EstimateDocs" asp-route-contractId="@Model?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model.Id">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        </svg>
+                        ПСД
+                    </a>
+                    <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Files" asp-route-id="@Model.Id" asp-route-fileCategory="@Folder.Contracts" asp-route-contractId="@Model?.Id"
+                       asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-returnContractId="@Model.Id" asp-route-isEngineering="@isEngineering">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                        </svg>
+                        Файлы
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="main-object">
+            <div class="tt-wrap">
+                <div class="clamp-2">@Model?.NameObject</div>
+                <div class="tt-popover">@Model?.NameObject</div>
+            </div>
+        </div>
+        <div class="main-grid">
+            <div class="field">
+                <span class="lbl">Заказчик</span>
+                <span class="val">
+                    @Model?.Client                    
+                </span>
+            </div>
+            @if (!isEngineering)
+            {
+                <div class="field">
+                    <span class="lbl">Генподрядчик</span>
+                    <span class="val gen">
+                        @Model?.GenContractor                        
+                    </span>
+                </div>
+            }
+
+            <div class="field">
+                <span class="lbl">Источник финансирования</span>
+                <span class="val">@Model?.FundingSource</span>
+            </div>
+
+            <div class="field">
+                <span class="lbl">Сроки выполнения работ</span>
+                <span class="val">@Model?.DateBeginWork?.ToShortDateString() – @Model?.DateEndWork?.ToShortDateString()</span>
+                <span class="val" style="font-size:12px; color:var(--md3-on-surface-low);">ввод: @Model?.EnteringTerm?.ToShortDateString()</span>
+            </div>
+            <div class="field">
+                <span class="lbl">Процедура выбора</span>
+                <span class="val" style="color:var(--md3-primary); font-weight:600;">
+                    @if (Model?.Author?.Equals(permissions.Company, StringComparison.OrdinalIgnoreCase) == true || permissions?.Company.Equals("ContrOrgBes", StringComparison.OrdinalIgnoreCase) == true)
                     {
-                        <span class="table_span-work">Виды услуг по договору</span>
+                        <a class="procedure-link" asp-action="GetArchByContractId"
+                           asp-controller="SelectionProcedures"
+                           asp-route-contractId="@Model?.Id"
+                           asp-route-returnContractId="@Model?.Id">
+                            @Model?.ProcedureName                           
+                        </a>
+                    }
+                    else
+                    {
+                        @Model?.ProcedureName
+                    }
+                </span>
+                <span class="lbl">Контрактная цена, с НДС</span>
+                <span class="val num">
+                    @Model?.ContractPrice.ToString("N2")
+                    <span style="font-size:12px; color:var(--md3-on-surface-low); font-weight:400;"> @Model?.Сurrency</span>
+                </span>
+            </div>
+            <div class="field">
+                <span class="lbl">Условия оплаты</span>
+                @* Авансирование *@
+
+                @{
+                    var hasNone = @Model?.PaymentСonditionsAvans?.Contains("Без авансов");
+                    var hasCurrent = @Model?.PaymentСonditionsAvans?.Contains("С предоставлением текущего аванса");
+                    var hasTarget = @Model?.PaymentСonditionsAvans?.Contains("С предоставлением целевого аванса");
+                }
+
+                @if (hasNone == true)
+                {
+                    <span class="pay-chip pc-none">Без авансов</span>
+                }
+                @if (hasCurrent == true && hasTarget == true)
+                {
+                    <span class="pay-chip pc-target"><a href="/Prepayments/GetArchByContractId?contractId=@Model?.Id">С текущим + целевым авансом</a></span>
+                }
+                else
+                {
+                    @if (hasCurrent == true)
+                    {
+                        <span class="pay-chip pc-current"><a href="/Prepayments/GetArchByContractId?contractId=@Model?.Id">С текущим авансом</a></span>
                     }
 
-                </th>
-                @*Контрактная цена*@
-                <th>
-                    <span class="table_span-currency">Контрактная цена, с НДС</span>
-                </th>
-                @*Валюта расчетов*@
-                <th>
-                    <span class="table_span-currency">Валюта расчетов</span>
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr id="firstrow">
-                <td>
-                    <div class="table_span-action">
-                        <div class="dropdown" title="Просмотр информации">
-                            <span class="icon view_list_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
-                            </span>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item"
-                                   asp-action="GetArchByContractId"
-                                   asp-controller="ScopeWorks"
-                                   asp-route-contractId="@Model?.Id"
-                                   asp-route-isEngineering="@isEngineering">
-                                    @(isEngineering ? "Oбъем услуг" : "Oбъем работ")
-                                </a>
-                                <a class="dropdown-item"
-                                   asp-action="GetArchByContractId"
-                                   asp-controller="Forms"
-                                   asp-route-contractId="@Model?.Id"
-                                   asp-route-isEngineering="@isEngineering">
-                                    @(isEngineering ? "Акты оказанных услуг" : "Формы С-3а")
-                                </a>
-                                <a class="dropdown-item"
-                                   asp-action="GetArchByContractId"
-                                   asp-controller="Prepayments"
-                                   asp-route-contractId="@Model?.Id">
-                                   @* asp-route-isEngineering="@isEngineering" *@ 
-                                    Авансы
-                                </a>
+                    @if (hasTarget == true)
+                    {
+                        <span class="pay-chip pc-current"><a href="/Prepayments/GetArchByContractId?contractId=@Model?.Id">С целевым авансом</a></span>
+                    }
+                }
 
-                                @if (!isEngineering)
-                                {
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchPrepaymentsTakes"
-                                       asp-controller="Prepayments"
-                                       asp-route-contractId="@Model?.Id">
-                                        Полученные авансы
-                                    </a>
-                                }
+                @* Оплата *@
+                <div class="tt-wrap val">
+                    <div class="pay-terms">@Model?.PaymentСonditionsRaschet</div>
+                    <div class="tt-popover">@Model?.PaymentСonditionsRaschet</div>
+                </div>
+            </div>
+        </div>      
 
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item"
-                                   asp-action="GetArchByContractId"
-                                   asp-controller="Amendments"
-                                   asp-route-id="@Model?.Id">
-                                    Дополнительные соглашения
-                                </a>
+        <div class="main-people">
+            <span><b>Подписант:</b>  @Model?.SignatoryEmp?.Replace("Подписант -", "") </span>
+            <span>
+                <b>Ответственное лицо за ведение договора:</b>
+                @Model?.ResponsibleEmp?.Replace("Лицо, ответственное за ведение договора -", "")
+            </span>
+            <div class="tt-wrap" style="max-width:260px;">
+                <span class="clamp-2" style="-webkit-line-clamp:1;"><b>Работы:</b> @Model?.WorkType</span>
+            </div>
+        </div>
+    </div>
+    <div style="display:flex; flex-direction:column; max-height:42vh; overflow-y:auto;">
+        @if (subObjectsOfContract.Any() || branchAgreement.Any() || subContract.Any())
+        {
+            <!-- ==================== СТРУКТУРА ДОГОВОРА ==================== -->
+            <div class="section-title">Структура договора</div>
+        }
 
-                                @if (!isEngineering)
-                                {
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Acts"
-                                       asp-route-id="@Model?.Id">
-                                        Акт приостановки/возобновления
-                                    </a>
-                                }
 
-                                <a class="dropdown-item"
-                                   asp-action="GetArchByContractId"
-                                   asp-controller="CommissionActs"
-                                   asp-route-id="@Model?.Id"
-                                   asp-route-isEngineering="@isEngineering">
-                                    Акты ввода
-                                </a>
-                                <a class="dropdown-item"
-                                   asp-action="GetArchByContractId"
-                                   asp-controller="Correspondences"
-                                   asp-route-id="@Model?.Id"
-                                   asp-route-isEngineering="@isEngineering">
-                                    Переписка с заказчиком
-                                </a>
-                                <a class="dropdown-item"
-                                   asp-action="GetArchByContractId"
-                                   asp-controller="EstimateDocs"
-                                   asp-route-contractId="@Model?.Id">
-                                    ПСД
-                                </a>
-                                <a class="dropdown-item"
-                                   asp-action="GetArchByContractId"
-                                   asp-controller="Files"
-                                   asp-route-id="@Model?.Id"
-                                   asp-route-fileCategory="@Folder.Contracts"
-                                   asp-route-contractId="@Model?.Id"
-                                   asp-route-redirectAction=@redirectAction
-                                   asp-route-redirectController=@redirectController>
-                                    Файлы
-                                </a>
+        <!-- --- Дерево подобъектов --- -->
+        @if (subObjectsOfContract?.Any() == true)
+        {
+            <div class="tree-block">
+                <div class="tree-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3z" /><path d="M9 6h4M15 6H9M6 9v6M12 6v3a3 3 0 0 0 3 3h0" /></svg>
+                    Подобъекты
+                    <span class="tree-count">@subObjectsOfContract.Count()</span>
+                </div>
+
+                <!-- Подобъект 1 — со своим вложенным субподрядом -->
+                @foreach (var contractBranch in subObjectsOfContract)
+                {
+                    <div class="tree-node">
+                        <div class="tree-node-card">
+                            <div class="row-grid">
+                                <div class="row-cell-num">
+                                    <span class="type-chip type-subobj">
+                                        Подобъект
+                                        <br />
+                                        @if (contractBranch?.Author?.Equals(permissions.Company, StringComparison.OrdinalIgnoreCase) == false && contractBranch?.Author != null)
+                                        {
+                                            <span class="badge rounded-pill bg-secondary text-wrap" style="width:80%;font-size:0.9rem">
+                                                @Convertor.GetNameOrganizationByCode(contractBranch?.Author)
+                                            </span>
+                                        }
+                                    </span>
+                                    @*  <span class="row-num">№ 33/22D-1</span>
+                                <span class="row-date">от 10.07.2026</span> *@
+                                </div>
+                                <div class="row-object">
+                                    <div class="tt-wrap"><div class="clamp-2">@contractBranch?.NameObject</div></div>
+                                </div>
+                                <div class="row-sides"><span class="empty-dash">— не заполняются для подобъекта —</span></div>
+                                <div class="row-deadline">
+                                    <span class="lbl">выполнения работ</span><br>
+                                    <span class="val">@contractBranch?.DateBeginWork?.ToShortDateString() -  @contractBranch?.DateEndWork?.ToShortDateString()</span><br>
+                                    <span class="lbl">ввод</span><br>
+                                    <span class="val">@contractBranch?.EnteringTerm?.ToShortDateString()</span>
+                                </div>
+                                <div class="row-terms"><span class="empty-dash">—</span></div>
+                                <div class="row-work"><span class="empty-dash">—</span></div>
+                                <div class="row-fin">
+                                    <span class="fin-val">
+                                        @contractBranch?.ContractPrice?.ToString("N2")
+                                        <span class="fin-cur">@contractBranch?.Сurrency</span>
+                                    </span>
+                                </div>
+                                <div class="row-actions">
+                                    @if (contractBranch?.Author?.Equals(permissions.Company, StringComparison.OrdinalIgnoreCase) == true || permissions.Company.Equals("ContrOrgBes", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <div class="menu-wrap">
+                                            <button class="kebab-btn" style="width:32px;height:32px;" onclick="toggleMenu(this)">
+                                                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
+                                            </button>
+                                            <div class="action-menu">
+                                                <div class="menu-header">Просмотр</div>
+                                                <a class="menu-item" asp-action="OpenScopeArch" asp-route-id="@contractBranch?.Id" asp-controller="Contracts" asp-route-mainId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                                                    </svg>
+                                                    @(isEngineering ? "График объема услуг" : "График объема работ")
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                                                    </svg>
+                                                    @(isEngineering ? "Oбъем услуг" : "Oбъем работ")
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Forms" asp-route-contractId="@contractBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <rect x="3" y="4" width="18" height="14" rx="2" />
+                                                        <path d="M3 9h18" />
+                                                    </svg>
+                                                    Акты оказанных услуг
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                                    </svg>
+                                                    Авансы
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Amendments" asp-route-id="@contractBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M9 11l3 3L22 4" />
+                                                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                                                    </svg>
+                                                    Дополнительные соглашения
+                                                </a>
+                                                @if (!isEngineering)
+                                                {
+
+                                                    @*  <a class="menu-item" asp-action="GetByContractId" asp-controller="AdditionalTerm" asp-route-id="@contractBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                            <path d="M3 9h18M9 21V9" />
+                                                        </svg>
+                                                        Продление сроков исполнения обязательств по договору
+                                                    </a> *@
+                                                    <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Acts" asp-route-id="@contractBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                            <path d="M3 9h18M9 21V9" />
+                                                        </svg>
+                                                        Акт приостановки/возобновления
+                                                    </a>
+                                                }
+
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="CommissionActs" asp-route-id="@contractBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M20 6L9 17l-5-5" />
+                                                    </svg>
+                                                    Акт ввода
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Correspondences" asp-route-id="@contractBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                                    </svg>
+                                                    Переписка с заказчиком
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="EstimateDocs" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                    </svg>
+                                                    ПСД
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Files"
+                                                   asp-route-id="@contractBranch.Id"
+                                                   asp-route-fileCategory="@Folder.Contracts"
+                                                   asp-route-contractId="@contractBranch?.Id"
+                                                   asp-route-redirectAction=@redirectAction
+                                                   asp-route-redirectController=@redirectController
+                                                   asp-route-isEngineering=""
+                                                   asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                                                    </svg>
+                                                    Файлы
+                                                </a>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
                             </div>
-                        </div>
-                        <div class="icon scope_work" title="@(isEngineering ? "Объем услуг" : "Объем работ генподряда")">
-                            <a asp-action="OpenScopeArch" asp-route-id="@Model?.Id"></a>
+
+                            <!-- вложенный аккордеон: субподряды именно этого подобъекта -->
+
+                            <div class="nested-accordion">
+
+                                @{
+                                    var branchAgreementNested = Contracts.GetSubsByType(contractBranch.Id, ContractType.Agreement, useArchiveData: true);
+                                    var subContractNested = Contracts.GetSubsByType(contractBranch.Id, ContractType.SubContract, useArchiveData: true);
+                                }
+
+                                <div class="nested-toggle open" onclick="toggleNested(this)">
+                                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6" /></svg>
+                                    Договоры субподряда подобъекта
+                                    <span class="nested-count">@(branchAgreementNested.Count() + subContractNested.Count())</span>
+                                </div>
+                                <div class="nested-body open">
+                                    @foreach (var nestedBranch in branchAgreementNested)
+                                    {
+                                        <div class="nested-row-card">
+                                            <div class="row-grid">
+                                                <div class="row-cell-num">
+                                                    <span class="type-chip type-agreement">Соглашение</span>
+                                                    <span class="row-num">№ @nestedBranch?.Number</span>
+                                                    <span class="row-date">от @nestedBranch?.Date?.ToShortDateString()</span>
+                                                </div>
+                                                <div class="row-sides">
+                                                    <span class="side-lbl">Процедура выбора</span><br>
+                                                    @if (Model?.Author?.Equals(permissions.Company, StringComparison.OrdinalIgnoreCase) == true || permissions?.Company.Equals("ContrOrgBes", StringComparison.OrdinalIgnoreCase) == true)
+                                                    {
+                                                        <span class="val">
+                                                            <a class="procedure-link" asp-action="GetArchByContractId" asp-controller="SelectionProcedures" asp-route-contractId="@nestedBranch?.Id"
+                                                               asp-route-returnContractId="@Model?.Id">
+                                                                @nestedBranch?.ProcedureName
+                                                            </a>
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="val procedure-link">
+                                                            @nestedBranch?.ProcedureName
+                                                        </span>
+                                                    }
+                                                    <br>
+
+                                                </div>
+                                                <div class="row-sides">
+                                                    <span class="side-lbl">Филиал</span>
+                                                    <div class="side-val gen">@nestedBranch.Client</div>
+                                                </div>
+                                                <div class="row-deadline">
+                                                    <span class="lbl">выполнения работ</span><br>
+                                                    <span class="val">@nestedBranch?.DateBeginWork?.ToShortDateString() - @nestedBranch?.DateEndWork?.ToShortDateString()</span><br>
+                                                    <span class="lbl">ввод</span><br>
+                                                    <span class="val">@nestedBranch?.EnteringTerm?.ToShortDateString()</span>
+                                                </div>
+                                                <div class="row-terms">
+                                                    @{
+                                                        var hasNone2 = nestedBranch?.PaymentСonditionsAvans?.Contains("Без авансов");
+                                                        var hasCurrent2 = nestedBranch?.PaymentСonditionsAvans?.Contains("С предоставлением текущего аванса");
+                                                        var hasTarget2 = nestedBranch?.PaymentСonditionsAvans?.Contains("С предоставлением целевого аванса");
+                                                    }
+
+                                                    @if (hasNone2 == true)
+                                                    {
+                                                        <span class="pay-chip pc-none">Без авансов</span>
+                                                    }
+
+                                                    @if (hasCurrent2 == true && hasTarget2 == true)
+                                                    {
+                                                        <span class="pay-chip pc-target"><a href="/Prepayments/GetArchByContractId?contractId=@nestedBranch?.Id">С текущим + целевым авансом</a></span>
+                                                    }
+                                                    else
+                                                    {
+                                                        @if (hasCurrent2 == true)
+                                                        {
+                                                            <span class="pay-chip pc-current"><a href="/Prepayments/GetArchByContractId?contractId=@nestedBranch?.Id">С текущим авансом</a></span>
+                                                        }
+
+                                                        @if (hasTarget2 == true)
+                                                        {
+                                                            <span class="pay-chip pc-current"><a href="/Prepayments/GetArchByContractId?contractId=@nestedBranch?.Id">С целевым авансом</a></span>
+                                                        }
+                                                    }
+                                                    @* Оплата *@
+
+                                                    <div class="tt-wrap val">
+                                                        <div class="pay-terms">@nestedBranch?.PaymentСonditionsRaschet</div>
+                                                        <div class="tt-popover">@nestedBranch?.PaymentСonditionsRaschet</div>
+                                                    </div>
+                                                </div>
+                                                <div class="row-sides">
+                                                    <span class="side-lbl">Источник финансирования</span><br>
+                                                    <span class="side-val">@(nestedBranch?.FundingSource ?? "—")</span>
+                                                </div>
+                                                <div class="row-fin">
+                                                    <span class="fin-val">@nestedBranch?.ContractPrice?.ToString("N2")<span class="fin-cur"> @nestedBranch?.Сurrency</span></span>
+                                                </div>
+                                                <div class="row-actions">
+                                                    @if (nestedBranch?.Author?.Equals(permissions?.Company, StringComparison.OrdinalIgnoreCase) == true || permissions?.Company.Equals("ContrOrgBes", StringComparison.OrdinalIgnoreCase) == true)
+                                                    {
+
+                                                        <div class="menu-wrap">
+                                                            <button class="kebab-btn" style="width:32px;height:32px;" onclick="toggleMenu(this)">
+                                                                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
+                                                            </button>
+                                                            <div class="action-menu">
+                                                                <div class="menu-header">Просмотр</div>
+                                                                <a class="menu-item" asp-action="OpenScopeArch" asp-route-id="@nestedBranch?.Id" asp-controller="Contracts" asp-route-mainId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                                                                    </svg>
+                                                                    @(isEngineering ? "График объема услуг" : "График объема работ")
+                                                                </a>
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="ScopeWorks" asp-route-contractId="@nestedBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                                                                    </svg>
+                                                                    @(isEngineering ? "Oбъем услуг" : "Oбъем работ")
+                                                                </a>
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Forms" asp-route-contractId="@nestedBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <rect x="3" y="4" width="18" height="14" rx="2" />
+                                                                        <path d="M3 9h18" />
+                                                                    </svg>
+                                                                    Акты оказанных услуг
+                                                                </a>
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Prepayments" asp-route-contractId="@nestedBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                                                    </svg>
+                                                                    Авансы
+                                                                </a>
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Amendments" asp-route-id="@nestedBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M9 11l3 3L22 4" />
+                                                                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                                                                    </svg>
+                                                                    Дополнительные соглашения
+                                                                </a>
+                                                                @if (!isEngineering)
+                                                                {
+
+                                                                    @*  <a class="menu-item" asp-action="GetByContractId" asp-controller="AdditionalTerm" asp-route-id="@nestedBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                                            <path d="M3 9h18M9 21V9" />
+                                                                        </svg>
+                                                                        Продление сроков исполнения обязательств по договору
+                                                                    </a> *@
+                                                                    <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Acts" asp-route-id="@nestedBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                                            <path d="M3 9h18M9 21V9" />
+                                                                        </svg>
+                                                                        Акт приостановки/возобновления
+                                                                    </a>
+                                                                }
+
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="CommissionActs" asp-route-id="@nestedBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M20 6L9 17l-5-5" />
+                                                                    </svg>
+                                                                    Акт ввода
+                                                                </a>
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Correspondences" asp-route-id="@nestedBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                                                    </svg>
+                                                                    Переписка с заказчиком
+                                                                </a>
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="EstimateDocs" asp-route-contractId="@nestedBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                                    </svg>
+                                                                    ПСД
+                                                                </a>
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Files" asp-route-id="@nestedBranch.Id" asp-route-fileCategory="@Folder.Contracts" asp-route-contractId="@nestedBranch?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                                                                    </svg>
+                                                                    Файлы
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+
+                                                <div class="item-9 main-people">
+                                                    <span><b>Подписант:</b>  @nestedBranch?.SignatoryEmp?.Replace("Подписант -", "")</span>
+                                                    <span><b>Ответственное лицо за ведение договора:</b> @nestedBranch?.ResponsibleEmp?.Replace("Лицо, ответственное за ведение договора -", "")</span>
+                                                    <div class="tt-wrap" style="max-width:55%;">
+                                                        <span class="clamp-2" style="-webkit-line-clamp:1;" title=" @nestedBranch?.WorkType">
+                                                            <b>Работы:</b> @nestedBranch?.WorkType
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    @foreach (var nestedBranch in subContractNested)
+                                    {
+                                        <div class="nested-row-card">
+                                            <div class="row-grid">
+                                                <div class="row-cell-num">
+                                                    <span class="type-chip type-subcontract">Субподряд</span>
+                                                    <span class="row-num">№ @nestedBranch?.Number</span>
+                                                    <span class="row-date">от @nestedBranch?.Date?.ToShortDateString()</span>
+                                                </div>
+                                                <div class="row-sides">
+                                                    <span class="side-lbl">Процедура выбора</span><br>
+                                                    @if (Model?.Author?.Equals(permissions.Company, StringComparison.OrdinalIgnoreCase) == true || permissions?.Company.Equals("ContrOrgBes", StringComparison.OrdinalIgnoreCase) == true)
+                                                    {
+                                                        <span class="val">
+                                                            <a class="procedure-link" asp-action="GetArchByContractId" asp-controller="SelectionProcedures"
+                                                               asp-route-contractId="@nestedBranch?.Id"
+                                                               asp-route-returnContractId="@Model?.Id">
+                                                                @nestedBranch?.ProcedureName
+                                                            </a>
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="procedure-link">
+                                                            @nestedBranch?.ProcedureName
+                                                        </span>
+                                                    }
+                                                </div>
+                                                <div class="row-sides">
+                                                    <span class="side-lbl">Филиал</span>
+                                                    <div class="side-val gen">@Organization?.FindByContractOrganization(x => x.ContractId == nestedBranch?.Id)?.Name</div>
+                                                </div>
+                                                <div class="row-deadline">
+                                                    <span class="lbl">выполнения работ</span><br>
+                                                    <span class="val">@nestedBranch?.DateBeginWork?.ToShortDateString() - @nestedBranch?.DateEndWork?.ToShortDateString()</span><br>
+                                                    <span class="lbl">ввод</span><br>
+                                                    <span class="val">@nestedBranch?.EnteringTerm?.ToShortDateString()</span>
+                                                </div>
+                                                <div class="row-terms">
+                                                    @{
+                                                        var hasNone2 = nestedBranch?.PaymentСonditionsAvans?.Contains("Без авансов");
+                                                        var hasCurrent2 = nestedBranch?.PaymentСonditionsAvans?.Contains("С предоставлением текущего аванса");
+                                                        var hasTarget2 = nestedBranch?.PaymentСonditionsAvans?.Contains("С предоставлением целевого аванса");
+                                                    }
+
+                                                    @if (hasNone2 == true)
+                                                    {
+                                                        <span class="pay-chip pc-none">Без авансов</span>
+                                                    }
+
+                                                    @if (hasCurrent2 == true && hasTarget2 == true)
+                                                    {
+                                                        <span class="pay-chip pc-target"><a href="/Prepayments/GetArchByContractId?contractId=@nestedBranch?.Id">С текущим + целевым авансом</a></span>
+                                                    }
+                                                    else
+                                                    {
+                                                        @if (hasCurrent2 == true)
+                                                        {
+                                                            <span class="pay-chip pc-current"><a href="/Prepayments/GetArchByContractId?contractId=@nestedBranch?.Id">С текущим авансом</a></span>
+                                                        }
+
+                                                        @if (hasTarget2 == true)
+                                                        {
+                                                            <span class="pay-chip pc-current"><a href="/Prepayments/GetArchByContractId?contractId=@nestedBranch?.Id">С целевым авансом</a></span>
+                                                        }
+                                                    }
+                                                    @* Оплата *@
+
+                                                    <div class="tt-wrap val">
+                                                        <div class="pay-terms">@nestedBranch?.PaymentСonditionsRaschet</div>
+                                                        <div class="tt-popover">@nestedBranch?.PaymentСonditionsRaschet</div>
+                                                    </div>
+                                                </div>
+                                                <div class="row-sides">
+                                                    <span class="side-lbl">Источник финансирования</span><br>
+                                                    <span class="side-val">@nestedBranch?.FundingSource</span>
+                                                </div>
+                                                <div class="row-fin">
+                                                    <span class="fin-val">@nestedBranch?.ContractPrice?.ToString("N2")<span class="fin-cur"> @nestedBranch?.Сurrency</span></span>
+                                                </div>
+                                                <div class="row-actions">
+                                                    @if (nestedBranch?.Author?.Equals(permissions?.Company, StringComparison.OrdinalIgnoreCase) == true || permissions?.Company.Equals("ContrOrgBes", StringComparison.OrdinalIgnoreCase) == true)
+                                                    {
+
+                                                        <div class="menu-wrap">
+                                                            <button class="kebab-btn" style="width:32px;height:32px;" onclick="toggleMenu(this)">
+                                                                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
+                                                            </button>
+                                                            <div class="action-menu">
+                                                                <div class="menu-header">Просмотр</div>
+                                                                <a class="menu-item" asp-action="OpenScopeArch" asp-route-id="@nestedBranch?.Id" asp-controller="Contracts" asp-route-mainId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                                                                    </svg>
+                                                                    @(isEngineering ? "График объема услуг" : "График объема работ")
+                                                                </a>
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="ScopeWorks" asp-route-contractId="@nestedBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                                                                    </svg>
+                                                                    @(isEngineering ? "Oбъем услуг" : "Oбъем работ")
+                                                                </a>
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Forms" asp-route-contractId="@nestedBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <rect x="3" y="4" width="18" height="14" rx="2" />
+                                                                        <path d="M3 9h18" />
+                                                                    </svg>
+                                                                    Акты оказанных услуг
+                                                                </a>
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Prepayments" asp-route-contractId="@nestedBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                                                    </svg>
+                                                                    Авансы
+                                                                </a>
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Amendments" asp-route-id="@nestedBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M9 11l3 3L22 4" />
+                                                                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                                                                    </svg>
+                                                                    Дополнительные соглашения
+                                                                </a>
+                                                                @if (!isEngineering)
+                                                                {
+
+                                                                    @*  <a class="menu-item" asp-action="GetArchByContractId" asp-controller="AdditionalTerm" asp-route-id="@nestedBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                                            <path d="M3 9h18M9 21V9" />
+                                                                        </svg>
+                                                                        Продление сроков исполнения обязательств по договору
+                                                                    </a> *@
+                                                                    <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Acts" asp-route-id="@nestedBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                                            <path d="M3 9h18M9 21V9" />
+                                                                        </svg>
+                                                                        Акт приостановки/возобновления
+                                                                    </a>
+                                                                }
+
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="CommissionActs" asp-route-id="@nestedBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M20 6L9 17l-5-5" />
+                                                                    </svg>
+                                                                    Акт ввода
+                                                                </a>
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Correspondences" asp-route-id="@nestedBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                                                    </svg>
+                                                                    Переписка с заказчиком
+                                                                </a>
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="EstimateDocs" asp-route-contractId="@nestedBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                                    </svg>
+                                                                    ПСД
+                                                                </a>
+                                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Files" asp-route-id="@nestedBranch.Id" asp-route-fileCategory="@Folder.Contracts" asp-route-contractId="@nestedBranch?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-returnContractId="@Model?.Id">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                                                                    </svg>
+                                                                    Файлы
+                                                                </a>
+                                                                <div class="menu-divider"></div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                
+                                                <div class="item-9 main-people">
+                                                    <span><b>Подписант:</b>  @nestedBranch?.SignatoryEmp?.Replace("Подписант -", "")</span>
+                                                    <span><b>Ответственное лицо за ведение договора:</b> @nestedBranch?.ResponsibleEmp?.Replace("Лицо, ответственное за ведение договора -", "")</span>
+                                                    <div class="tt-wrap" style="max-width:55%;">
+                                                        <span class="clamp-2" style="-webkit-line-clamp:1;" title=" @nestedBranch?.WorkType">
+                                                            <b>Работы:</b> @nestedBranch?.WorkType
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </td>
-                <td>
-                    <span>
-                        <a asp-action="GetArchByContractId"
-                           asp-controller="SelectionProcedures"
-                           asp-route-contractId="@Model?.Id">
-                            @Model?.SelectionProcedures?.FirstOrDefault(x => x.ContractId == Model.Id)?.TypeProcedure
-                        </a>
-                    </span>
-                </td>
-
-                @* Сотрудники *@
-                <td>
-                    <span class="table_span-signer">
-                        @{
-                            var empSign = @Model?.EmployeeContracts?.FirstOrDefault(x => x.ContractId == Model?.Id && x.IsSignatory == true)?.Employee;
-                            var empRespon = @Model?.EmployeeContracts?.FirstOrDefault(x => x.ContractId == Model?.Id && x.IsResponsible == true)?.Employee;
-                        }
-                        @if (@empSign?.Fio is not null)
-                        {
-                            <span>
-                                Подписант - @empSign?.Position @empSign?.Fio
-                            </span>
-                        }
-                        <br><br>
-                        @if (@empRespon?.Fio is not null)
-                        {
-                            <span>
-                                Лицо ответственное за ведение договора - @empRespon?.Fio, тел.@empRespon?.Phones?.FirstOrDefault()?.Number
-                            </span>
-                        }
-                    </span>
-                </td>
-
-                @* Номер и дата- *@
-                <td>
-                    <span class="table_span-numberanddate">
-                        @Model?.Number от
-                        @Model?.Date?.ToShortDateString()
-                    </span>
-                </td>
-
-                @*  Наименование объекта - *@
-                <td>
-                    <span class="table_span-nameobject">
-
-                        @Model?.NameObject
-                    </span>
-                </td>
-
-                @* Источник финансирования *@
-                <td>
-                    <span class="table_span-fin-source">
-                        @Model?.FundingSource
-                    </span>
-                </td>
-
-                <!-- #region ORGANIZATIONS -->
-                @* Заказчик *@
-                <td>
-                    <span class="table_span-customer">
-
-                        @Model?.ContractOrganizations?.FirstOrDefault(x => x.ContractId == Model.Id && x.IsClient == true)?.Organization?.Name
-                    </span>
-                </td>
-                @if (!isEngineering)
-                {
-                    @*  Генподрядчик *@
-                    <td>
-                        <span class="table_span-contractor">
-
-                            @Model?.ContractOrganizations?.FirstOrDefault(x => x.ContractId == Model.Id && x.IsGenContractor == true)?.Organization?.Name
-
-                        </span>
-                    </td>
-                    @* Субподрядчик - *@
-                    <td>
-                        <span class="table_span-subcontractor">
-                        </span>
-                    </td>
                 }
+            
+            </div>
+        }
 
-                <!-- #endregion -->
-                @* Сроки - *@
-                <td>
-                    <span class="table_span-deadlines">
-                        
-                        @if (Model?.DateBeginWork?.ToShortDateString() is not null || Model?.DateEndWork?.ToShortDateString() is not null)
-                        {
-                            <b>выполнения работ:</b>
-                            <br>
-                            <span>@Model?.DateBeginWork?.ToShortDateString() -  @Model?.DateEndWork?.ToShortDateString()</span>
-                            <br>
-                        }
-                        @if (Model?.EnteringTerm?.ToShortDateString() is not null)
-                        {
-                            <b>ввода:</b>
-                            <br>
-                            <span>@Model?.EnteringTerm?.ToShortDateString()</span>
-                            <br>
-                        }
 
-                    </span>
-                </td>
-
-                @* Условия оплаты - *@
-                <td>
-                    <span class="table_span-conditions">
-                        <a asp-action="GetArchByContractId" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">
-                            @Model?.PaymentСonditionsAvans
-                        </a>
-                        <br />
-                        <br />
-                        <a asp-action="GetArchByContractId" asp-controller="Payments" asp-route-contractId="@Model?.Id">
-                            @* Оплата *@
-                            @Model?.PaymentСonditionsRaschet
-                        </a>
-                    </span>
-                </td>
-
-                @* Вид работ- *@
-                <td>
-                    <span class="table_span-work">
-                        @ArchiveService.GetTypeWorkByContractId((int)Model?.Id)?.Name
-                    </span>
-                </td>
-
-                @* ЦЕна - *@
-                <td class="text-end">
-                    <span class="table_span-contractprice">
-                        @Model?.ContractPrice.ToString("N2")
-
-                    </span>
-                </td>
-
-                @* Валюта - *@
-                <td>
-                    @* Валюта - *@
-                    <span class="table_span-currency">
-
-                        @Model?.Сurrency
-                    </span>
-                </td>
-            </tr>
-            @foreach (var contractBranch in subObjectsOfContract)
-            {
-                var dropdownid1 = "Dropdown" + contractBranch.Id;
-                var dropdownid2 = "Dropdown_" + contractBranch.Id;
-                <tr style="background-color: #f9c5b1">
-                    <td>
-                        <div class="table_span-action">
-
-                            <!-- #region ACTIONS -->
-
-                            <div class="dropdown" title="Просмотр информации">
-                                <span class="icon view_list_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
-                                </span>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="ScopeWorks"
-                                       asp-route-contractId="@contractBranch?.Id"
-                                       asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
-                                        @(isEngineering ? "Oбъем услуг" : "Oбъем работ")
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Forms"
-                                       asp-route-contractId="@contractBranch?.Id"
-                                       asp-route-isEngineering="@isEngineering"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        @(isEngineering ? "Акты оказанных услуг" : "Формы С-3а")
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Prepayments"
-                                       asp-route-contractId="@contractBranch?.Id"
-                                       asp-route-isEngineering="@isEngineering"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Авансы
-                                    </a>
-
-                                    @if (!isEngineering)
-                                    {
-                                        <a class="dropdown-item"
-                                           asp-action="GetArchPrepaymentsTakes"
-                                           asp-controller="Prepayments"
-                                           asp-route-contractId="@contractBranch?.Id"
-                                           asp-route-returnContractId="@Model?.Id">
-                                            Полученные авансы
-                                        </a>
-                                    }
-
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Amendments"
-                                       asp-route-id="@contractBranch?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Дополнительные соглашения
-                                    </a>
-
-                                    @if (!isEngineering)
-                                    {
-                                        <a class="dropdown-item"
-                                           asp-action="GetArchByContractId"
-                                           asp-controller="Acts"
-                                           asp-route-id="@contractBranch?.Id"
-                                           asp-route-returnContractId="@Model?.Id">
-                                            Акты приостановки/возобновления
-                                        </a>
-                                    }
-
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="CommissionActs"
-                                       asp-route-id="@contractBranch?.Id"
-                                       asp-route-isEngineering="@isEngineering"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Акты ввода
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Correspondences"
-                                       asp-route-id="@contractBranch?.Id"
-                                       asp-route-isEngineering="@isEngineering"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Переписка с заказчиком
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="EstimateDocs"
-                                       asp-route-contractId="@contractBranch?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        ПСД
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Files"
-                                       asp-route-id="@contractBranch?.Id"
-                                       asp-route-fileCategory="@Folder.Contracts"
-                                       asp-route-contractId="@Model?.Id"
-                                       asp-route-redirectAction=@redirectAction
-                                       asp-route-redirectController=@redirectController>
-                                        Файлы
-                                    </a>
+        <!-- --- Аккордеон: СОГЛАШЕНИЯ с филиалами (открыт по умолчанию) --- -->
+        @if (branchAgreement?.Any() is true)
+        {
+            <div class="accordion">
+                <div class="accordion-header open" onclick="toggleAccordion(this)">
+                    <div class="accordion-header-left">
+                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6" /></svg>
+                        <span class="accordion-title">Соглашения с филиалами</span>
+                        <span class="accordion-badge agreement">@branchAgreement?.Count()</span>
+                    </div>
+                </div>
+                <div class="accordion-body open">
+                    @foreach (var contractBranch in branchAgreement)
+                    {
+                        <div class="accordion-row">
+                            <div class="row-grid">
+                                <div class="row-cell-num">
+                                    <span class="type-chip type-agreement">Соглашение</span>
+                                    <span class="row-num">№ @contractBranch?.Number</span>
+                                    <span class="row-date">от @contractBranch?.Date?.ToShortDateString()</span>
                                 </div>
-                            </div>
+                                <div class="row-sides">
+                                    <span class="side-lbl">Процедура выбора</span><br>
+                                    @if (Model?.Author?.Equals(permissions.Company, StringComparison.OrdinalIgnoreCase) == true || permissions?.Company.Equals("ContrOrgBes", StringComparison.OrdinalIgnoreCase) == true)
+                                    {
+                                        <span class="val">
+                                            <a class="procedure-link" asp-action="GetArchByContractId" asp-controller="SelectionProcedures" asp-route-contractId="@contractBranch?.Id"
+                                               asp-route-returnContractId="@Model?.Id">
+                                                @contractBranch?.ProcedureName
+                                           </a>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="val procedure-link">
+                                            @contractBranch?.ProcedureName
+                                        </span>
+                                    }
+                                </div>
+                                <div class="row-sides">
+                                    <span class="side-lbl">Филиал</span>
+                                    <div class="side-val gen">
+                                        @contractBranch?.Client
+                                    </div>
+                                </div>
+                                <div class="row-deadline">
+                                    <span class="lbl">выполнения работ</span><br>
+                                    <span class="val">@contractBranch?.DateBeginWork?.ToShortDateString() - @contractBranch?.DateEndWork?.ToShortDateString()</span><br>
+                                    <span class="lbl">ввод</span><br>
+                                    <span class="val">@contractBranch?.EnteringTerm?.ToShortDateString()</span>
+                                </div>
+                                <div class="row-terms">
+                                    @{
+                                        var hasNone2 = contractBranch?.PaymentСonditionsAvans?.Contains("Без авансов");
+                                        var hasCurrent2 = contractBranch?.PaymentСonditionsAvans?.Contains("С предоставлением текущего аванса");
+                                        var hasTarget2 = contractBranch?.PaymentСonditionsAvans?.Contains("С предоставлением целевого аванса");
+                                    }
 
-                            <div class="icon info" title="Просмотр детальной информации">
-                                <a asp-action="DetailsArch" asp-route-id="@contractBranch?.Id"></a>
-                            </div>
+                                    @if (hasNone2 == true)
+                                    {
+                                        <span class="pay-chip pc-none">Без авансов</span>
+                                    }
 
-                            <div class="icon scope_work" title="@titleScope">
-                                <a asp-action="OpenScopeArch" asp-route-id="@contractBranch?.Id" asp-route-mainId="@Model?.Id"></a>
-                            </div>
+                                    @if (hasCurrent2 == true && hasTarget2 == true)
+                                    {
+                                        <span class="pay-chip pc-target"><a href="/Prepayments/GetArchByContractId?contractId=@contractBranch?.Id">С текущим + целевым авансом</a></span>
+                                    }
+                                    else
+                                    {
+                                        @if (hasCurrent2 == true)
+                                        {
+                                            <span class="pay-chip pc-current"><a href="/Prepayments/GetArchByContractId?contractId=@contractBranch?.Id">С текущим авансом</a></span>
+                                        }
 
+                                        @if (hasTarget2 == true)
+                                        {
+                                            <span class="pay-chip pc-current"><a href="/Prepayments/GetArchByContractId?contractId=@contractBranch?.Id">С целевым авансом</a></span>
+                                        }
+                                    }
+                                    @* Оплата *@
 
-                            <!-- #endregion -->
-                        </div>
-                    </td>
-                    <td colspan="3" class="text-center text-uppercase">Подобъект:</td>
-                    <td>
-                        <span class="table_span-nameobject">
-                            @contractBranch?.NameObject
-                        </span>
-                    </td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                                    <div class="tt-wrap val">
+                                        <div class="pay-terms">@contractBranch?.PaymentСonditionsRaschet</div>
+                                        <div class="tt-popover">@contractBranch?.PaymentСonditionsRaschet</div>
+                                    </div>
+                                </div>
+                                <div class="row-sides">
+                                    <span class="side-lbl">Источник финансирования</span><br>
+                                    <span class="side-val">@contractBranch?.FundingSource</span>
+                                </div>
+                                <div class="row-fin">
+                                    <span class="fin-val">@contractBranch?.ContractPrice?.ToString("N2")<span class="fin-cur"> @contractBranch?.Сurrency</span></span>
+                                </div>
+                                <div class="row-actions">
+                                    @if (contractBranch?.Author?.Equals(permissions?.Company, StringComparison.OrdinalIgnoreCase) == true || permissions?.Company.Equals("ContrOrgBes", StringComparison.OrdinalIgnoreCase) == true)
+                                    {
 
-                    @* Сроки - *@
-                    <td>
-                        <span class="table_span-deadlines">
+                                        <div class="menu-wrap">
+                                            <button class="kebab-btn" style="width:32px;height:32px;" onclick="toggleMenu(this)">
+                                                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
+                                            </button>
+                                            <div class="action-menu">
+                                                <div class="menu-header">Просмотр</div>
+                                                <a class="menu-item" asp-action="OpenScopeArch" asp-route-id="@contractBranch?.Id" asp-controller="Contracts" asp-route-mainId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                                                    </svg>
+                                                    @(isEngineering ? "График объема услуг" : "График объема работ")
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                                                    </svg>
+                                                    @(isEngineering ? "Oбъем услуг" : "Oбъем работ")
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Forms" asp-route-contractId="@contractBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <rect x="3" y="4" width="18" height="14" rx="2" />
+                                                        <path d="M3 9h18" />
+                                                    </svg>
+                                                    Акты оказанных услуг
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                                    </svg>
+                                                    Авансы
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Amendments" asp-route-id="@contractBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M9 11l3 3L22 4" />
+                                                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                                                    </svg>
+                                                    Дополнительные соглашения
+                                                </a>
+                                                @if (!isEngineering)
+                                                {
 
-                            @if (contractBranch?.DateBeginWork?.ToShortDateString() is not null || contractBranch?.DateEndWork?.ToShortDateString() is not null)
-                            {
+                                                    @*  <a class="menu-item" asp-action="GetByContractId" asp-controller="AdditionalTerm" asp-route-id="@contractBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                            <path d="M3 9h18M9 21V9" />
+                                                        </svg>
+                                                        Продление сроков исполнения обязательств по договору
+                                                    </a> *@
+                                                    <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Acts" asp-route-id="@contractBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                            <path d="M3 9h18M9 21V9" />
+                                                        </svg>
+                                                        Акт приостановки/возобновления
+                                                    </a>
+                                                }
+
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="CommissionActs" asp-route-id="@contractBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M20 6L9 17l-5-5" />
+                                                    </svg>
+                                                    Акт ввода
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Correspondences" asp-route-id="@contractBranch?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                                    </svg>
+                                                    Переписка с заказчиком
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="EstimateDocs" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                    </svg>
+                                                    ПСД
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Files" asp-route-id="@contractBranch.Id" asp-route-fileCategory="@Folder.Contracts" asp-route-contractId="@contractBranch?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                                                    </svg>
+                                                    Файлы
+                                                </a>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
                                
-                                <b>выполнения работ:</b>
-                                <br>
-                                <span>@contractBranch?.DateBeginWork?.ToShortDateString() -  @contractBranch?.DateEndWork?.ToShortDateString()</span>
-                                <br>
-                            }
-                            @if (contractBranch?.EnteringTerm?.ToShortDateString() is not null)
-                            {
-                                <b>ввода:</b>
+                                <div class="item-9 main-people">
+                                    <span><b>Подписант:</b>  @contractBranch?.SignatoryEmp?.Replace("Подписант -", "")</span>
+                                    <span><b>Ответственное лицо за ведение договора:</b> @contractBranch?.ResponsibleEmp?.Replace("Лицо, ответственное за ведение договора -", "")</span>
+                                    <div class="tt-wrap" style="max-width:55%;">
+                                        <span class="clamp-2" style="-webkit-line-clamp:1;" title=" @contractBranch?.WorkType">
+                                            <b>Работы:</b>  @contractBranch?.WorkType
+                                        </span>
 
-                                <br>
-                                <span>@Model?.EnteringTerm?.ToShortDateString()</span>
-                                <br>
-                            }
-                        </span>
-                    </td>
-                    <td></td>
-                    <td></td>
-
-                    @* ЦЕна - *@
-                    <td class="text-end">
-                        <span class="table_span-contractprice">
-                            @contractBranch?.ContractPrice?.ToString("N2")
-                        </span>
-                    </td>
-
-                    @* Валюта - *@
-                    <td>
-                        <span class="table_span-currency">
-                            @contractBranch?.Сurrency
-                        </span>
-                    </td>
-                </tr>
-            }
-
-            @if (branchAgreement.Count() > 0)
-            {
-                <tr><td class="text-center text-uppercase" colspan="15">Соглашения с филиалами</td></tr>
-            }
-
-            @foreach (var contractBranch in branchAgreement)
-            {
-                var dropdownid1 = "Dropdown" + contractBranch.Id;
-                var dropdownid2 = "Dropdown_" + contractBranch.Id;
-                <tr style="background-color: #ccf3ff">
-                    <td>
-                        <div class="table_span-action">
-                            <div class="dropdown" title="Просмотр информации">
-                                <span class="icon view_list_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
-                                </span>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="ScopeWorks"
-                                       asp-route-contractId="@contractBranch?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Oбъем работ
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Forms"
-                                       asp-route-contractId="@contractBranch?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Форма С-3а
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Prepayments"
-                                       asp-route-contractId="@contractBranch?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Авансы
-                                    </a>
-
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchPrepaymentsTakes"
-                                       asp-controller="Prepayments"
-                                       asp-route-contractId="@contractBranch?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Полученные авансы
-                                    </a>
-                                    @* <a class="dropdown-item"
-                                       asp-action="GetByContractId"
-                                       asp-controller="Material"
-                                       asp-route-contractId="@contractBranch?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Стоимость материалов
-                                    </a> *@
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Payments"
-                                       asp-route-contractId="@contractBranch?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Оплату договора
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Amendments"
-                                       asp-route-id="@contractBranch?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Дополнительные соглашения
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Acts"
-                                       asp-route-id="@contractBranch?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Акт приостановки/возобновления
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="CommissionActs"
-                                       asp-route-Id="@contractBranch?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Акт ввода
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Correspondences"
-                                       asp-route-id="@contractBranch?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Переписка с заказчиком
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="EstimateDocs"
-                                       asp-route-contractId="@contractBranch?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        ПСД
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Files"
-                                       asp-route-id="@contractBranch?.Id"
-                                       asp-route-fileCategory="@Folder.Contracts"
-                                       asp-route-contractId="@Model?.Id"
-                                       asp-route-redirectAction=@redirectAction
-                                       asp-route-redirectController=@redirectController
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Файлы
-                                    </a>
-
+                                    </div>
                                 </div>
                             </div>
-                            <div class="icon scope_work" title="@titleScope">
-                                <a asp-action="OpenScopeArch" asp-route-id="@contractBranch?.Id" asp-route-mainId="@Model?.Id"></a>
-                            </div>
                         </div>
-                    </td>
-                    <td>
-                        <span>
-                            <a asp-action="GetArchByContractId"
-                               asp-controller="SelectionProcedures"
-                               asp-route-contractId="@contractBranch?.Id"
-                               asp-route-returnContractId="@Model?.Id">
-                                @ArchiveService?.FindSlctProcedure(x => x.ContractId == contractBranch?.Id)?.FirstOrDefault()?.TypeProcedure
-                            </a>
-                        </span>
-                    </td>
 
-                    @* Сотрудники *@
-                    <td>
-                        <span class="table_span-signer">
-                            @{
-                                var empSignBr = ArchiveService.FindByContractEmployee(x => x.ContractId == contractBranch?.Id && x.IsSignatory == true);
-                                var empResponBr = ArchiveService.FindByContractEmployee(x => x.ContractId == contractBranch?.Id && x.IsResponsible == true);
-                            }
-                            @if (@empSignBr?.Fio is not null)
-                            {
-                                <span>Подписант - @empSignBr?.Position @empSignBr?.Fio</span>
-                            }
-                            <br><br>
-                            @if (@empResponBr?.Fio is not null)
-                            {
-                                <span>
-                                    Лицо ответственное за ведение договора - @empResponBr?.Fio, тел.@empResponBr?.Phones?.FirstOrDefault()?.Number
-                                </span>
-                            }
-                        </span>
-                    </td>
+                    }
+                </div>
+            </div>
+        }
 
-                    @* Номер и дата- *@
-                    <td>
-                        <span class="table_span-numberanddate">
-                            @contractBranch?.Number от
-                            @contractBranch?.Date?.ToShortDateString()
-                        </span>
-                    </td>
 
-                    @*  Наименование объекта - *@
-                    <td>
-                        <span class="table_span-nameobject">
-                            @contractBranch?.NameObject
-                        </span>
-                    </td>
+        <!-- --- Аккордеон: Договоры СУБПОДРЯДа (свёрнут по умолчанию) --- -->
+        @if (subContract?.Any() is true)
+        {
+            <div class="accordion">
+                <div class="accordion-header open" onclick="toggleAccordion(this)">
+                    <div class="accordion-header-left">
+                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6" /></svg>
+                        <span class="accordion-title">Договоры субподряда</span>
+                        <span class="accordion-badge subcontract">@subContract?.Count()</span>
+                    </div>
+                </div>
+                <div class="accordion-body open">
+                    @foreach (var contractSub in subContract)
+                    {
+                        <div class="accordion-row">
+                            <div class="row-grid">
+                                <div class="row-cell-num">
+                                    <span class="type-chip type-subcontract">Субподряд</span>
+                                    <span class="row-num">№ @contractSub?.Number</span>
+                                    <span class="row-date">от @contractSub?.Date?.ToShortDateString()</span>
+                                </div>
+                                <div class="row-sides" @* class="row-object" *@>
+                                    <span class="side-lbl">Процедура выбора</span><br>
+                                    @if (Model?.Author?.Equals(permissions.Company, StringComparison.OrdinalIgnoreCase) == true || permissions?.Company.Equals("ContrOrgBes", StringComparison.OrdinalIgnoreCase) == true)
+                                    {
+                                        <span class="val">
+                                            <a class="procedure-link" asp-action="GetArchByContractId" asp-controller="SelectionProcedures" asp-route-contractId="@contractSub?.Id"
+                                               asp-route-returnContractId="@Model?.Id">
+                                                @contractSub?.ProcedureName
+                                            </a>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="val procedure-link">
+                                            @contractSub?.ProcedureName
+                                        </span>
+                                    }
 
-                    @*Источник финансирования*@
-                    <td>
-                        <span class="table_span-fin-source">
-                            @contractBranch?.FundingSource
-                        </span>
-                    </td>
 
-                    @*Заказчик*@
-                    <td>
-                        <span class="table_span-customer">
-                        </span>
-                    </td>
 
-                    @*Генподрядчик*@
-                    <td>
-                        <span class="table_span-contractor">
-                        </span>
-                    </td>
+                                </div>
+                                <div class="row-sides">
+                                    <span class="side-lbl">Субподрядчик</span>
+                                    <div class="side-val gen">@contractSub?.Client</div>
+                                </div>
+                                <div class="row-deadline">
+                                    <span class="lbl">выполнения работ</span><br>
+                                    <span class="val">@contractSub?.DateBeginWork?.ToShortDateString() - @contractSub?.DateEndWork?.ToShortDateString()</span><br>
+                                    <span class="lbl">ввод</span><br>
+                                    <span class="val">@contractSub?.EnteringTerm?.ToShortDateString()</span>
+                                </div>
+                                <div class="row-terms">
+                                    @{
+                                        var hasNone1 = contractSub?.PaymentСonditionsAvans?.Contains("Без авансов");
+                                        var hasCurrent1 = contractSub?.PaymentСonditionsAvans?.Contains("С предоставлением текущего аванса");
+                                        var hasTarget1 = contractSub?.PaymentСonditionsAvans?.Contains("С предоставлением целевого аванса");
+                                    }
 
-                    @*Субподрядчик*@
-                    <td>
-                        <span class="table_span-subcontractor">
-                            @ArchiveService?.FindByContractOrganization(x => x.ContractId == contractBranch?.Id)?.Name
-                        </span>
-                    </td>
+                                    @if (hasNone1 == true)
+                                    {
+                                        <span class="pay-chip pc-none">Без авансов</span>
+                                    }
 
-                    @* Сроки - *@
-                    <td>
-                        <span class="table_span-deadlines">
-                           
-                            @if (@contractBranch?.DateBeginWork?.ToShortDateString() is not null || @contractBranch?.DateEndWork?.ToShortDateString() is not null)
-                            {
-                                <b>выполнения работ:</b>
-                                <br>
-                                <span> @contractBranch?.DateBeginWork?.ToShortDateString() - @contractBranch?.DateEndWork?.ToShortDateString()</span>
-                                <br>
-                            }
-                            @if (@contractBranch?.EnteringTerm?.ToShortDateString() is not null)
-                            {
-                                <b>ввода:</b>
-                                <br>
-                                <span>@contractBranch?.EnteringTerm?.ToShortDateString()</span>
-                                <br>
-                            }
-                        </span>
-                    </td>
+                                    @if (hasCurrent1 == true && hasTarget1 == true)
+                                    {
+                                        <span class="pay-chip pc-target"><a href="/Prepayments/GetArchByContractId?contractId=@contractSub?.Id">С текущим + целевым авансом</a></span>
+                                    }
+                                    else
+                                    {
+                                        @if (hasCurrent1 == true)
+                                        {
+                                            <span class="pay-chip pc-current"><a href="/Prepayments/GetArchByContractId?contractId=@contractSub?.Id">С текущим авансом</a></span>
+                                        }
 
-                    @* Условия оплаты - *@
-                    <td>
-                        <span class="table_span-conditions">
+                                        @if (hasTarget1 == true)
+                                        {
+                                            <span class="pay-chip pc-current"><a href="/Prepayments/GetArchByContractId?contractId=@contractSub?.Id">С целевым авансом</a></span>
+                                        }
+                                    }
 
-                            <a asp-action="GetArchByContractId" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">
-                                @contractBranch?.PaymentСonditionsAvans
-                            </a>
-                            <a asp-action="GetArchByContractId" asp-controller="Payments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">
-                                @* Оплата *@
-                                @contractBranch?.PaymentСonditionsRaschet
-                            </a>
-                        </span>
-                    </td>
+                                    @* Оплата *@
 
-                    @* Вид работ- *@
-                    <td>
-                        <span class="table_span-work">
-                            @ArchiveService?.GetTypeWorkByContractId((int)@contractBranch?.Id)?.Name
-                        </span>
-                    </td>
+                                    <div class="tt-wrap val">
+                                        <div class="pay-terms">@contractSub?.PaymentСonditionsRaschet</div>
+                                        <div class="tt-popover">@contractSub?.PaymentСonditionsRaschet</div>
+                                    </div>
+                                </div>
+                                <div class="row-sides">
+                                    <span class="side-lbl">Источник финансирования</span><br>
+                                    <span class="side-val">@contractSub?.FundingSource</span>
+                                </div>
+                                <div class="row-fin">
+                                    <span class="fin-val">@contractSub?.ContractPrice?.ToString("N2")<span class="fin-cur"> @contractSub?.Сurrency</span></span>
+                                </div>
+                                <div class="row-actions">
+                                    @if (contractSub?.Author?.Equals(permissions.Company, StringComparison.OrdinalIgnoreCase) == true || permissions.Company.Equals("ContrOrgBes", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <div class="menu-wrap">
+                                            <button class="kebab-btn" style="width:32px;height:32px;" onclick="toggleMenu(this)">
+                                                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
+                                            </button>
+                                            <div class="action-menu">
+                                                <div class="menu-header">Просмотр</div>
+                                                <a class="menu-item" asp-action="OpenScopeArch" asp-route-id="@contractSub?.Id" asp-controller="Contracts" asp-route-mainId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                                                    </svg>
+                                                    @(isEngineering ? "График объема услуг" : "График объема работ")
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractSub?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                                                    </svg>
+                                                    @(isEngineering ? "Oбъем услуг" : "Oбъем работ")
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Forms" asp-route-contractId="@contractSub?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <rect x="3" y="4" width="18" height="14" rx="2" />
+                                                        <path d="M3 9h18" />
+                                                    </svg>
+                                                    Акты оказанных услуг
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Prepayments" asp-route-contractId="@contractSub?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                                    </svg>
+                                                    Авансы
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Amendments" asp-route-id="@contractSub?.Id" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M9 11l3 3L22 4" />
+                                                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                                                    </svg>
+                                                    Дополнительные соглашения
+                                                </a>
+                                                @if (!isEngineering)
+                                                {
 
-                    @* ЦЕна - *@
-                    <td class="text-end">
-                        <span class="table_span-contractprice">
-                            @contractBranch?.ContractPrice?.ToString("N2")
-                        </span>
-                    </td>
+                                                    @*  <a class="menu-item" asp-action="GetByContractId" asp-controller="AdditionalTerm" asp-route-id="@contractSub?.Id" asp-route-returnContractId="@Model?.Id">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                            <path d="M3 9h18M9 21V9" />
+                                                        </svg>
+                                                        Продление сроков исполнения обязательств по договору
+                                                    </a> *@
+                                                    <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Acts" asp-route-id="@contractSub?.Id" asp-route-returnContractId="@Model?.Id">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                            <path d="M3 9h18M9 21V9" />
+                                                        </svg>
+                                                        Акт приостановки/возобновления
+                                                    </a>
+                                                }
 
-                    @* Валюта - *@
-                    <td>
-                        <span class="table_span-currency">
-                            @contractBranch?.Сurrency
-                        </span>
-                    </td>
-                </tr>
-            }
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="CommissionActs" asp-route-id="@contractSub?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M20 6L9 17l-5-5" />
+                                                    </svg>
+                                                    Акт ввода
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Correspondences" asp-route-id="@contractSub?.Id" asp-route-isEngineering="@isEngineering" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                                    </svg>
+                                                    Переписка с заказчиком
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="EstimateDocs" asp-route-contractId="@contractSub?.Id" asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                    </svg>
+                                                    ПСД
+                                                </a>
+                                                <a class="menu-item" asp-action="GetArchByContractId" asp-controller="Files" asp-route-id="@contractSub.Id" asp-route-fileCategory="@Folder.Contracts" asp-route-contractId="@contractSub?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-returnContractId="@Model?.Id">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                                                    </svg>
+                                                    Файлы
+                                                </a>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                               
+                                <div class="item-9 main-people">
+                                    <span><b>Подписант:</b>  @contractSub?.SignatoryEmp?.Replace("Подписант -", "")</span>
+                                    <span><b>Ответственное лицо за ведение договора:</b> @contractSub?.ResponsibleEmp?.Replace("Лицо, ответственное за ведение договора -", "")</span>
+                                    <div class="tt-wrap" style="max-width: 55%;">
+                                        <span class="clamp-2" style="-webkit-line-clamp:1;" title="@contractSub?.WorkType">
+                                            <b>Работы:</b>
+                                            @contractSub?.WorkType
+                                        </span>
 
-            @if (subContract.Count() > 0)
-            {
-                <tr><td class="text-center text-uppercase" colspan="15">Договоры субподряда</td></tr>
-            }
-
-            @foreach (var contractSub in subContract)
-            {
-                var dropdownid3 = "Dropdown" + contractSub.Id;
-                var dropdownid4 = "Dropdown_" + contractSub.Id;
-
-                <tr style="background-color: #d8f3d8">
-                    <td>
-                        <div class="table_span-action">
-                            <div class="dropdown" title="Просмотр информации">
-                                <span class="icon view_list_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
-                                </span>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="ScopeWorks"
-                                       asp-route-contractId="@contractSub?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        @titleScope
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Forms"
-                                       asp-route-contractId="@contractSub?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Форма С-3а
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Prepayments"
-                                       asp-route-contractId="@contractSub?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Авансы
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchPrepaymentsTakes"
-                                       asp-controller="Prepayments"
-                                       asp-route-contractId="@contractSub?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Полученные авансы
-                                    </a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Amendments"
-                                       asp-route-id="@contractSub?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Дополнительные соглашения
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Acts"
-                                       asp-route-id="@contractSub?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Акт приостановки/возобновления
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="CommissionActs"
-                                       asp-route-Id="@contractSub?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Акт ввода
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Correspondences"
-                                       asp-route-id="@contractSub?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Переписка с заказчиком
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="EstimateDocs"
-                                       asp-route-contractId="@contractSub?.Id"
-                                       asp-route-returnContractId="@Model?.Id">
-                                        ПСД
-                                    </a>
-                                    <a class="dropdown-item"
-                                       asp-action="GetArchByContractId"
-                                       asp-controller="Files"
-                                       asp-route-id="@contractSub?.Id"
-                                       asp-route-fileCategory="@Folder.Contracts"
-                                       asp-route-contractId="@Model?.Id"
-                                       asp-route-redirectAction=@redirectAction
-                                       asp-route-redirectController=@redirectController
-                                       asp-route-returnContractId="@Model?.Id">
-                                        Файлы
-                                    </a>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="icon scope_work" title="@titleScope">
-                                <a asp-controller="Contracts" asp-action="OpenScopeArch" asp-route-mainId="@Model?.Id" asp-route-id="@contractSub?.Id"></a>
-                            </div>
                         </div>
-                    </td>
-                    <td>
-                        <span>
-                            <a asp-action="GetArchByContractId"
-                               asp-controller="SelectionProcedures"
-                               asp-route-contractId="@contractSub?.Id"
-                               asp-route-returnContractId="@Model?.Id">
-                                @ArchiveService?.FindSlctProcedure(x => x.ContractId == contractSub?.Id)?.FirstOrDefault()?.TypeProcedure
-                            </a>
-                        </span>
-                    </td>
-
-                    @* Сотрудники *@
-                    <td>
-                        <span class="table_span-signer">
-                            @{
-                                var empSignSub = ArchiveService?.FindByContractEmployee(x => x.ContractId == contractSub?.Id && x.IsSignatory == true);
-                                var empResponSub = ArchiveService?.FindByContractEmployee(x => x.ContractId == contractSub?.Id && x.IsResponsible == true);
-                            }
-                            @if (@empSignSub?.Fio is not null)
-                            {
-                                <span>
-                                    Подписант - @empSignSub?.Position @empSignSub?.Fio
-                                </span>
-                            }
-                            <br><br>
-                            @if (@empResponSub?.Fio is not null)
-                            {
-                                <span>
-                                    Лицо ответственное за ведение договора - @empResponSub?.Fio, тел.@empResponSub?.Phones?.FirstOrDefault()?.Number
-                                </span>
-                            }
-                        </span>
-                    </td>
-
-                    @* Номер и дата- *@
-                    <td>
-                        <span class="table_span-numberanddate">
-                            @contractSub?.Number от
-                            @contractSub?.Date?.ToShortDateString()
-                        </span>
-                    </td>
-
-                    @*  Наименование объекта - *@
-                    <td>
-                        <span class="table_span-nameobject">
-                            @contractSub?.NameObject
-                        </span>
-                    </td>
-
-                    @* Источник финансирования *@
-                    <td>
-                        <span class="table_span-fin-source">
-                            @contractSub?.FundingSource
-                        </span>
-                    </td>
-                    
-                    @*Заказчик*@
-                    <td>
-                        <span class="table_span-customer">
-                        </span>
-                    </td>
-                    
-                    @*Генподрядчик*@
-                    <td>
-                        <span class="table_span-contractor">
-                        </span>
-                    </td>
-                   
-                    @*Субподрядчик*@
-                    <td>
-                        <span class="table_span-subcontractor">
-                            @ArchiveService?.FindByContractOrganization(x => x.ContractId == contractSub?.Id)?.Name
-                        </span>
-                    </td>
-
-                    @* Сроки - *@
-                    <td>
-                        <span class="table_span-deadlines">
-                           
-                            @if (@contractSub?.DateBeginWork?.ToShortDateString() is not null || @contractSub?.DateEndWork?.ToShortDateString() is not null)
-                            {
-                                <b>выполнения работ:</b>
-                                <br>
-                                <span>  @contractSub?.DateBeginWork?.ToShortDateString() - @contractSub?.DateEndWork?.ToShortDateString()</span>
-                                <br>
-                            }
-                            @if (@contractSub?.EnteringTerm?.ToShortDateString() is not null)
-                            {
-                                <b>ввода:</b>
-                                <br>
-                                <span>@contractSub?.EnteringTerm?.ToShortDateString()</span>
-                                <br>
-                            }
-                        </span>
-                    </td>
-
-                    @* Условия оплаты - *@
-                    <td>
-                        <span class="table_span-conditions">
-                            <a asp-action="GetArchByContractId" asp-controller="Prepayments" asp-route-contractId="@contractSub?.Id" asp-route-returnContractId="@Model?.Id">
-                                @contractSub?.PaymentСonditionsAvans
-                            </a>
-                            <br />
-                            <br />
-                            <a asp-action="GetArchByContractId" asp-controller="Payments" asp-route-contractId="@contractSub?.Id" asp-route-returnContractId="@Model?.Id">
-                                @* Оплата *@
-                                @contractSub?.PaymentСonditionsRaschet
-                            </a>
-                        </span>
-                    </td>
-
-                    @* Вид работ- *@
-                    <td>
-                        <span class="table_span-work">
-                            @ArchiveService?.GetTypeWorkByContractId((int)@contractSub?.Id)?.Name
-                        </span>
-                    </td>
-                    
-                    @* ЦЕна - *@
-                    <td class="text-end">
-                        <span class="table_span-contractprice">
-                            @contractSub?.ContractPrice?.ToString("N2")
-                        </span>
-                    </td>
-
-                    @* Валюта - *@
-                    <td>
-                        <span class="table_span-currency">
-                            @contractSub?.Сurrency
-                        </span>
-                    </td>
-                </tr>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<script>
+    function ShowModalScopeWork(id) {
+        $.ajax({
+            type: 'GET',
+                url: '@Url.Action("ShowScopeWorks")',
+            dataType: 'html',
+            data: { id: id },
+            success: function (result) {
+                 $('#dialogContent').html(result);
+               $('#modDialog').modal({ backdrop: false });
+                $('#modDialog').modal('toggle');
+            },
+            error: function (result) {
+                console.log(result);
             }
-        </tbody>
-    </table>
+        });
+    };
+</script>
+<script>
+    function toggleAccordion(header){
+      header.classList.toggle('open');
+      header.nextElementSibling.classList.toggle('open');
+    }
+    function toggleNested(el){
+      el.classList.toggle('open');
+      el.nextElementSibling.classList.toggle('open');
+    }
 
-    <script>
-        function ShowModalScopeWork(id) {
-            $.ajax({
-                type: 'GET',
-                    url: '@Url.Action("ShowScopeWorks")',
-                dataType: 'html',
-                data: { id: id },
-                success: function (result) {
-                        $('#dialogContent').html(result);
-                    $('#modDialog').modal({ backdrop: false });
-                    $('#modDialog').modal('toggle');
-                },
-                error: function (result) {
-                    console.log(result);
-                }
-            });
-        };
-    </script>
-}
+    /* ---- kebab-меню: портал в body, fixed-позиционирование ---- */
+    let openMenu = null, openBtn = null, homeParent = null, homeNextSibling = null;
+
+    function closeMenu(){
+      if(!openMenu) return;
+      openMenu.classList.remove('open');
+      openMenu.style.position = '';
+      openMenu.style.top = '';
+      openMenu.style.left = '';
+      if(homeParent){
+        if(homeNextSibling){ homeParent.insertBefore(openMenu, homeNextSibling); }
+        else { homeParent.appendChild(openMenu); }
+      }
+      openMenu = null; openBtn = null; homeParent = null; homeNextSibling = null;
+    }
+
+    function toggleMenu(btn){
+      const menu = btn.parentElement.querySelector('.action-menu');
+      if(openMenu === menu){ closeMenu(); return; }
+      closeMenu();
+      homeParent = menu.parentNode;
+      homeNextSibling = menu.nextSibling;
+      document.body.appendChild(menu);
+      menu.classList.add('open');
+      menu.style.position = 'fixed';
+      positionMenu(btn, menu);
+      openMenu = menu; openBtn = btn;
+    }
+
+    function positionMenu(btn, menu){
+      const btnRect = btn.getBoundingClientRect();
+      const menuRect = menu.getBoundingClientRect();
+      const vw = window.innerWidth, vh = window.innerHeight, margin = 8;
+      let top = btnRect.bottom + 4;
+      let left = btnRect.right - menuRect.width;
+      if(top + menuRect.height > vh - margin){ top = btnRect.top - menuRect.height - 4; }
+      if(top < margin){ top = margin; }
+      if(left < margin){ left = margin; }
+      if(left + menuRect.width > vw - margin){ left = vw - margin - menuRect.width; }
+      menu.style.top = top + 'px';
+      menu.style.left = left + 'px';
+    }
+
+    document.addEventListener('click', function(e){
+      if(openMenu && !openMenu.contains(e.target) && e.target !== openBtn && !openBtn.contains(e.target)){
+        closeMenu();
+      }
+    });
+    window.addEventListener('scroll', closeMenu, true);
+    window.addEventListener('resize', closeMenu);
+</script>

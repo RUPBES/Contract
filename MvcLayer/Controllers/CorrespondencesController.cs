@@ -115,7 +115,7 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "DeletePolicy")]
-        public ActionResult Delete(int id, int? contractId = null)
+        public ActionResult Delete(int id, int? contractId = null, int returnContractId = 0)
         {
             try
             {
@@ -127,7 +127,7 @@ namespace MvcLayer.Controllers
                 _correspondenceService.Delete(id);
                 if (contractId is not null && contractId > 0)
                 {
-                    return RedirectToAction(nameof(GetByContractId), new { id = contractId });
+                    return RedirectToAction(nameof(GetByContractId), new { id = contractId , returnContractId  = returnContractId });
                 }
                 else
                 {

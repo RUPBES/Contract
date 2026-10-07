@@ -677,6 +677,7 @@ internal class ReportExcelService : IReportExcelService
         return startRow;
     }
 
+    //todo: для архива необходимо скорректировать!
     private void FillDetailsTable(ExcelWorksheet sheet, string path, ExcelSettings settings, VContractDTO? contract, bool isGenContract)
     {
         var amendment = _amendmentService

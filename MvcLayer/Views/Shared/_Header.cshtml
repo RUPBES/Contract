@@ -5,86 +5,590 @@
 @{
     var permissions = HttpHelper.GetUserPermissions();
 }
-<style>
-    a {
-        font-weight: normal !important;
-        font-size: 14px !important;
-    }
 
-    ul > li > a {
-        font-weight: 500 !important;
-        font-size: 16px !important;
-    }
+@* 
 
-    .nav-item {
-        border-radius: 15px;
-    }
+<div class="ch-header-inner">
 
-    .user_name {
-        line-height: 35px;
-        margin-right: 7px;
-        border-radius: 5px;
-        font-weight: bold;
-        font-family: Georgia, serif;
-    }
+    <a asp-controller="Home" asp-action="Index" class="ch-brand">
+        <svg class="ch-brand-icon" viewBox="0 0 40 40" fill="none">
+            <path d="M20 2 L36 11 V29 L20 38 L4 29 V11 Z" fill="var(--md3-primary)" />
+            <path d="M12 20.5 L17.5 26 L28.5 14" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        </svg>
+        <span class="ch-brand-name">Договоры</span>
+    </a>
 
-    .img_user {
-        margin-right: 5px;
-        margin-bottom: 3%;
-    }
+    <nav class="ch-main-nav">
 
-    .navbar_shadow {
-        box-shadow: rgba(0, 0, 0, 0.25) 0px 25px 50px -12px;
-    }
+        <!-- ---- Договоры: full-width hover-меню ---- -->
+        <div class="ch-nav-item" onmouseenter="scheduleOpenFw(this,'ch-fw-contracts')" onmouseleave="scheduleCloseFw()">
+            <button class="ch-nav-link" id="ch-trig-contracts">
+                Договоры
+                <svg class="ch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+        </div>
 
-    .agreement_icon {
-        width: 30px;
-        height: 30px;
-    }
+        <!-- ---- Инжиниринговые услуги: full-width hover-меню ---- -->
+        <div class="ch-nav-item" onmouseenter="scheduleOpenFw(this,'ch-fw-engineering')" onmouseleave="scheduleCloseFw()">
+            <button class="ch-nav-link" id="ch-trig-engineering">
+                Инжиниринговые услуги
+                <svg class="ch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+        </div>
 
-    .agr_hover {
-        color: black !important;
-    }
+        <!-- ---- Разделы: тот же hover full-width тип, что у Договоров/Услуг ---- -->
+        <div class="ch-nav-item" onmouseenter="scheduleOpenFw(this,'ch-fw-sections')" onmouseleave="scheduleCloseFw()">
+            <button class="ch-nav-link" id="ch-trig-sections">
+                Разделы
+                <svg class="ch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+        </div>
 
-    .agreement_item {
-        margin-top: 0.2%;
-    }
+    </nav>
 
-    .log_btn {
-        width: 100px !important;
-        font-size: 14px !important;
-        border-radius: 10px !important;
-    }
+    <!-- ---- Full-width панели (вынесены за пределы nav для корректного z-index/ширины) ---- -->
+    <div class="ch-fw-panel" id="ch-fw-contracts" onmouseenter="cancelCloseFw()" onmouseleave="scheduleCloseFw()">
+        <div class="ch-fw-panel-inner">
+            <a class="ch-fw-card" asp-controller="Contracts" asp-action="Index">
+                <span class="ch-fw-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M9 13h6M9 17h6" /></svg></span>
+                <span><span class="ch-fw-card-title">Текущие договоры</span><br><span class="ch-fw-card-sub">Активный реестр договоров организации: статусы, сроки, финансы, детальная информация по каждому договору</span></span>
+            </a>
+            <a class="ch-fw-card" asp-controller="Contracts" asp-action="IndexArch">
+                <span class="ch-fw-card-icon ch-archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1" /><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /><line x1="10" y1="12" x2="14" y2="12" /></svg></span>
+                <span><span class="ch-fw-card-title">Архив договоров</span><br><span class="ch-fw-card-sub">Завершённые и закрытые договоры, доступные только для просмотра</span></span>
+            </a>
+        </div>
+    </div>
 
-    .img_icon-login {
-        width: 20px;
-        height: 20px;
-        margin-right: 4px;
-    }
+    <div class="ch-fw-panel" id="ch-fw-engineering" onmouseenter="cancelCloseFw()" onmouseleave="scheduleCloseFw()">
+        <div class="ch-fw-panel-inner">
+            <a class="ch-fw-card" asp-action="Engineerings" asp-controller="Contracts">
+                <span class="ch-fw-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg></span>
+                <span><span class="ch-fw-card-title">Текущие инжиниринговые услуги</span><br><span class="ch-fw-card-sub">Активный реестр договоров инжиниринговых услуг</span></span>
+            </a>
+            <a class="ch-fw-card" asp-controller="Contracts" asp-action="EngineeringsArch">
+                <span class="ch-fw-card-icon ch-archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1" /><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /><line x1="10" y1="12" x2="14" y2="12" /></svg></span>
+                <span><span class="ch-fw-card-title">Архив инжиниринговых услуг</span><br><span class="ch-fw-card-sub">Завершённые договоры инжиниринговых услуг</span></span>
+            </a>
+        </div>
+    </div>
 
-    .img_icon-logout {
-        width: 20px;
-        height: 20px;
-        margin-left: 3px;
-    }
+    <!-- ---- Разделы: та же full-width панель, 3 колонки вместо 2 карточек ---- -->
+    <div class="ch-fw-panel ch-fw-panel-cols3" id="ch-fw-sections" onmouseenter="cancelCloseFw()" onmouseleave="scheduleCloseFw()">
+        <div class="ch-fw-panel-inner">
 
-    .log_flex {
-        display: flex;
-        flex-direction: row;
-    }
+            <div class="ch-launcher-col">
+                <div class="ch-launcher-col-title">Справочники</div>
+                <a class="ch-mega-item" asp-controller="Organizations" asp-action="Index">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14" /></svg></span>
+                    <span><span class="ch-mega-item-title">Организации</span><br><span class="ch-mega-item-sub">Реестр контрагентов</span></span>
+                </a>
+                <a class="ch-mega-item" asp-controller="Employees" asp-action="Index">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4" /><path d="M4 21v-1a7 7 0 0 1 16 0v1" /></svg></span>
+                    <span><span class="ch-mega-item-title">Сотрудники</span><br><span class="ch-mega-item-sub">Подписанты, отв. лица</span></span>
+                </a>
+                @* <a class="ch-mega-item" href="#">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg></span>
+                    <span><span class="ch-mega-item-title">Виды работ</span><br><span class="ch-mega-item-sub">Классификатор работ</span></span>
+                </a>
+                 <a class="ch-mega-item" href="#">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v10" /></svg></span>
+                    <span><span class="ch-mega-item-title">Валюты и курсы</span><br><span class="ch-mega-item-sub">Курсы на дату</span></span>
+                </a>
+                <a class="ch-mega-item" href="#">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2" /></svg></span>
+                    <span><span class="ch-mega-item-title">Источники финанс-я</span><br><span class="ch-mega-item-sub">Справочник ИФ</span></span>
+                </a> *
+            </div>
 
-    .header_navbar {
-        width: 100vh;
-    }
+            <div class="ch-launcher-col">
+                <div class="ch-launcher-col-title">Аналитика / Мониторинг</div>
+                <a class="ch-mega-item" asp-controller="Payments" asp-action="GetPayableCash">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20M6 15h4" /></svg></span>
+                    <span><span class="ch-mega-item-title">Денежные средства к оплате</span><br><span class="ch-mega-item-sub">Контроль платежей</span></span>
+                </a>
+                @* <a class="ch-mega-item" href="#">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg></span>
+                    <span><span class="ch-mega-item-title">Просроченные договоры</span><br><span class="ch-mega-item-sub">Контроль сроков</span></span>
+                </a>
+                <a class="ch-mega-item" href="#">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18" /><path d="M7 15l4-5 3 3 5-7" /></svg></span>
+                    <span><span class="ch-mega-item-title">Динамика выполнения работ</span><br><span class="ch-mega-item-sub">Графики и тренды</span></span>
+                </a> *
+            </div>
 
-    .link_a {
-        color: black !important;
-    }
+            <div class="ch-launcher-col">
+                @if (permissions is not null && (permissions.IsReader && permissions.GroupeName.Contains(Constants.GRP_REPORT)))
+                {
+                    <div class="ch-launcher-col-title">Отчёты</div>
+                    <a class="ch-mega-item" asp-controller="Report" asp-action="SelectContractProperties">
+                        <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /></svg></span>
+                        <span><span class="ch-mega-item-title">Договоры</span><br><span class="ch-mega-item-sub">Сводный отчёт, сформированный согласно заданному фильтру</span></span>
+                    </a>
+                    <a class="ch-mega-item" asp-controller="Report" asp-action="FilterPayableCash">
+                        <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" /></svg></span>
+                        <span><span class="ch-mega-item-title">Денежные средства к оплате</span><br><span class="ch-mega-item-sub">Отчёт по платежам</span></span>
+                    </a>
+                }
+            </div>
 
-</style>
+        </div>
+    </div>
+
+    <!-- ---- Правый блок ---- -->
+    <div class="ch-header-right">
+
+        <a href="/release-notes" class="ch-icon-btn" title="Уведомления">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
+            <span class="ch-badge-count" id="release-notes-badge"></span>
+        </a>
+        @{
+            var user = @User?.Identities?.FirstOrDefault()?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value.Split(' ');
+        }
+        <div class="ch-user-menu">
+            <button class="ch-user-trigger" aria-expanded="false" onclick="toggleUserMenu(this)">
+                <span class="ch-user-avatar">@user[0][0] @user[1][0]</span>
+                <span class="ch-user-name">@String.Join(' ', user)</span>
+                <svg class="ch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="ch-user-dropdown" id="ch-user-dropdown">
+
+                @if (permissions is not null && permissions.IsLeadAdmin)
+                {
+                    <a class="ch-user-dropdown-item" href="~/admin/dashboard" title="Видно только администраторам">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+                        Админка
+                    </a>
+                }
+                <div class="ch-user-dropdown-divider"></div>
 
 
+                @if ((User?.Identity == null) || (!(User.Identity.IsAuthenticated)))
+                {
+                    <a class="ch-user-dropdown-item" asp-controller="Account" asp-action="Login">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                        Войти
+                    </a>
+                }
+                else
+                {                 
 
+                    <a class="ch-user-dropdown-item" asp-controller="Account" asp-action="Logout">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                        Выйти
+                    </a>
+                }
+
+               
+            </div>
+        </div>
+
+        <button class="ch-burger-btn" onclick="openMobilePanel()" title="Меню">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="17" x2="20" y2="17" /></svg>
+        </button>
+
+    </div>
+
+</div>
+ *@
+
+<div class="ch-header-inner">
+
+    <a asp-controller="Home" asp-action="Index" class="ch-brand">
+        <svg class="ch-brand-icon" viewBox="0 0 40 40" fill="none">
+            <path d="M20 2 L36 11 V29 L20 38 L4 29 V11 Z" fill="var(--md3-primary)" />
+            <path d="M12 20.5 L17.5 26 L28.5 14" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        </svg>
+        <span class="ch-brand-name">Договоры</span>
+    </a>
+
+    <nav class="ch-main-nav">
+
+        <!-- ---- Договоры: full-width hover-меню ---- -->
+        <div class="ch-nav-item" data-ch-fw-trigger="ch-fw-contracts">
+            <button class="ch-nav-link" id="ch-trig-contracts">
+                Договоры
+                <svg class="ch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+        </div>
+
+        <!-- ---- Инжиниринговые услуги: full-width hover-меню ---- -->
+        <div class="ch-nav-item" data-ch-fw-trigger="ch-fw-engineering">
+            <button class="ch-nav-link" id="ch-trig-engineering">
+                Инжиниринговые услуги
+                <svg class="ch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+        </div>
+
+        <!-- ---- Разделы: тот же hover full-width тип, что у Договоров/Услуг ---- -->
+        <div class="ch-nav-item" data-ch-fw-trigger="ch-fw-sections">
+            <button class="ch-nav-link" id="ch-trig-sections">
+                Разделы
+                <svg class="ch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+        </div>
+
+    </nav>
+
+    <!-- ---- Full-width панели (вынесены за пределы nav для корректного z-index/ширины) ---- -->
+    <div class="ch-fw-panel" id="ch-fw-contracts">
+        <div class="ch-fw-panel-inner">
+            <a class="ch-fw-card" asp-controller="Contracts" asp-action="Index">
+                <span class="ch-fw-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M9 13h6M9 17h6" /></svg></span>
+                <span><span class="ch-fw-card-title">Текущие договоры</span><br><span class="ch-fw-card-sub">Активный реестр договоров компании: статусы, сроки, финансы по каждому договору</span></span>
+            </a>
+            <a class="ch-fw-card" asp-controller="Contracts" asp-action="IndexArch">
+                <span class="ch-fw-card-icon ch-archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1" /><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /><line x1="10" y1="12" x2="14" y2="12" /></svg></span>
+                <span><span class="ch-fw-card-title">Архив договоров</span><br><span class="ch-fw-card-sub">Завершённые и закрытые договоры, доступные только для просмотра</span></span>
+            </a>
+        </div>
+    </div>
+
+    <div class="ch-fw-panel" id="ch-fw-engineering">
+        <div class="ch-fw-panel-inner">
+            <a class="ch-fw-card" asp-action="Engineerings" asp-controller="Contracts">
+                <span class="ch-fw-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg></span>
+                <span><span class="ch-fw-card-title">Текущие инжиниринговые услуги</span><br><span class="ch-fw-card-sub">Активный реестр договоров на инжиниринговые услуги</span></span>
+            </a>
+            <a class="ch-fw-card" asp-controller="Contracts" asp-action="EngineeringsArch">
+                <span class="ch-fw-card-icon ch-archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1" /><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /><line x1="10" y1="12" x2="14" y2="12" /></svg></span>
+                <span><span class="ch-fw-card-title">Архив инжиниринговых услуг</span><br><span class="ch-fw-card-sub">Завершённые договоры на инжиниринговые услуги</span></span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ---- Разделы: та же full-width панель, 3 колонки вместо 2 карточек ---- -->
+    <div class="ch-fw-panel ch-fw-panel-cols3" id="ch-fw-sections">
+        <div class="ch-fw-panel-inner">
+
+            <div class="ch-launcher-col">
+                <div class="ch-launcher-col-title">Справочники</div>
+                <a class="ch-mega-item" asp-controller="Organizations" asp-action="Index">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14" /></svg></span>
+                    <span><span class="ch-mega-item-title">Организации</span><br><span class="ch-mega-item-sub">Реестр контрагентов</span></span>
+                </a>
+                <a class="ch-mega-item" asp-controller="Employees" asp-action="Index">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4" /><path d="M4 21v-1a7 7 0 0 1 16 0v1" /></svg></span>
+                    <span><span class="ch-mega-item-title">Сотрудники</span><br><span class="ch-mega-item-sub">Подписанты, отв. лица</span></span>
+                </a>
+                @*  <a class="ch-mega-item" href="#">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg></span>
+                    <span><span class="ch-mega-item-title">Виды работ</span><br><span class="ch-mega-item-sub">Классификатор работ</span></span>
+                </a>
+                <a class="ch-mega-item" href="#">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v10" /></svg></span>
+                    <span><span class="ch-mega-item-title">Валюты и курсы</span><br><span class="ch-mega-item-sub">Курсы на дату</span></span>
+                </a>
+                <a class="ch-mega-item" href="#">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2" /></svg></span>
+                    <span><span class="ch-mega-item-title">Источники финанс-я</span><br><span class="ch-mega-item-sub">Справочник ИФ</span></span>
+                </a> *@
+            </div>
+
+            <div class="ch-launcher-col">
+                <div class="ch-launcher-col-title">Аналитика / Мониторинг</div>
+                <a class="ch-mega-item" asp-controller="Home" asp-action="Index">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20M6 15h4" /></svg></span>
+                    <span><span class="ch-mega-item-title">Денежные средства к оплате</span><br><span class="ch-mega-item-sub">Контроль платежей</span></span>
+                </a>
+@*                 <a class="ch-mega-item" asp-controller="Payments" asp-action="GetPayableCash">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20M6 15h4" /></svg></span>
+                    <span><span class="ch-mega-item-title">Денежные средства к оплате</span><br><span class="ch-mega-item-sub">Контроль платежей</span></span>
+                </a>
+ *@                @* <a class="ch-mega-item" href="#">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg></span>
+                    <span><span class="ch-mega-item-title">Просроченные договоры</span><br><span class="ch-mega-item-sub">Контроль сроков</span></span>
+                </a>
+                <a class="ch-mega-item" href="#">
+                    <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18" /><path d="M7 15l4-5 3 3 5-7" /></svg></span>
+                    <span><span class="ch-mega-item-title">Динамика выполнения работ</span><br><span class="ch-mega-item-sub">Графики и тренды</span></span>
+                </a> *@
+            </div>
+
+            <div class="ch-launcher-col">
+                @if (permissions is not null && (permissions.IsReader && permissions.GroupeName.Contains(Constants.GRP_REPORT)))
+                {
+                    <div class="ch-launcher-col-title">Отчёты</div>
+                    <a class="ch-mega-item" asp-controller="Report" asp-action="SelectContractProperties">
+                        <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /></svg></span>
+                        <span><span class="ch-mega-item-title">Договоры</span><br><span class="ch-mega-item-sub">Сводный отчёт</span></span>
+                    </a>
+                    <a class="ch-mega-item" asp-controller="Report" asp-action="FilterPayableCash">
+                        <span class="ch-mega-item-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" /></svg></span>
+                        <span><span class="ch-mega-item-title">Денежные средства к оплате</span><br><span class="ch-mega-item-sub">Отчёт по платежам</span></span>
+                    </a>
+                }
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ---- Правый блок ---- -->
+    <div class="ch-header-right">
+        
+        @{
+            var user1 = @User?.Identities?.FirstOrDefault()?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value?.Split(' ');
+        }
+
+        @if ((User?.Identity == null) || (!(User.Identity.IsAuthenticated)))
+        {
+            <a class="ch-user-dropdown-item ch-login-item" asp-controller="Account" asp-action="Login">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                    <polyline points="10 17 15 12 10 7" />
+                    <line x1="15" y1="12" x2="3" y2="12" />
+                </svg>
+                Войти
+            </a>
+        }
+        else
+        {
+            <a href="/release-notes" class="ch-icon-btn" title="Уведомления">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
+                <span class="ch-badge-count" id="release-notes-badge"></span>
+            </a>
+            <div class="ch-user-menu">
+                <button class="ch-user-trigger" aria-expanded="false" data-ch-user-toggle>
+                    <span class="ch-user-avatar">@user1?.FirstOrDefault()?.FirstOrDefault()@user1?.LastOrDefault()?.FirstOrDefault() </span>
+                    <span class="ch-user-name">@User?.Identities?.FirstOrDefault()?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value </span>
+                    <svg class="ch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" /></svg>
+                </button>
+                <div class="ch-user-dropdown" id="ch-user-dropdown">
+                    @if (permissions is not null && permissions.IsLeadAdmin)
+                    {
+                        <a class="ch-user-dropdown-item admin-room" href="~/admin/dashboard" title="Видно только администраторам">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+                            Админка
+                        </a>
+                    }
+                    <div class="ch-user-dropdown-divider"></div>
+                    <a class="ch-user-dropdown-item" asp-controller="Account" asp-action="Logout">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                        Выйти
+                    </a>
+                </div>
+            </div>
+        }
+
+        <button class="ch-burger-btn" data-ch-burger-open title="Меню">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="17" x2="20" y2="17" /></svg>
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ==================== МОБИЛЬНАЯ ПАНЕЛЬ ====================
+     Эти два div'а и <script> ниже — ОБЯЗАТЕЛЬНАЯ часть компонента.
+     Без них бургер-кнопка выше не будет иметь ни панели для открытия,
+     ни обработчиков событий. Именно их отсутствие в partial было
+     причиной "бургер не работает" в прошлый раз. ==================== -->
+<div class="ch-mobile-overlay" id="ch-mobile-overlay" data-ch-burger-close></div>
+<div class="ch-mobile-panel" id="ch-mobile-panel">
+    <div class="ch-mobile-panel-header">
+        <a asp-controller="Home" asp-action="Index" class="ch-brand" style="margin:0;">
+            <svg class="ch-brand-icon" viewBox="0 0 40 40" fill="none" style="width:28px;height:28px;">
+                <path d="M20 2 L36 11 V29 L20 38 L4 29 V11 Z" fill="var(--md3-primary)" />
+                <path d="M12 20.5 L17.5 26 L28.5 14" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            </svg>
+            <span class="ch-brand-name" style="display:inline; font-size:15px;">Договоры</span>
+        </a>
+        <button class="ch-mobile-panel-close" data-ch-burger-close>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="6" y1="6" x2="18" y2="18" /><line x1="6" y1="18" x2="18" y2="6" /></svg>
+        </button>
+    </div>
+    <nav class="ch-mobile-nav">
+
+        <a class="ch-mobile-nav-link" aria-expanded="false" data-ch-mobile-accordion="ch-m-contracts">
+            Договоры
+            <svg class="ch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M9 6l6 6-6 6" /></svg>
+        </a>
+        <div class="ch-mobile-accordion-body" id="ch-m-contracts">
+            <a class="ch-mobile-mega-item" asp-controller="Contracts" asp-action="Index"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /></svg>Текущие договоры</a>
+            <a class="ch-mobile-mega-item" asp-controller="Contracts" asp-action="IndexArch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1" /></svg>Архив договоров</a>
+        </div>
+
+        <a class="ch-mobile-nav-link" aria-expanded="false" data-ch-mobile-accordion="ch-m-engineering">
+            Инжиниринговые услуги
+            <svg class="ch-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M9 6l6 6-6 6" /></svg>
+        </a>
+        <div class="ch-mobile-accordion-body" id="ch-m-engineering">
+            <a class="ch-mobile-mega-item" asp-action="Engineerings" asp-controller="Contracts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>Текущие инжиниринговые услуги</a>
+            <a class="ch-mobile-mega-item" asp-controller="Contracts" asp-action="EngineeringsArch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1" /></svg>Архив инжиниринговых услуг</a>
+        </div>
+
+        <div class="ch-mobile-section-title">Справочники</div>
+        <a class="ch-mobile-mega-item" asp-controller="Organizations" asp-action="Index"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14" /></svg>Организации</a>
+        <a class="ch-mobile-mega-item" asp-controller="Employees" asp-action="Index"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4" /><path d="M4 21v-1a7 7 0 0 1 16 0v1" /></svg>Сотрудники</a>
+        @* <a class="ch-mobile-mega-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>Виды работ</a>
+        <a class="ch-mobile-mega-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v10" /></svg>Валюты и курсы</a>
+        <a class="ch-mobile-mega-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2" /></svg>Источники финансирования</a> *@
+
+        <div class="ch-mobile-section-title">Аналитика / Мониторинг</div>
+        <a class="ch-mobile-mega-item" asp-controller="Home" asp-action="Index"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" /></svg>Денежные средства к оплате</a>
+@*         <a class="ch-mobile-mega-item" asp-controller="Payments" asp-action="GetPayableCash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" /></svg>Денежные средства к оплате</a>
+ *@        @* <a class="ch-mobile-mega-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /></svg>Просроченные договоры</a>
+        <a class="ch-mobile-mega-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18" /></svg>Динамика выполнения работ</a> *@
+        @if (permissions is not null && (permissions.IsReader && permissions.GroupeName.Contains(Constants.GRP_REPORT)))
+        {
+            <div class="ch-mobile-section-title">Отчёты</div>
+            <a class="ch-mobile-mega-item" asp-controller="Report" asp-action="SelectContractProperties"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /></svg>Договоры</a>
+            <a class="ch-mobile-mega-item" asp-controller="Report" asp-action="FilterPayableCash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" /></svg>Денежные средства к оплате</a>
+        }
+    </nav>
+
+    <div class="ch-mobile-panel-footer">
+        <div class="ch-mobile-user">
+            <span class="ch-user-avatar">ИП</span>
+            <span style="font-size:13.5px; font-weight:600;">Иван Петров</span>
+        </div>
+        <a class="ch-mobile-admin" href="~/admin/dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+            Админка
+        </a>
+        @if ((User?.Identity == null) || (!(User.Identity.IsAuthenticated)))
+        {
+            <a class="ch-mobile-logout" asp-controller="Account" asp-action="Login">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                Войти
+            </a>
+
+        }
+        else
+        {
+            <a class="ch-mobile-logout" asp-controller="Account" asp-action="Logout">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                Выйти
+            </a>
+        }
+
+    </div>
+</div>
+
+<script>
+    (function(){
+      'use strict';
+
+      function ready(fn){
+        if(document.readyState !== 'loading'){ fn(); }
+        else{ document.addEventListener('DOMContentLoaded', fn); }
+      }
+
+      ready(function(){
+
+        /* ---- hover full-width меню с задержками открытия/закрытия ---- */
+        var OPEN_DELAY = 180;
+        var CLOSE_DELAY = 250;
+        var openTimer = null, closeTimer = null;
+        var currentFwPanel = null, currentFwTrigger = null;
+
+        function openFw(navItemEl, panelId){
+          closeFwImmediate();
+          var panel = document.getElementById(panelId);
+          var trigger = navItemEl.querySelector('.ch-nav-link');
+          if(!panel || !trigger) return;
+          panel.classList.add('ch-open');
+          trigger.classList.add('ch-is-open');
+          currentFwPanel = panel; currentFwTrigger = trigger;
+        }
+        function scheduleOpenFw(navItemEl, panelId){
+          clearTimeout(closeTimer); clearTimeout(openTimer);
+          openTimer = setTimeout(function(){ openFw(navItemEl, panelId); }, OPEN_DELAY);
+        }
+        function scheduleCloseFw(){
+          clearTimeout(openTimer); clearTimeout(closeTimer);
+          closeTimer = setTimeout(closeFwImmediate, CLOSE_DELAY);
+        }
+        function cancelCloseFw(){ clearTimeout(closeTimer); }
+        function closeFwImmediate(){
+          if(currentFwPanel){ currentFwPanel.classList.remove('ch-open'); }
+          if(currentFwTrigger){ currentFwTrigger.classList.remove('ch-is-open'); }
+          currentFwPanel = null; currentFwTrigger = null;
+        }
+
+        document.querySelectorAll('[data-ch-fw-trigger]').forEach(function(navItemEl){
+          var panelId = navItemEl.getAttribute('data-ch-fw-trigger');
+          navItemEl.addEventListener('mouseenter', function(){ scheduleOpenFw(navItemEl, panelId); });
+          navItemEl.addEventListener('mouseleave', scheduleCloseFw);
+        });
+        document.querySelectorAll('.ch-fw-panel').forEach(function(panelEl){
+          panelEl.addEventListener('mouseenter', cancelCloseFw);
+          panelEl.addEventListener('mouseleave', scheduleCloseFw);
+        });
+
+        /* ---- меню пользователя ---- */
+        var userTrigger = document.querySelector('[data-ch-user-toggle]');
+        var userDropdown = document.getElementById('ch-user-dropdown');
+        if(userTrigger && userDropdown){
+          userTrigger.addEventListener('click', function(e){
+            e.stopPropagation();
+            var isOpen = userDropdown.classList.contains('ch-open');
+            userDropdown.classList.toggle('ch-open', !isOpen);
+            userTrigger.setAttribute('aria-expanded', String(!isOpen));
+          });
+          document.addEventListener('click', function(e){
+            if(userDropdown.classList.contains('ch-open') &&
+               !userDropdown.contains(e.target) && !userTrigger.contains(e.target)){
+              userDropdown.classList.remove('ch-open');
+              userTrigger.setAttribute('aria-expanded', 'false');
+            }
+          });
+        }
+
+        /* ---- мобильная панель: портал в body + addEventListener ---- */
+        var overlayEl = document.getElementById('ch-mobile-overlay');
+        var panelEl   = document.getElementById('ch-mobile-panel');
+        var burgerOpenBtns  = document.querySelectorAll('[data-ch-burger-open]');
+        var burgerCloseEls  = document.querySelectorAll('[data-ch-burger-close]');
+
+        if(overlayEl && panelEl){
+          // переносим оба узла в самый конец body — исключает влияние
+          // чужого transform/overflow/z-index на родителях шапки/layout
+          document.body.appendChild(overlayEl);
+          document.body.appendChild(panelEl);
+
+          function openMobilePanel(){
+            overlayEl.classList.add('ch-open');
+            panelEl.classList.add('ch-open');
+            document.body.style.overflow = 'hidden';
+          }
+          function closeMobilePanel(){
+            overlayEl.classList.remove('ch-open');
+            panelEl.classList.remove('ch-open');
+            document.body.style.overflow = '';
+          }
+
+          burgerOpenBtns.forEach(function(btn){
+            btn.addEventListener('click', openMobilePanel);
+          });
+          burgerCloseEls.forEach(function(el){
+            el.addEventListener('click', closeMobilePanel);
+          });
+          document.addEventListener('keydown', function(e){
+            if(e.key === 'Escape' && panelEl.classList.contains('ch-open')){ closeMobilePanel(); }
+          });
+        }
+
+        /* ---- аккордеоны внутри мобильной панели ---- */
+        document.querySelectorAll('[data-ch-mobile-accordion]').forEach(function(link){
+          var bodyId = link.getAttribute('data-ch-mobile-accordion');
+          var body = document.getElementById(bodyId);
+          if(!body) return;
+          link.addEventListener('click', function(e){
+            e.preventDefault();
+            var isOpen = body.classList.contains('ch-open');
+            body.classList.toggle('ch-open', !isOpen);
+            link.setAttribute('aria-expanded', String(!isOpen));
+          });
+        });
+
+      });
+    })();
+</script>
+
+
+@* 
 <nav class="navbar navbar-expand-xl navbar-toggler-xl  navbar-light bg-white border-bottom box-shadow mb-3 navbar_shadow">
     <div class="container-fluid">
         <button style="margin-bottom: 1%;" class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
@@ -126,7 +630,7 @@
                         <li><hr class="dropdown-divider"></li>
 
                         <li><a class="text-dark dropdown-item" asp-area="" asp-controller="ScopeWorks" asp-action="GetCostDeviation">Мониторинг выполнения графика производства работ</a></li>
-                        <li><hr class="dropdown-divider"></li> *@
+                        <li><hr class="dropdown-divider"></li> 
 
                         <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Payments" asp-action="GetPayableCash">Денежные средства по договорам, подлежащие к оплате</a></li>
 
@@ -169,44 +673,11 @@
 
                         </ul>
                     </li>
-                    @*  @if (permissions is not null && permissions.IsLeadAdmin)
-                    {
-                        <li class="nav-item dropdown">
-                            <a class="btn-prizrac dropdown-toggle dropbtn agr_hover nav-link" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                "АД"
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="text-dark dropdown-item" href="~/admin/dashboard">Кабинет</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="text-dark dropdown-item" asp-controller="Admin" asp-action="CreateReport" asp-route-daysCount="7">Сформировать отчет</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="text-dark dropdown-item" asp-controller="Admin" asp-action="SendReport" asp-route-daysCount="7">Отправить сформированный отчет</a></li>
-
-                            </ul>
-                        </li>
-                    } *@
-
+                   
                 }
 
             </ul>
-            @*  <ul class="navbar-nav flex-grow-1">
-            @if (User?.Identity is { IsAuthenticated: true })
-            {
-            <li style="line-height:35px; margin-right:30px;">Пользователь - @User.Identity.Name</li>
-            <li class="nav-item">
-            <form asp-action="Logout" asp-controller="Authentication" method="post">
-            <button class="btn btn-danger" type="submit">Sign out</button>
-            </form>
-            </li>
-            }
-            @if (User?.Identity is { IsAuthenticated: false })
-            {
-            <li class="nav-item">
-            <a class="nav-link text-white btn btn-sm btn-primary" asp-area="" asp-controller="Authentication" asp-action="Login">Войти</a>
-            </li>
-            }
-            </ul> *@
-
+            
         </div>
         <ul class="navbar-nav log_flex">
             @if ((User.Identity == null) || (!(User.Identity.IsAuthenticated)))
@@ -242,3 +713,4 @@
 
     </div>
 </nav>
+ *@

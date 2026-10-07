@@ -5,17 +5,40 @@
     var permissions = HttpHelper.GetUserPermissions();
     ViewData["Title"] = "Cотрудники";
 }
-
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
+<style>
+    .dm-modal {
+        width: min(90vw, 1600px) !important;
+        max-width: 1600px !important;
+    }
+</style>
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
             <div class="dm-modal">
+
                 <div class="top-modal-block flex-column">
-                    <div class="input-group m-2">
-                        <span class="my-modal-title m-auto">@ViewData["Title"]</span>
-                        <a asp-controller="Home" asp-action="" class="close-btn"></a>
+                    <!-- Шапка -->
+                    <div class="am-header">
+                        <span class="am-header-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                            </svg>
+                        </span>
+                        <div class="am-header-info">
+                            <h1 class="am-header-title">
+                                @ViewData["Title"]
+                            </h1>
+                            <div class="am-header-sub">Список сотрудников — просмотр, редактирование и удаление</div>
+                        </div>
+                        <div class="am-header-actions">
+                            <a asp-controller="Home" asp-action="" class="close-btn" aria-label="Закрыть"></a>
+                        </div>
                     </div>
-                    
                     <div class="header-view no-title">
                         <div class="box-btn">
                             <div class="btn btn-warning reset-btn btn-ctr" style="display:none !important">Сбросить фильтры</div>
@@ -28,7 +51,7 @@
                             }
                         </div>
                     </div>
-                    <hr class="modal-line" />
+
                     <div id="containerTable">
                         <!-- Форма поиска -->
                         <div class="search-container">
@@ -46,63 +69,64 @@
                                             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                                         </svg>
                                     </button>
-                                    @*<div class="md3-input-hint">
-                        Используйте * для поиска по маске
-                    </div>*@
                                 </div>
                             </div>
                         </div>
-                        <div class="wrapper-table" style="max-height:500px; overflow-y:scroll">
-                            <table class="table table-bordered table-employee table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>
-                                            <span class="column_300">ФИО</span>
-                                            <div class="inline-block-icons">
-                                                <div class="sort-btn" data-content-sort="fullName">
-                                                    <span class="column-sorter-up" title="Сортировка по возрастанию">
-                                                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                                            <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
-                                                        </svg>
-                                                    </span>
-                                                    <span class="column-sorter-down" title="Сортировка по убыванию">
-                                                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                                            <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
-                                                        </svg>
-                                                    </span>
-                                                </div>
-                                                <div class="icon-sm search_icon search_img_btn" data-content-search="fullName" title="Поиск сотрудника по ФИО" alt="Поиск сотрудника"></div>
-                                            </div>
-                                        </th>
-                                        <th>
-                                            <span class="column_150">Электронная почта</span>
-                                            <div class="inline-block-icons">
-                                                <div class="sort-btn" data-content-sort="email">
-                                                    <span class="column-sorter-up" title="Сортировка по возрастанию">
-                                                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                                            <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
-                                                        </svg>
-                                                    </span>
-                                                    <span class="column-sorter-down" title="Сортировка по убыванию">
-                                                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                                                            <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
-                                                        </svg>
-                                                    </span>
-                                                </div>
-                                                <div class="icon-sm search_icon search_img_btn" data-content-search="email" title="Поиск сотрудника по электронной почте" alt="Поиск сотрудника по Email"></div>
-                                            </div>
-                                        </th>
-                                        <th>
-                                            <span class="column_130">Телефон</span>
-                                        </th>
-                                        <th>
-                                            <span class="column_100">Действие</span>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody class="table_tbody">                                    
-                                </tbody>
-                            </table>
+                        <div class="am-card" style="border-radius: unset;border-top-right-radius: var(--md3-radius-lg);border-top-left-radius: var(--md3-radius-lg);">
+                            <div class="am-table-scroll">
+                                @* <div class="wrapper-table" style="max-height:500px; overflow-y:scroll"> *@
+                                    <table class="am-table">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    <span class="column_300">ФИО</span>
+                                                    <div class="inline-block-icons">
+                                                        <div class="sort-btn" data-content-sort="fullName">
+                                                            <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                                    <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                                                </svg>
+                                                            </span>
+                                                            <span class="column-sorter-down" title="Сортировка по убыванию">
+                                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                                    <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                                                </svg>
+                                                            </span>
+                                                        </div>
+                                                    <div class="icon-sm search_icon search_img_btn" data-content-search="fullName" title="Поиск сотрудника по ФИО" alt="Поиск сотрудника" style="filter: contrast(0.25);"></div>
+                                                    </div>
+                                                </th>
+                                                <th>
+                                                    <span class="column_150">Электронная почта</span>
+                                                    <div class="inline-block-icons">
+                                                        <div class="sort-btn" data-content-sort="email">
+                                                            <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                                    <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                                                </svg>
+                                                            </span>
+                                                            <span class="column-sorter-down" title="Сортировка по убыванию">
+                                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                                    <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                                                </svg>
+                                                            </span>
+                                                        </div>
+                                                    <div class="icon-sm search_icon search_img_btn" data-content-search="email" title="Поиск сотрудника по электронной почте" alt="Поиск сотрудника по Email" style="filter: contrast(0.25);"></div>
+                                                    </div>
+                                                </th>
+                                                <th>
+                                                    <span class="column_130">Телефон</span>
+                                                </th>
+                                                <th>
+                                                    <span class="column_100">Действие</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="table_tbody">
+                                        </tbody>
+                                    </table>
+                                @* </div> *@
+                            </div>
                         </div>
                         <div class="footer-page">
                             <!-- Pagination block -->
@@ -134,7 +158,7 @@
                                 </li>
                             </ul>
                         </div>
-                    </div>                   
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,84 +1,210 @@
-﻿@using BusinessLayer.Enums;
-@using BusinessLayer.Interfaces.Shared
+﻿@using BusinessLayer.Interfaces.Shared
 @using BusinessLayer.Models.KDO
+@inject IWebHostEnvironment _env;
 @model List<FileDTO>
 @inject IConverterService Converter
-@inject IHttpContextUserProvider HttpHelper
+
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 <link href="~/kendoui/upload_style.css" rel="stylesheet" />
+
 @{
-    var permissions = HttpHelper.GetUserPermissions();
-    ViewData["Title"] = $"Файлы договора";
+    ViewData["Title"] = "Файлы";
+    
+    string action = ViewBag.redirectAction is not null
+        ? ViewBag.redirectAction
+        : "IndexArch";
 
-    string controller = ViewBag.redirectController is not null || ViewBag.redirectController == "Files" ? ViewBag.redirectController : "Contracts";
-    string action = ViewBag.redirectAction is not null ? ViewBag.redirectAction : "IndexArch";
-    var routeValue = !action.Equals("IndexArch", StringComparison.OrdinalIgnoreCase) 
-                        && ViewBag.entityId is not null ? 
-                        ("?id=" + ViewBag.entityId) :
-                        null;
+    int backId = ViewBag.returnContractId == 0
+        ? (int)ViewBag.entityId
+        : (int)ViewBag.returnContractId;
 
-    if (ViewBag.returnContractId != 0)
-        routeValue = "?id=" + ViewBag.returnContractId;
+    var routeValue = !action.Equals("IndexArch", StringComparison.OrdinalIgnoreCase) && ViewBag.entityId is not null
+        ? ViewBag.entityId
+        : null;
+
+    var contract = ViewBag.contractId is > 0
+        ? Contract.GetById((int)ViewData["contractId"], useArchiveData: true)
+        : Contract.GetById(routeValue, useArchiveData: true);
 }
 
-<style>
-    .file_list_item {
-        display: flex;
-        align-items: center;
-    }
-</style>
+<svg style="display:none">
+    <defs>
 
+        <symbol id="ic-img-file" viewBox="0 0 24 24">
+            <path d="M5 4a2 2 0 0 1 2-2h9l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" fill="#0e9594"></path>
+            <path d="M16 2v5h5" fill="#0c7f7e"></path>
+            <circle cx="9.5" cy="11" r="1.6" fill="#ffffff"></circle>
+            <path d="M6.5 17.5l3.6-3.8a1 1 0 0 1 1.4 0l2 2.1 1.6-1.7a1 1 0 0 1 1.4 0l1.8 1.9" fill="none" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path>
+        </symbol>
+
+        <symbol id="ic-docx-file" viewBox="0 0 24 24">
+            <path d="M5 4a2 2 0 0 1 2-2h9l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" fill="#2b579a"></path>
+            <path d="M16 2v5h5" fill="#1e3f73"></path>
+            <rect x="5" y="15.5" width="14" height="6" rx="1" fill="#1e3f73"></rect>
+            <text x="12" y="20" text-anchor="middle" font-size="5.4" font-weight="700" fill="#ffffff" font-family="Arial, sans-serif">DOC</text>
+        </symbol>
+
+        <symbol id="ic-excel-file" viewBox="0 0 24 24">
+            <path d="M5 4a2 2 0 0 1 2-2h9l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" fill="#1e7145"></path>
+            <path d="M16 2v5h5" fill="#155432"></path>
+            <rect x="5" y="15.5" width="14" height="6" rx="1" fill="#155432"></rect>
+            <text x="12" y="20" text-anchor="middle" font-size="5.4" font-weight="700" fill="#ffffff" font-family="Arial, sans-serif">XLS</text>
+        </symbol>
+
+        <symbol id="ic-pdf-file" viewBox="0 0 24 24">
+            <path d="M5 4a2 2 0 0 1 2-2h9l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" fill="#d32f2f"></path>
+            <path d="M16 2v5h5" fill="#a11f1f"></path>
+            <rect x="5" y="15.5" width="14" height="6" rx="1" fill="#a11f1f"></rect>
+            <text x="12" y="20" text-anchor="middle" font-size="5.4" font-weight="700" fill="#ffffff" font-family="Arial, sans-serif">PDF</text>
+        </symbol>
+
+        <symbol id="ic-zip-file" viewBox="0 0 24 24">
+            <path d="M5 4a2 2 0 0 1 2-2h9l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" fill="#f5a623"></path>
+            <path d="M16 2v5h5" fill="#c9820f"></path>
+            <rect x="5" y="15.5" width="14" height="6" rx="1" fill="#c9820f"></rect>
+            <text x="12" y="20" text-anchor="middle" font-size="5.4" font-weight="700" fill="#ffffff" font-family="Arial, sans-serif">ZIP</text>
+        </symbol>
+
+        <symbol id="ic-rar-file" viewBox="0 0 24 24">
+            <path d="M5 4a2 2 0 0 1 2-2h9l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" fill="#8e5cd9"></path>
+            <path d="M16 2v5h5" fill="#6c3fb0"></path>
+            <rect x="5" y="15.5" width="14" height="6" rx="1" fill="#6c3fb0"></rect>
+            <text x="12" y="20" text-anchor="middle" font-size="5.4" font-weight="700" fill="#ffffff" font-family="Arial, sans-serif">RAR</text>
+        </symbol>
+
+        <symbol id="ic-default-file" viewBox="0 0 24 24">
+            <path d="M5 4a2 2 0 0 1 2-2h9l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" fill="#9aa5b1"></path>
+            <path d="M16 2v5h5" fill="#78828d"></path>
+            <line x1="8" y1="12" x2="16" y2="12" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"></line>
+            <line x1="8" y1="15" x2="16" y2="15" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"></line>
+            <line x1="8" y1="18" x2="13" y2="18" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round"></line>
+        </symbol>
+
+    </defs>
+</svg>
+<style>
+    .dm-modal {
+        width: min(90vw, 1000px) !important;
+        max-width: 1600px !important;
+    }
+
+</style>
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="width:800px;">
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a href="~/archive/@controller/@action@routeValue" class="close-btn"></a>
+            <div class="dm-modal">
+                <div class="am-wrap">
+                    <!-- Шапка -->
+                    <div class="am-header">
+                        <span class="am-header-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                            </svg>
+                        </span>
+                        <div class="am-header-info">
+                            <h1 class="am-header-title">
+                                @ViewData["Title"]
+                                @if (contract != null)
+                                {
+                                    <span>прикрепленные к договору <span style="color:var(--md3-primary);">№@contract?.Number</span></span>
+                                }
+                            </h1>
+                        </div>
+                        <div class="am-header-actions">
+                            <a asp-controller="Contracts" asp-action="DetailsArch" asp-route-id="@backId" class="close-btn" aria-label="Закрыть"></a>
+                        </div>
+                    </div>
+                    
+                    <!-- Карточка -->
+                    <div class="am-card" style="min-width:400px; max-width: 1000px;">
+                        @if (Model.Any())
+                        {
+                            <div class="am-table-scroll">
+                                <table class="am-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="">Название</th>
+                                            <th class="">Расширение</th>
+                                            <th class="">Размер</th>                                           
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model)
+                                        {
+                                            var pointIndex = item?.FileName?.LastIndexOf('.');
+                                            var typeFileValue = item?.FileName?.Substring((int)pointIndex + 1);
+                                            var iconName = Converter.GetIconNames(typeFileValue);
+
+                                            <tr>
+
+                                                <!-- Название -->
+                                                <td class="col-40per-250max">
+
+                                                    <div>
+                                                        <svg width="22" height="22"><use href="#@iconName"></use></svg>
+                                                        <a href="~/Files/OpenFile?id=@item?.Id&useArchiveData=true" target="_blank">@item?.FileName</a>
+                                                    </div>
+                                                </td>
+                                                <!-- Тип -->
+                                                <td class="col-8per-110max" style="min-width: fit-content;">
+                                                    .@typeFileValue
+                                                </td>
+                                                <!-- Размер -->
+                                                <td class="col-5per-50max-files">
+                                                    <div>
+                                                        @{
+                                                            double? size = null;
+                                                            if (File.Exists(_env.WebRootPath + item.FilePath))
+                                                            {
+                                                                size = new FileInfo(_env.WebRootPath + item.FilePath).Length / 1024.0;
+                                                            }
+                                                        }
+                                                        @size?.ToString("N2") KB
+                                                    </div>
+
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Подвал с итогами -->
+                            <div class="am-footer-row">
+                                <span class="am-footer-badge count">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="8" y1="6" x2="21" y2="6" />
+                                        <line x1="8" y1="12" x2="21" y2="12" />
+                                        <line x1="8" y1="18" x2="21" y2="18" />
+                                        <line x1="3" y1="6" x2="3.01" y2="6" />
+                                        <line x1="3" y1="12" x2="3.01" y2="12" />
+                                        <line x1="3" y1="18" x2="3.01" y2="18" />
+                                    </svg>
+                                    Файлов: @Model.Count()
+                                </span>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Пустое состояние -->
+                            <div class="am-empty">
+                                <svg class="am-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <line x1="9" y1="13" x2="15" y2="13" />
+                                </svg>
+                                <p class="am-empty-text">Прикрепленные файлы отсутствуют</p>
+                            </div>
+                        }
+                    </div>
                 </div>
-                <hr class="modal-line" />
-                @if (Model.Any())
-                {
-                    <div id="example" style="min-width:400px; max-width: 800px;">
-                        <div class='file-wrapper'>
-                            @foreach (var item in Model)
-                            {
-                                var pointIndex = item?.FileName?.LastIndexOf('.');
-                                var typeFileValue = item?.FileName?.Substring((int)pointIndex + 1);
-                                var classType = Converter.GetFileClass(typeFileValue);
-
-                                <div class="file_list_item">
-                                    <span class="file-icon @classType"></span>
-                                    <h4 class='file-heading file-name-heading'>
-                                        Название: <a href="~/Files/OpenFile?id=@item.Id&useArchiveData=true" target="_blank">@item.FileName</a>
-                                    </h4>
-
-                                    <strong style="display:flex; align-items:center">                                        
-                                    </strong>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                        <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
-                        </symbol>
-                        <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
-                        </symbol>
-                        <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-                        </symbol>
-                    </svg>
-                    <div class="alert alert-warning d-flex align-items-center" role="alert">
-                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill" /></svg>
-                        <div>
-                            Отсутствуют данные
-                        </div>
-                    </div>
-                }
             </div>
         </div>
     </div>

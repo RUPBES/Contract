@@ -5,9 +5,11 @@ using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.Settings;
 using DatabaseLayer.Interfaces;
+using DatabaseLayer.Models.KDO;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using Contract = DatabaseLayer.Models.KDO.Contract;
 
@@ -173,7 +175,7 @@ namespace BusinessLayer.Services
                                     message: e.Message,
                                     nameSpace: typeof(ContractService).Name,
                                     methodName: MethodBase.GetCurrentMethod().Name);
-            }           
+            }
         }
 
 
@@ -259,11 +261,12 @@ namespace BusinessLayer.Services
 
         public async Task<bool> MoveToArchive(int contrId)
         {
+            string user = _httpHelper.GetUserName();
             return await Task.Run(() =>
              {
                  bool isSuccessCopy = false;
                  var childrenContracts = GetChildren(contrId);
-                 string user = _httpHelper.GetUserName();
+
                  isSuccessCopy = _database.Contracts.CopyToArchiveDb(contrId, user, _archiveOptions.SourceArchiveDb, _archiveOptions.TargetArchiveDb);
 
                  if (childrenContracts.Count > 0 && isSuccessCopy)
@@ -542,8 +545,77 @@ namespace BusinessLayer.Services
             return childIds;
         }
 
+        /// <summary>
+        /// Проверка на наличие актов ввода у договора, по его ID
+        /// </summary>
+        /// <param name="contractId">ID договора</param>
+        /// <returns>Возвращает true если есть заполненный акт ввода объекта, если нет - false</returns>
+        public bool HasCommissionAct(int? contractId)
+        {
+            if (contractId.HasValue)
+            {
+                //Если есть подобъекты, то у них должны у каждого свои акты ВВОДА быть заполненные!
+                var contract = _database.Contracts.GetById(contractId ?? 0);
+                if (contract is { IsMultiple:true })
+                {
+                    var arrSubobjIds = _database.Contracts.Find(x => x.MultipleContractId == contract.Id).Select(s=> s.Id).ToList();
+                    var countCommissions = _database.CommissionActs.Find(x => arrSubobjIds.Contains(x.ContractId??0))?.Count() ?? 0;
+                    return countCommissions == arrSubobjIds.Count;
+                }
+                return _database.CommissionActs.Find(x => x.ContractId == contractId).Any();
+            }
+            return false;
+        }
 
+        public (DateTime Start, DateTime End)? GetFullPeriodRange(int contractId, bool useArchiveData)
+        {
+            if (contractId < 1)
+            {
+                return null;
+            }
+            var contract = (useArchiveData == true)
+                ? _databaseArch.Contracts.GetById(contractId)
+                : _database.Contracts.GetById(contractId);
 
+            (DateTime start, DateTime end)? period = new()
+            {
+                start = contract.DateBeginWork ?? new DateTime(),
+                end = contract.DateEndWork ?? new DateTime(),
+            };
+
+            var agreement = (useArchiveData == true)
+                    ? _databaseArch.AdditionalTerms.Find(x => x.ContractId == contractId).LastOrDefault()
+                    : _database.AdditionalTerms.Find(x => x.ContractId == contractId).LastOrDefault();
+
+            // Для авансов, начало периода = начало договора (дата подписания)
+            if (period is var (start, end) && agreement?.DueDate is { } date)
+            {
+                if (end.Year <= date.Year && end.Month < date.Month)
+                {
+                    period = (start, date);
+                    return period;
+                }
+            }
+
+            var amendmend = (useArchiveData == true)
+                ? _databaseArch.Amendments.Find(x => x.ContractId == contractId).LastOrDefault()
+                : _database.Amendments.Find(x => x.ContractId == contractId).LastOrDefault();
+
+            // Для авансов, начало периода = начало договора (дата подписания)
+            if (period is var (startAm, endAm) && amendmend?.DateBeginWork is { } dateBgn && amendmend.DateEndWork is { } dataEnd)
+            {
+                if (startAm.Year >= dateBgn.Year && startAm.Month > dateBgn.Month)
+                {
+                    period = (dateBgn, endAm);
+                }
+
+                if (endAm.Year <= dataEnd.Year && endAm.Month < dataEnd.Month)
+                {
+                    period = (startAm, dataEnd);
+                }
+            }
+            return period;
+        }
 
         private dynamic? GetContractTypingProps(int contractId)
         {

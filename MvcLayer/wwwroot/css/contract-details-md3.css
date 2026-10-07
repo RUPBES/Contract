@@ -1,0 +1,818 @@
+﻿html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--md3-surface-2);
+    color: var(--md3-on-surface);
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    width: 100%;
+    max-width: 100%;
+    /* height:90vh; */
+}
+
+.page {
+    max-width: 90%;
+    width: 90vw;
+    margin: 0 auto;
+    padding: 5px 24px 60px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--md3-primary);
+    text-decoration: none;
+    margin-bottom: 5px;
+}
+
+    .back-link:hover {
+        text-decoration: underline;
+    }
+
+    .back-link svg {
+        width: 16px;
+        height: 16px;
+    }
+
+/* ==================== ШАПКА-КАРТОЧКА ГЛАВНОГО ДОГОВОРА ==================== */
+.main-card {
+    background: var(--md3-surface);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-lg);
+    box-shadow: var(--md3-shadow-1);
+    padding: 15px 28px;
+    margin-bottom: 20px;
+}
+
+.main-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    /* margin-bottom: 10px; */
+}
+
+.main-card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.main-num {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--md3-on-surface);
+}
+
+.main-date {
+    font-size: 14px;
+    color: var(--md3-on-surface-low);
+    font-family: var(--font-num);
+}
+
+.status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+    .status-chip .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+.status-active {
+    background: var(--md3-success-light);
+    color: #0f6b50;
+}
+
+    .status-active .dot {
+        background: var(--md3-success);
+    }
+
+.status-overdue {
+    background: var(--md3-error-light);
+    color: var(--md3-error);
+}
+
+    .status-overdue .dot {
+        background: var(--md3-error);
+    }
+
+.main-object {
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--md3-on-surface);
+    max-width: 90%;
+    margin-bottom: 12px;
+}
+
+.clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+    max-width: fit-content;
+}
+
+.empty-dash {
+    color: var(--md3-outline-strong);
+}
+
+.tt-wrap {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.tt-popover {
+    display: none;
+    position: absolute;
+    z-index: 20;
+    top: calc(100% - 1px);
+    left: 0;
+    width: 400px;
+    max-height: 240px;
+    overflow-y: auto;
+    background: var(--md3-on-surface);
+    color: #F2F4F9;
+    font-size: 12.5px;
+    line-height: 1.55;
+    padding: 12px 14px;
+    border-radius: var(--md3-radius-sm);
+    box-shadow: var(--md3-shadow-2);
+}
+
+.tt-wrap:hover .tt-popover {
+    display: block;
+}
+
+.tt-popover::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 16px;
+    width: 10px;
+    height: 10px;
+    background: var(--md3-on-surface);
+    transform: rotate(45deg);
+}
+
+.main-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px 28px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--md3-outline);
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+    .field .lbl {
+        font-size: 11px;
+        color: var(--md3-on-surface-low);
+        text-transform: uppercase;
+        letter-spacing: .02em;
+    }
+
+    .field .val {
+        font-size: 14px;
+        color: var(--md3-on-surface);
+    }
+
+        .field .val.gen {
+            color: var(--md3-gen);
+            font-weight: 600;
+        }
+
+        .field .val.num {
+            font-family: var(--font-num);
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+.val > a,
+.pay-chip > a {
+    text-decoration: none;
+    color: var(--md3-primary);
+    font-weight: 600;
+}
+
+.warn-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 5px;
+    padding: 3px 9px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--md3-error-light);
+    color: var(--md3-error);
+    cursor: pointer;
+    width: fit-content;
+}
+
+    .warn-chip svg {
+        width: 13px;
+        height: 13px;
+    }
+
+    .warn-chip.prolong {
+        background: var(--md3-warning-fill);
+        color: var(--md3-warning);
+    }
+
+.main-people {
+    margin-top: 5px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--md3-outline);
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+    color: var(--md3-on-surface-med);
+}
+
+    .main-people .tt-wrap {
+        width: auto;
+        display: inline-flex;
+    }
+
+    .main-people b {
+        color: var(--md3-on-surface);
+        font-weight: 600;
+    }
+
+/* --- kebab на шапке --- */
+.kebab-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--md3-on-surface-med);
+    flex-shrink: 0;
+    transition: background .12s, color .12s;
+}
+
+    .kebab-btn:hover {
+        background: var(--md3-primary-light);
+        color: var(--md3-primary);
+    }
+
+    .kebab-btn svg {
+        width: 22px;
+        height: 22px;
+    }
+
+.menu-wrap {
+    position: relative;
+}
+
+.action-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    max-width: 300px;
+    max-height: 70vh;
+    overflow-y: auto;
+    z-index: 50;
+    background: var(--md3-surface);
+    border-radius: var(--md3-radius-md);
+    box-shadow: var(--md3-shadow-2);
+    border: 1px solid var(--md3-outline);
+    padding: 6px;
+}
+
+    .action-menu.open {
+        display: block;
+    }
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 2px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--md3-on-surface);
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+    .menu-item:hover {
+        background: var(--md3-surface-3);
+    }
+
+    .menu-item svg {
+        width: 16px;
+        height: 16px;
+        color: var(--md3-on-surface-low);
+        flex-shrink: 0;
+    }
+
+    .menu-item.item-add {
+        color: var(--md3-create);
+    }
+
+        .menu-item.item-add svg {
+            color: var(--md3-create);
+        }
+
+        .menu-item.item-add:hover {
+            background: var(--md3-create-light);
+        }
+
+    .menu-item.item-edit {
+        color: var(--md3-edit);
+    }
+
+        .menu-item.item-edit svg {
+            color: var(--md3-edit);
+        }
+
+        .menu-item.item-edit:hover {
+            background: var(--md3-edit-light);
+        }
+
+    .menu-item.danger {
+        color: var(--md3-error);
+    }
+
+        .menu-item.danger svg {
+            color: var(--md3-error);
+        }
+
+        .menu-item.danger:hover {
+            background: var(--md3-error-light);
+        }
+
+.menu-divider {
+    height: 1px;
+    background: var(--md3-outline);
+    margin: 6px 4px;
+}
+
+.menu-header {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--md3-on-surface-low);
+    padding: 8px 12px 4px;
+}
+
+/* ==================== СЕКЦИЯ "СТРУКТУРА ДОГОВОРА" ==================== */
+.section-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--md3-on-surface-low);
+    margin: 0 0 12px 2px;
+}
+
+/* --- дерево подобъектов --- */
+.tree-block {
+    margin-bottom: 24px;
+}
+
+.tree-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--md3-subobj);
+    margin-bottom: 10px;
+}
+
+    .tree-header svg {
+        width: 18px;
+        height: 18px;
+    }
+
+.tree-count {
+    background: var(--md3-subobj-light);
+    color: var(--md3-subobj);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+}
+
+.tree-node {
+    position: relative;
+    margin-left: 20px;
+    padding-left: 20px;
+    border-left: 2px solid var(--md3-outline);
+    margin-bottom: 10px;
+}
+
+    .tree-node:last-child {
+        border-left: 2px solid transparent;
+    }
+
+    .tree-node::before {
+        content: "";
+        position: absolute;
+        left: -2px;
+        top: 26px;
+        width: 20px;
+        height: 2px;
+        background: var(--md3-outline);
+    }
+
+.tree-node-card {
+    background: var(--md3-surface);
+    border: 1px solid var(--md3-outline);
+    border-left: 3px solid var(--md3-subobj);
+    border-radius: var(--md3-radius-md);
+    box-shadow: var(--md3-shadow-1);
+    overflow: hidden;
+}
+
+.row-grid {
+    display: grid;
+    /* grid-template-columns: 1.3fr 1.6fr 1.6fr 1.1fr 1.6fr 1.2fr 1.2fr 44px; */
+    grid-template-columns: 1fr 1.6fr 1.6fr 1fr 1.5fr 1.2fr 1fr 40px;
+    gap: 0;
+    align-items: start;
+}
+
+    .row-grid > div {
+        padding: 14px 14px;
+        border-right: 1px solid var(--md3-outline-variant, var(--md3-outline));
+    }
+
+        .row-grid > div:last-child {
+            border-right: none;
+        }
+
+    .row-grid > .item-9 {
+        display: flex;
+        grid-column: 1 / -1; /* занимает все 8 колонок = целая нижняя строка */
+    }
+
+.row-cell-num {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.row-num {
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--md3-primary);
+}
+
+.row-date {
+    font-size: 11.5px;
+    color: var(--md3-on-surface-low);
+    font-family: var(--font-num);
+}
+
+.type-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 7px;
+    font-size: 10.5px;
+    font-weight: 700;
+    width: fit-content;
+}
+
+.type-subobj {
+    background: var(--md3-subobj-light);
+    color: var(--md3-subobj);
+}
+
+.type-agreement {
+    background: var(--md3-agreement-light);
+    color: var(--md3-agreement);
+}
+
+.type-subcontract {
+    background: var(--md3-sub-light);
+    color: var(--md3-sub);
+}
+
+.row-object {
+    font-size: 12.5px;
+    line-height: 1.4;
+    max-width: 220px;
+}
+
+    .row-object .clamp-2 {
+        max-width: 220px;
+    }
+
+.row-sides {
+    font-size: 11.5px;
+    line-height: 1.5;
+}
+
+    .row-sides .side-lbl {
+        color: var(--md3-on-surface-low);
+        font-size: 10px;
+        text-transform: uppercase;
+    }
+
+    .row-sides .side-val {
+        margin-bottom: 6px;
+    }
+
+        .row-sides .side-val.gen {
+            color: var(--md3-gen);
+            font-weight: 600;
+        }
+
+        .row-sides .side-val.sub {
+            color: var(--md3-sub);
+            font-weight: 600;
+        }
+
+    .row-sides .empty-dash, .row-object .empty-dash, .row-terms .empty-dash {
+        color: var(--md3-outline-strong);
+    }
+
+.row-deadline {
+    font-size: 11.5px;
+    line-height: 1.5;
+}
+
+    .row-deadline .lbl {
+        color: var(--md3-on-surface-low);
+        font-size: 10.5px;
+    }
+
+    .row-deadline .val {
+        font-family: var(--font-num);
+    }
+
+.row-terms {
+    font-size: 11.5px;
+    line-height: 1.5;
+}
+
+    .row-terms .procedure-link {
+        color: var(--md3-primary);
+        font-weight: 600;
+        text-decoration: none;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+        .row-terms .procedure-link:hover {
+            text-decoration: underline;
+        }
+
+.pay-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 7px;
+    font-size: 10.5px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    width: fit-content;
+}
+
+    .pay-chip.pc-none {
+        background: var(--md3-surface-3);
+        color: var(--md3-on-surface-med);
+    }
+
+    .pay-chip.pc-current {
+        background: var(--md3-indigo-light);
+        color: var(--md3-indigo);
+    }
+
+    .pay-chip.pc-target {
+        background: var(--md3-sub-light);
+        color: var(--md3-sub);
+    }
+
+.pay-terms {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: var(--md3-on-surface-med);
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.row-work {
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--md3-on-surface-low);
+}
+
+.row-fin {
+    font-size: 11.5px;
+}
+
+    .row-fin .fin-val {
+        font-family: var(--font-num);
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--md3-on-surface);
+    }
+
+    .row-fin .fin-cur {
+        font-family: var(--font-num);
+        font-size: 10.5px;
+        color: var(--md3-on-surface-low);
+        margin-left: 3px;
+    }
+
+.row-actions {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 10px;
+}
+
+/* --- вложенный аккордеон внутри подобъекта --- */
+.nested-accordion {
+    border-top: 1px dashed var(--md3-outline);
+    background: var(--md3-surface-2);
+}
+
+.nested-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--md3-sub);
+}
+
+    .nested-toggle svg.chevron {
+        width: 14px;
+        height: 14px;
+        transition: transform .18s;
+    }
+
+    .nested-toggle.open svg.chevron {
+        transform: rotate(90deg);
+    }
+
+.nested-count {
+    background: var(--md3-sub-light);
+    color: var(--md3-sub);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 7px;
+}
+
+.nested-body {
+    display: none;
+    padding: 0 14px 12px 30px;
+}
+
+    .nested-body.open {
+        display: block;
+    }
+
+.nested-row-card {
+    background: var(--md3-surface);
+    border: 1px solid var(--md3-outline);
+    border-left: 3px solid var(--md3-sub);
+    border-radius: var(--md3-radius-sm);
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+/* ==================== АККОРДЕОНЫ (Соглашения / Субподряды) ==================== */
+.accordion {
+    background: var(--md3-surface);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-lg);
+    box-shadow: var(--md3-shadow-1);
+    margin-bottom: 16px;
+    /* overflow: hidden; */
+}
+
+.accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 20px;
+    cursor: pointer;
+    user-select: none;
+    background: var(--md3-surface-3);
+}
+
+.accordion-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    .accordion-header-left svg.chevron {
+        width: 18px;
+        height: 18px;
+        color: var(--md3-on-surface-med);
+        transition: transform .18s;
+    }
+
+.accordion-header.open svg.chevron {
+    transform: rotate(90deg);
+}
+
+.accordion-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--md3-on-surface);
+}
+
+.accordion-badge {
+    background: var(--md3-primary);
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 9px;
+}
+
+    .accordion-badge.agreement {
+        background: var(--md3-agreement);
+    }
+
+    .accordion-badge.subcontract {
+        background: var(--md3-sub);
+    }
+
+.accordion-body {
+    display: none;
+    padding: 0;
+}
+
+    .accordion-body.open {
+        display: block;
+    }
+
+.accordion-row + .accordion-row {
+    border-top: 1px solid var(--md3-outline);
+}
+
+/* ==================== АДАПТИВ ==================== */
+@@media (max-width:1180px) {
+    .page {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .row-grid {
+        grid-template-columns: 1.3fr 1.6fr 1.6fr 1.1fr 1.6fr 1.2fr 1.2fr 44px;
+        overflow-x: auto;
+    }
+}
+
+@@media (max-width:900px) {
+    .main-grid {
+        grid-template-columns: repeat(2,1fr);
+    }
+
+    .row-grid {
+        grid-template-columns: repeat(8, minmax(150px,1fr));
+    }
+
+    .accordion-body {
+        overflow-x: auto;
+    }
+}

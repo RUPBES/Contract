@@ -66,6 +66,7 @@ namespace DatabaseLayer.Models.KDO
         public virtual List<ServiceGc> ServiceGcs { get; set; } = new List<ServiceGc>();
         public virtual List<TypeWorkContract> TypeWorkContracts { get; set; } = new List<TypeWorkContract>();
         public virtual List<CommissionAct> CommissionActs { get; set; } = new List<CommissionAct>();
+        public virtual List<PrepaymentReceived> PrepaymentReceiveds { get; set; } = new List<PrepaymentReceived>();
         public virtual List<ContractFile> ContractFiles { get; set; } = new List<ContractFile>();
     }
 }

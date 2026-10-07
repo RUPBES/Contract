@@ -6,7 +6,6 @@ using DatabaseLayer.Interfaces;
 using DatabaseLayer.Interfaces.Dapper;
 using DatabaseLayer.Models.KDO;
 using Microsoft.Extensions.Options;
-using System.Collections.Generic;
 
 namespace BusinessLayer.Services
 {
@@ -45,6 +44,16 @@ namespace BusinessLayer.Services
         public VContractDTO GetById(int id)
         {
             var contract = _contractDpr.GetById($"where c.Id ={id}");
+
+            if (contract is not null)
+            {
+                return _mapper.Map<VContractDTO>(contract);
+            }
+            return null;
+        }
+        public VContractDTO GetById(int id, bool useArchiveData)
+        {
+            var contract = _vContractDpr.GetById(id, useArchiveData ? _archiveOptions.TargetArchiveDb : null);
 
             if (contract is not null)
             {
@@ -196,7 +205,7 @@ namespace BusinessLayer.Services
                 return Enumerable.Empty<VContractDTO>();
             }
 
-            var contracts = _contractDpr.GetSubsById(id.Value, sqlPredicate);
+            var contracts = _contractDpr.GetSubsById(id.Value, sqlPredicate, useArchiveData? _archiveOptions.TargetArchiveDb : null);
             if (contracts.Any())
             {
                 return _mapper.Map<IEnumerable<VContractDTO>>(contracts);

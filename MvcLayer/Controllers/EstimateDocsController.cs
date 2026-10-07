@@ -36,8 +36,9 @@ namespace MvcLayer.Controllers
         }
 
         [Route("/archive/EstimateDocs")]
-        public IActionResult GetArchByContractId(int contractId, int returnContractId = 0)
+        public IActionResult GetArchByContractId(int contractId, bool isEngineering, int returnContractId = 0)
         {
+            ViewBag.IsEngineering = isEngineering;
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
             return View(_mapper.Map<IEnumerable<EstimateDocViewModel>>(_estimateDocService.Find(x => x.ContractId == contractId, useArchiveData: true)));
@@ -112,7 +113,10 @@ namespace MvcLayer.Controllers
                     return View();
                 }
             }
-            NotificationHelper.SetNotification(TempData, "Ошибка обновления", NotificationType.Warning);
+            else
+            {
+                NotificationHelper.SetNotification(TempData, "Ошибка обновления", NotificationType.Warning);
+            }
             if (commissionAct?.ContractId is not null && commissionAct.ContractId > 0)
             {
                 return RedirectToAction(nameof(GetByContractId), new { id = commissionAct.ContractId, returnContractId = returnContractId});
@@ -124,7 +128,7 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "DeletePolicy")]
-        public ActionResult Delete(int id, int? contractId = null)
+        public ActionResult Delete(int id, int? contractId = null, int returnContractId = 0)
         {
             try
             {
@@ -138,7 +142,7 @@ namespace MvcLayer.Controllers
 
                 if (contractId is not null && contractId > 0)
                 {
-                    return RedirectToAction(nameof(GetByContractId), new { id = contractId });
+                    return RedirectToAction(nameof(GetByContractId), new { id = contractId, returnContractId = returnContractId });
                 }
                 else
                 {

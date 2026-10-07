@@ -120,6 +120,26 @@ namespace BusinessLayer.Helpers
             "rar" => "zip-file",
             _ => "default-file"
         };
+        /// <summary>
+        /// Получить по тип файла и вернуть название иконки
+        /// </summary>
+        /// <param name="type">Тип</param>
+        /// <returns>строка с названием класса типа</returns>
+        public string GetIconNames(string type) => type switch
+        {
+            "jpg" =>"ic-img-file",
+            "jpeg"=> "ic-img-file",
+            "png"=> "ic-img-file",
+            "gif"=> "ic-img-file",
+            "docx"=> "ic-docx-file",
+            "doc"=> "ic-docx-file",
+            "xlsx"=> "ic-excel-file",
+            "xls"=> "ic-excel-file",
+            "pdf"=>"ic-pdf-file",
+            "zip"=>"ic-zip-file",
+            "rar"=>"ic-rar-file",
+            _ => "ic-default-file"
+        };
 
 
         /// <summary>

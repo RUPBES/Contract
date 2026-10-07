@@ -1,4 +1,5 @@
 ﻿using BusinessLayer.Helpers;
+using BusinessLayer.Interfaces.Core;
 using BusinessLayer.IoC;
 using BusinessLayer.Models.Settings;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -9,8 +10,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using MvcLayer.Mapper;
 using MvcLayer.Filters;
+using MvcLayer.Mapper;
+using MvcLayer.Middleware;
 using Quartz;
 using System.Security.Claims;
 
@@ -253,6 +255,9 @@ namespace MvcLayer
                 );
             });
             services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true);
+            services.AddControllersWithViews();
+            services.AddMemoryCache();
+            
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -290,6 +295,7 @@ namespace MvcLayer
             app.UseSession();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseMiddleware<ActivityMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {

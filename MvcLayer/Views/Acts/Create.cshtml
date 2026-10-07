@@ -39,11 +39,11 @@
                                 Заполните данные акта приостановки/возобновления
                             </p>
                         </div>
-                        @if (backId != null && backId > 0)
+                        @if ( backId > 0)
                         {
                             <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn" aria-label="Закрыть"></a>
                         }
-                        @if (backId == null || backId == 0)
+                        @if ( backId == 0)
                         {
                             <a asp-controller="Contracts" asp-action="" class="close-btn" aria-label="Закрыть"></a>
                         }
@@ -72,18 +72,17 @@
                                             @Html.DisplayNameFor(m => m.Reason)
                                         </label>
                                         <div class="md3-input-wrap">
-                                                                                        <textarea rows="2" asp-for="Reason" class="md3-input" placeholder="Введите причину" required></textarea>
+                                            <textarea rows="2" asp-for="Reason" class="md3-input" placeholder="Введите причину" required></textarea>
                                         </div>
                                         <span asp-validation-for="Reason" class="md3-validation-msg"></span>
-                                    </div>                                    
+                                    </div>
                                     <div class="md3-field full-width-org">
                                         <div class="md3-input-wrap">
-
                                             <label class="md3-label" style="cursor:pointer;">
                                                 <span class="md3-input">
-                                                    <input type="checkbox" name="IsSuspension" value="false"
+                                                    <input type="checkbox" name="IsSuspension" id="checkActId" value="false"
                                                            @(Model?.IsSuspension == true ? "checked" : "") />
-
+                                                    <input type="hidden" name="IsSuspension"  value="false" />
                                                 </span>
                                                 <span class="wz-opt-lbl" style="font-weight:600;">@Html.DisplayNameFor(m => m.IsSuspension)</span>
                                             </label>
@@ -132,7 +131,7 @@
                                                 </svg>
                                             </div>
                                             <input asp-for="DateSuspendedFrom"
-                                                   type="text" 
+                                                   type="text"
                                                    class="md3-input"
                                                    required />
                                         </div>
@@ -148,7 +147,7 @@
                                                 </svg>
                                             </div>
                                             <input asp-for="DateSuspendedUntil"
-                                                   type="text" 
+                                                   type="text"
                                                    class="md3-input"
                                                    required />
                                         </div>
@@ -201,8 +200,9 @@
 
                         @*  {{-- ══ ФУТЕР ══ --}} *@
                         <div class="org-footer" style="padding:10px 16px 14px;">
-                            <a asp-controller="Contracts" asp-action="@(backId > 0 ? "Details" : "Index")"
+                            <a asp-controller="Acts" asp-action="GetByContractId"
                                asp-route-id=@(backId > 0 ? @backId : null)
+                               asp-route-returnContractId="@ViewBag.returnContractId"
                                class="md3-btn md3-btn-ghost" style="padding:6px 14px; font-size:12px;">
                                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
                                     <path d="M19 12H5M12 5l-7 7 7 7"
@@ -233,6 +233,11 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
+ // 1. Управление значением чекбокса
+            // $("#checkActId").on("change", function () {
+            //     $(this).val($(this).prop('checked') ? "true" : "false");
+            // });
+
         $("#checkActId").on("change", function () {
             let isChange = $(this).prop('checked');
             if (isChange === false) {
@@ -242,6 +247,7 @@
                 $(this).attr("value", "true")
             }
         });
+
         $("#DateAct").datepicker({
             format: "d MM yyyy",
             language: "ru",

@@ -1,0 +1,411 @@
+﻿@model MvcLayer.Models.Data.ActionChooseViewModel
+@using MvcLayer.Models.Data
+
+@functions {
+    string AccentVar(string accent) => accent switch
+    {
+        "secondary" => "--md3-secondary",
+        "tertiary" => "--md3-tertiary",
+        "create" => "--md3-create",
+        "edit" => "--md3-edit",
+        "gen" => "--md3-gen",
+        "sub" => "--md3-sub",
+        _ => "--md3-primary"
+    };
+
+    string AccentLightVar(string accent) => accent switch
+    {
+        "secondary" => "--md3-secondary-light",
+        "tertiary" => "--md3-tertiary-light",
+        "create" => "--md3-create-light",
+        "edit" => "--md3-edit-light",
+        "gen" => "--md3-gen-light",
+        "sub" => "--md3-sub-light",
+        _ => "--md3-primary-light"
+    };
+
+    (string main, string light) AlertColors(AlertType type) => type switch
+    {
+        AlertType.Success => ("--md3-success", "--md3-primary-light"),
+        AlertType.Warning => ("--md3-warning", "--md3-warning-light"),
+        AlertType.Error => ("--md3-warning", "--md3-warning-light"), // при отсутствии --md3-error используем warning-тон
+        _ => ("--md3-primary", "--md3-primary-light")
+    };
+}
+
+@{
+    var (headlineMain, headlineLight) = AlertColors(Model.HeadlineType);
+}
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
+<style>
+    .md3-dialog-overlay {
+        position: fixed;
+        inset: 0;
+        background:  rgba(0, 0, 0, 0.65); /* rgba(26, 29, 38, .40); */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        font-family: 'Inter', 'Roboto', sans-serif;
+    }
+
+    .md3-dialog {
+        width: 480px;
+        max-width: calc(100vw - 32px);
+        background: var(--md3-surface, #fff);
+        border-radius: var(--md3-radius-lg, 16px);
+        box-shadow: var(--md3-shadow-2, 0 4px 16px rgba(26,86,164,.10), 0 1px 4px rgba(26,86,164,.07));
+        padding: 20px 24px 24px;
+        position: relative;
+        transition: var(--md3-transition, .18s cubic-bezier(.4,0,.2,1));
+    }
+
+    .md3-dialog-close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--md3-on-surface-med, #4a5068);
+        text-decoration: none;
+        transition: background .15s ease;
+    }
+
+        .md3-dialog-close:hover {
+            background: var(--md3-surface-3, #eef1f8);
+            color: var(--md3-on-surface, #1a1d26);
+        }
+
+        .md3-dialog-close svg {
+            width: 20px;
+            height: 20px;
+        }
+
+    .md3-headline-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 4px 0 4px;
+        padding-right: 32px;
+    }
+
+    .md3-headline-icon {
+        flex: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var( @headlineLight, #e8f0fb);
+        color: var( @headlineMain, #1a56a4);
+    }
+
+        .md3-headline-icon svg {
+            width: 22px;
+            height: 22px;
+        }
+
+    .md3-headline-text {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--md3-on-surface, #1a1d26);
+    }
+
+    .md3-supporting-text {
+        margin: 8px 0 20px;
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--md3-on-surface-med, #4a5068);
+    }
+
+    /* ---------- Список-picker (замена select) ---------- */
+    .md3-picker {
+        border: 1px solid var(--md3-outline, #dde2ed);
+        border-radius: var(--md3-radius-md, 10px);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .md3-picker-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        cursor: pointer;
+        border-bottom: 1px solid var(--md3-outline, #dde2ed);
+        transition: background .15s ease;
+    }
+
+        .md3-picker-item:last-child {
+            border-bottom: none;
+        }
+
+        .md3-picker-item:hover {
+            background: var(--md3-surface-2, #f7f8fc);
+        }
+
+        .md3-picker-item.is-checked {
+            background: var(--md3-primary-light, #e8f0fb);
+        }
+
+    .md3-radio {
+        flex: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid var(--md3-outline-strong, #b0bace);
+        position: relative;
+    }
+
+    .md3-picker-item.is-checked .md3-radio {
+        border-color: var(--md3-primary, #1a56a4);
+    }
+
+        .md3-picker-item.is-checked .md3-radio::after {
+            content: "";
+            position: absolute;
+            inset: 3px;
+            border-radius: 50%;
+            background: var(--md3-primary, #1a56a4);
+        }
+
+    .md3-picker-item span.opt-text {
+        font-size: 14px;
+        color: var(--md3-on-surface, #1a1d26);
+    }
+
+    .md3-picker-item input[type=radio] {
+        display: none;
+    }
+
+    /* ---------- Alerts (компактные строки) ---------- */
+    .md3-alert-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 4px 0;
+        margin-bottom: 10px;
+        font-size: 14px;
+        color: var(--md3-on-surface-med, #4a5068);
+    }
+
+        .md3-alert-row svg {
+            flex: none;
+            width: 18px;
+            height: 18px;
+            margin-top: 1px;
+        }
+
+    /* ---------- Actions ---------- */
+    .md3-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .md3-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: var(--md3-radius-md, 10px);
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: var(--md3-transition, .18s cubic-bezier(.4,0,.2,1));
+        white-space: nowrap;
+    }
+
+        .md3-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+    .md3-btn-filled {
+        background: var(--btn-accent, var(--md3-primary, #1a56a4));
+        color: #fff;
+    }
+
+        .md3-btn-filled:hover {
+            filter: brightness(0.93);
+        }
+
+    .md3-btn-tonal {
+        background: var(--btn-accent-light, var(--md3-primary-light, #e8f0fb));
+        color: var(--btn-accent, var(--md3-primary, #1a56a4));
+    }
+
+        .md3-btn-tonal:hover {
+            filter: brightness(0.97);
+        }
+
+    .md3-btn-outlined {
+        background: transparent;
+        border-color: var(--md3-outline-strong, #b0bace);
+        color: var(--md3-on-surface, #1a1d26);
+    }
+
+        .md3-btn-outlined:hover {
+            background: var(--md3-surface-2, #f7f8fc);
+        }
+
+    .md3-btn-text {
+        background: transparent;
+        color: var(--btn-accent, var(--md3-primary, #1a56a4));
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+        .md3-btn-text:hover {
+            background: var(--md3-surface-2, #f7f8fc);
+        }
+</style>
+
+<div class="md3-dialog-overlay">
+    <div class="md3-dialog" role="dialog" aria-modal="true" aria-labelledby="md3DialogHeadline">
+
+        @if (!string.IsNullOrEmpty(Model.CloseUrl))
+        {
+            <a href="@Model.CloseUrl" class="md3-dialog-close" aria-label="Закрыть">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19" /><line x1="19" y1="5" x2="5" y2="19" /></svg>
+            </a>
+        }
+
+        <div class="md3-headline-row">
+            <div class="md3-headline-icon">
+                @switch (Model.HeadlineIcon)
+                {
+                    case "check_circle":
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M8 12.5l2.5 2.5L16 9" /></svg>
+                        break;
+                    case "warning":
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2 20h20L12 4z" /><line x1="12" y1="10" x2="12" y2="14" /><circle cx="12" cy="17" r="0.8" fill="currentColor" stroke="none" /></svg>
+                        break;
+                    case "error":
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>
+                        break;
+                    default:
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><line x1="12" y1="11" x2="12" y2="16" /><circle cx="12" cy="7.5" r="0.8" fill="currentColor" stroke="none" /></svg>
+                        break;
+                }
+            </div>
+            <div id="md3DialogHeadline" class="md3-headline-text">@Model.HeadlineText</div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.SupportingText))
+        {
+            <div class="md3-supporting-text">@Model.SupportingText</div>
+        }
+
+        @if (Model.ShowSelector && Model.Selector != null)
+        {
+            <form id="md3SelectorForm" asp-controller="@Model.Selector.FormController" asp-action="@Model.Selector.FormAction" method="get">
+                @foreach (var kv in Model.Selector.HiddenFields)
+                {
+                    <input type="hidden" name="@kv.Key" value="@kv.Value" />
+                }
+                <input type="hidden" id="md3SelectedValue" name="@Model.Selector.SelectName" value="" />
+
+                <div class="md3-picker" id="md3Picker">
+                    @foreach (var opt in Model.Selector.Options)
+                    {
+                        <label class="md3-picker-item" data-value="@opt.Value">
+                            <input type="radio" name="@(Model.Selector.SelectName)_radio" value="@opt.Value" />
+                            <span class="md3-radio"></span>
+                            <span class="opt-text">@opt.Text</span>
+                        </label>
+                    }
+                </div>
+            </form>
+        }
+        else
+        {
+            @foreach (var alert in Model.Alerts)
+            {
+                var (aMain, _) = AlertColors(alert.Type);
+                <div class="md3-alert-row" style="color: var(@aMain);">
+                    @switch (alert.Type)
+                    {
+                        case AlertType.Success:
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M8 12.5l2.5 2.5L16 9" /></svg>
+                            break;
+                        case AlertType.Warning:
+                        case AlertType.Error:
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2 20h20L12 4z" /><line x1="12" y1="10" x2="12" y2="14" /><circle cx="12" cy="17" r="0.8" fill="currentColor" stroke="none" /></svg>
+                            break;
+                        default:
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><line x1="12" y1="11" x2="12" y2="16" /><circle cx="12" cy="7.5" r="0.8" fill="currentColor" stroke="none" /></svg>
+                            break;
+                    }
+                    <span>@alert.Text</span>
+                </div>
+            }
+
+            @if (Model.Actions.Any())
+            {
+                <div class="md3-actions">
+                    @foreach (var action in Model.Actions)
+                    {
+                        var variantClass = action.Variant switch
+                        {
+                            ActionVariant.Filled => "md3-btn-filled",
+                            ActionVariant.Tonal => "md3-btn-tonal",
+                            ActionVariant.Outlined => "md3-btn-outlined",
+                            _ => "md3-btn-text"
+                        };
+                        var style = $"--btn-accent: var({AccentVar(action.Accent)}); --btn-accent-light: var({AccentLightVar(action.Accent)});";
+
+                        <a class="md3-btn @variantClass" style="@style"
+                           asp-controller="@action.Controller" asp-action="@action.Action"
+                           asp-all-route-data="action.RouteValues">
+                            @switch (action.Icon)
+                            {
+                                case "add":
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                                    break;
+                                case "search":
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5" /><line x1="20" y1="20" x2="15.8" y2="15.8" /></svg>
+                                    break;
+                                case "check_circle":
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M8 12.5l2.5 2.5L16 9" /></svg>
+                                    break;
+                                default:
+                                    break;
+                            }
+                            <span>@action.Text</span>
+                        </a>
+                    }
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<script>
+    (function () {
+        var picker = document.getElementById('md3Picker');
+        if (!picker) return;
+        var hidden = document.getElementById('md3SelectedValue');
+        var form = document.getElementById('md3SelectorForm');
+
+        picker.querySelectorAll('.md3-picker-item').forEach(function (item) {
+            item.addEventListener('click', function () {
+                picker.querySelectorAll('.md3-picker-item').forEach(function (i) { i.classList.remove('is-checked'); });
+                item.classList.add('is-checked');
+                item.querySelector('input[type=radio]').checked = true;
+                hidden.value = item.getAttribute('data-value');
+                form.requestSubmit ? form.requestSubmit() : form.submit();
+            });
+        });
+    })();
+</script>

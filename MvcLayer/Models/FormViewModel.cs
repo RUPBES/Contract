@@ -37,23 +37,23 @@ namespace MvcLayer.Models
 
         [DisplayName("Стоимость доп. работ")]
         public decimal AdditionalCost { get; set; }
-        [DisplayName("Контрактная цена(без НДС) по дополнительным работам")]
+        [DisplayName("Дополнительные работы (без НДС)")]
         public decimal AdditionalContractCost { get; set; }
         [DisplayName("Сумма НДС доп. работ")]
         public decimal AdditionalNdsCost { get; set; }
 
         [DisplayName("Стоимость ПНР")]
         public decimal PnrCost { get; set; }
-        [DisplayName("Контрактная цена(без НДС)")]
+        [DisplayName("ПНР (без НДС)")]
         public decimal PnrContractCost { get; set; }
-        [DisplayName("Сумма НДС")]
+        [DisplayName("Сумма НДС для ПНР")]
         public decimal PnrNdsCost { get; set; }
 
         [DisplayName("Стоимость оборудования")]
         public decimal EquipmentCost { get; set; }
-        [DisplayName("Контрактная цена(без НДС) по оборудованию")]
+        [DisplayName("Контрактная цена оборудования (без НДС)")]
         public decimal EquipmentContractCost { get; set; }
-        [DisplayName("Сумма НДС для оборудования")]
+        [DisplayName("Сумма НДС оборудования")]
         public decimal EquipmentNdsCost { get; set; }
         [DisplayName("Стоимость оборудования заказчика (справочно)")]
         public decimal EquipmentClientCost { get; set; } //стоимость оборудования заказчика (справочно)

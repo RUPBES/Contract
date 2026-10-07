@@ -3,6 +3,7 @@ using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using static Dapper.SqlMapper;
 using File = DatabaseLayer.Models.KDO.File;
 
 namespace DatabaseLayer.Data;
@@ -10,7 +11,7 @@ namespace DatabaseLayer.Data;
 public partial class ContractsContext : DbContext
 {
     public ContractsContext()
-    {       
+    {
     }
     public ContractsContext(DbContextOptions<ContractsContext> options) : base(options)
     {
@@ -72,6 +73,7 @@ public partial class ContractsContext : DbContext
 
     public virtual DbSet<Prepayment> Prepayments { get; set; }
     public virtual DbSet<PrepaymentFact> PrepaymentFacts { get; set; }
+    public virtual DbSet<PrepaymentReceived> PrepaymentReceiveds { get; set; }
     public virtual DbSet<PrepaymentTake> PrepaymentTakes { get; set; }
     public virtual DbSet<PrepaymentPlan> PrepaymentPlans { get; set; }
 
@@ -106,6 +108,7 @@ public partial class ContractsContext : DbContext
     public DbSet<ReleaseNote> ReleaseNotes { get; set; }
     public DbSet<ReleaseNoteFile> ReleaseNoteFiles { get; set; }
     public DbSet<UserReleaseNote> UserReleaseNotes { get; set; }
+    public DbSet<UserDailyVisit> UserDailyVisits { get; set; }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -115,14 +118,14 @@ public partial class ContractsContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var basePath = AppContext.BaseDirectory;
-        
+
         var builder = new ConfigurationBuilder()
             .SetBasePath(basePath)
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-        
+
         var configuration = builder.Build();
         var connectionString = configuration.GetConnectionString("Data");
-       
+
 
         if (!optionsBuilder.IsConfigured)
         {
@@ -139,7 +142,16 @@ public partial class ContractsContext : DbContext
                   
          */
 
-        // DbContext — добавить в OnModelCreating
+       
+
+        modelBuilder.Entity<UserDailyVisit>(e =>
+        {
+            e.ToTable("UserDailyVisit");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.UserId, x.Date }).IsUnique();
+        });
+
+
         modelBuilder.Entity<ReleaseNoteFile>(e =>
         {
             e.HasKey(x => x.Id);
@@ -1047,6 +1059,20 @@ public partial class ContractsContext : DbContext
             entity.HasOne(d => d.Prepayment).WithMany(p => p.PrepaymentFacts)
                 .HasForeignKey(d => d.PrepaymentId)
                 .HasConstraintName("FK_PrepaymentFact_Prepayment_Id");
+        });
+        modelBuilder.Entity<PrepaymentReceived>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_PrepaymentReceived_Id");
+
+            entity.ToTable("PrepaymentReceived", tb => tb.HasComment("Полученные авансы"));
+
+            entity.Property(e => e.CurrentValue).HasColumnType("money");
+            entity.Property(e => e.Period).HasColumnType("datetime");
+            entity.Property(e => e.TargetValue).HasColumnType("money");
+
+            entity.HasOne(d => d.Contract).WithMany(p => p.PrepaymentReceiveds)
+                .HasForeignKey(d => d.ContractId)
+                .HasConstraintName("FK_PrepaymentReceived_Contract");
         });
 
         modelBuilder.Entity<PrepaymentPlan>(entity =>

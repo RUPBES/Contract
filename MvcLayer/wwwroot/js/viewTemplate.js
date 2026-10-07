@@ -9,98 +9,224 @@
     const canArchive = canEdit && permissions?.isAdmin;
     const canTransfer = isBes && canEdit;
 
+
     return contractItems.map(item => {
-        const isOverdue = item.DateEndWork && new Date(item.DateEndWork) < now;
+        const isOverdue = (() => {
+            if (!item.DateEndWork) return false;
+
+            const [day, month, year] = item.DateEndWork.split('.').map(Number);
+            const endDate = new Date(year, month - 1, day);
+
+            return endDate < now;
+        })();
         const isAuthorAllowed = item.Author === permissions.company || isBes;
+        const avans = item.PaymentСonditionsAvans ?? '';
 
-        return `<tr class="${isOverdue ? 'overdue' : ''}">
-            <td>
-                <a href="/Contracts/Details/${item.Id}" class="save-page-state"> ${item.Number ?? ''} <br/> от ${item.Date ?? ''} </a>
-            </td>
-            <td>${item.NameObject ?? ''}</td>
-            <td>${item.Client ?? ''}</td>
+        const hasNone = avans.includes('Без авансов');
+        const hasCurrent = avans.includes('С предоставлением текущего аванса');
+        const hasTarget = avans.includes('С предоставлением целевого аванса');
 
-             ${!isEngineering ? `
+        return `<tr>
+        <td>
+          <a class="contract-num" href="/Contracts/Details/${item.Id}">№ ${item.Number ?? ''}</a>
+          <span class="contract-date">от ${item.Date ?? ''}</span>
+          <span class="status-chip ${isOverdue ? 'status-overdue' : 'status-active'}"><span class="dot"></span>${isOverdue ? 'Просрочен' : 'Активен'}</span>
+        </td>
+        <td>
+          <div class="tt-wrap">
+            <div class="clamp-2">${item.NameObject ?? ''}</div>
+            <div class="tt-popover">${item.NameObject ?? ''}</div>
+          </div>
+        </td>
+        <td>${item.Client ?? ''}</td>
+        ${!isEngineering ? `
+        <td>
+          <span class="gen-name">${item.GenContractor ?? ''}</span>
+          ${item.ResponsibleForWork
+                    ? `
+          <span class="subline"><b>Отв. за произв. работ:</b><br>${item.ResponsibleForWork}</span>`
+                    : ''}
+        </td>` : ''}
 
-            <td>
-                <div>${item.GenContractor ?? ''}</div>
-                ${item.ResponsibleForWork
-                ? `<div><hr/>Ответственный за производство работ:<br/>${item.ResponsibleForWork}</div>`
+        <td class="deadline-block">
+        ${item.DateBeginWork || item.DateEndWork
+                ? `
+          <div class="deadline-label">выполнения работ</div>
+          <div class="deadline-range">${item.DateBeginWork ?? ''} - ${item.DateEndWork ?? ''}</div>`
                 : ''}
-            </td>` : ''}
-            <td>
-                ${item.DateBeginWork || item.DateEndWork
-                ? `<b>выполнения работ:</b><br>${item.DateBeginWork ?? ''} - ${item.DateEndWork ?? ''}`
+        ${item.EnteringTerm ? `  
+          <div class="deadline-input">
+            <div class="deadline-label">ввод</div>
+            <div class="val">${item.EnteringTerm}</div>
+          </div>`
                 : ''}
-                ${item.EnteringTerm ? `<br><b>ввода:</b><br>${item.EnteringTerm}` : ''}
-            </td>
-            <td>
-                <a href="/Prepayments/GetByContractId?contractId=${item.Id}">${item.PaymentСonditionsAvans ?? ''}</a><br/><br/>
-                <a href="/Payments/GetByContractId?contractId=${item.Id}">${item.PaymentСonditionsRaschet ?? ''}</a>
-            </td>
-            ${!isEngineering ? `<td>${item.WorkType ?? ''}</td>` : `<td>${item.PaymentСonditionsPrice ?? ''}</td>`}
-            <td class="text-end">${item.ContractPrice} <br/> ${item.Сurrency ?? ''}</td>
-            <td class="text-end">${item.PreYearSum} <br/> ${item.Сurrency ?? ''}</td>
-            <td class="text-end">${item.RemainingSum} <br/> ${item.Сurrency ?? ''}</td>
-            <td class="text-end">${item.ThisYearSum} <br/> ${item.Сurrency ?? ''}</td>
-            <td>
-                <button class="action-btn"><svg class="ic ic-18"><use href="#ic-more-vert"/></svg></button>
-                <div class="action-menu">
-                    <a class="menu-item save-page-state" href="/Contracts/Details/${item.Id}">
-                        <span class="menu-icon"><svg class="ic ic-15"><use href="#ic-open"></use></svg></span>
-                        <span class="menu-label">Открыть</span>
-                    </a>
-                    ${isAuthorAllowed ? buildAuthorMenu(item, hasEstimate, hasContract, hasReport, canEdit, canDelete, canArchive, canTransfer, isOverdue) : ''}
-                </div>
-           </td>
-        </tr>`
+        </td>
+        <td>
+          ${hasNone
+                ? `<span class="pay-chip pc-none">Без авансов</span>`
+                : ''
+            }
 
+        ${hasCurrent && hasTarget
+                ? `<span class="pay-chip pc-current">
+                        <a href="/Prepayments/GetByContractId?contractId=${item.Id}">
+                            С текущим + целевым авансом
+                        </a>
+                    </span>`
+                :
+            (hasCurrent && !hasTarget) ? `<span class="pay-chip pc-target">
+                        <a href="/Prepayments/GetByContractId?contractId=${item.Id}">
+                            С текущим авансом
+                        </a>
+                    </span>`
+                : (!hasCurrent && hasTarget) ? `<span class="pay-chip pc-target">
+                        <a href="/Prepayments/GetByContractId?contractId=${item.Id}">
+                           С целевым авансом
+                        </a>
+                    </span>`
+                    : ''
+            }
+            
+        
+          
+          <div class="tt-wrap">
+            <div class="pay-terms">${item.PaymentСonditionsRaschet ?? ''}</div>
+            <div class="tt-popover">${item.PaymentСonditionsRaschet ?? ''}</div>
+          </div>
+          <span class="work-type">${!isEngineering ? `${item.WorkType ?? ''}` : `${item.PaymentСonditionsPrice ?? ''}`}</span>
+        </td>
+        <td >
+          <div class="fin-grid">
+            <div class="fin-cell main" >
+              <span class="lbl">Всего по договору с НДС</span>
+              <span class="val">${item.ContractPrice ?? ''}<span class="fin-cur">${item.Сurrency ?? ''}</span></span>
+            </div>
+            <div class="fin-cell" ><span class="lbl">Выполнено на 01.01</span><span class="val">${item.PreYearSum ?? ''}</span></div>
+            <div class="fin-cell" ><span class="lbl">Объём на год</span><span class="val">${item.RemainingSum ?? ''}</span></div>
+            <div class="fin-cell" ><span class="lbl">Остаток</span><span class="val pos">${item.ThisYearSum ?? ''}</span></div>
+          </div>
+        </td>
+        <td >
+          <button class="action-btn"><svg class="ic ic-18"><use href="#ic-more-vert"/></svg></button>
+            <div class="action-menu">
+                <a class="menu-item save-page-state" href="/Contracts/Details/${item.Id}">
+                    <span class="menu-icon"><svg class="ic ic-15"><use href="#ic-open"></use></svg></span>
+                    <span class="menu-label">Открыть</span>
+                </a>
+                ${isAuthorAllowed ? buildAuthorMenu(item, hasEstimate, hasContract, hasReport, canEdit, canDelete, canArchive, canTransfer, isOverdue) : ''}
+            </div>
+        </td>
+      </tr>`;
     }).join('');
 }
 
 
 function setContractArchiveTableRow(contractItems, permissions, isEngineering) {
-    return contractItems.map(contractItem => `
-    <tr>                           
-            <td><span class="table_span-numberanddate">
-                    <a href="/archive/Contracts/Details/${contractItem.Id}" title="Просмотр детальной информации">
-                        ${contractItem.Number ?? ``} от ${contractItem.Date ?? ``}
-                    </a>
-                </span>
-            </td>
-            <td><span class="table_span-nameobject">${contractItem.NameObject ?? ``}</span></td>
-            <td><span class="table_span-customer">${contractItem.Client ?? ``}</span></td>   
-             ${!isEngineering ?
-            `<td><div><span class="table_span-contractor">${contractItem.GenContractor ?? ``}</span></div>                                   
-                            ${contractItem.ResponsibleForWork ?
-                `<div><span class="table_span-contractor"><hr /><span>Ответственный за производство работ:</span><br />${contractItem.ResponsibleForWork}</span></div>` : ``}                                                                        
-                </td> `
-            : ``}
+    const isBes = permissions.company === 'ContrOrgBes';
+    const hasEstimate = !isEngineering && permissions.groupeName.includes('GRP_Estimate');
+    const hasContract = permissions.groupeName.includes('GRP_Contract');
+    const hasReport = permissions.isReader && permissions.groupeName.includes('GRP_Report'); 
 
-            <td><span class="table_span-deadlines">
-                    ${contractItem.DateBeginWork || contractItem.DateEndWork ? `<b>выполнения работ:</b><br><span>${contractItem.DateBeginWork ?? ``} - ${contractItem?.DateEndWork ?? ``}</span>` : ``} 
-                    ${contractItem.EnteringTerm ? `<br><b>ввода:</b><br><span>${contractItem?.EnteringTerm ?? ``}</span>` : ``}                                    
-                </span>
-            </td>
-            <td><span class="table_span-conditions">
-                    <a href="/Prepayments/GetByContractId?contractId=${contractItem.Id}" > ${contractItem.PaymentСonditionsAvans ?? ``}</a><br /><br />
-                    <a href="/Payments/GetByContractId?contractId=${contractItem.Id}">${contractItem.PaymentСonditionsRaschet ?? ``}</a>
-                    </span>
-            </td>           
-            ${!isEngineering ? `<td><span class="table_span-work">${contractItem.WorkType ?? ``}</span></td>` : ` <td><span class="table_span-work">${contractItem.PaymentСonditionsPrice ?? ``}</span></td>`}
-                                        
-            <td class="text-end"><span class="table_span-contractprice">${contractItem.ContractPrice ?? `0.00`} ${contractItem.Сurrency ?? ``}</span></td>
-            <td class="text-end"><span class="table_span-realization">${contractItem.PreYearSum ?? `0.00`} ${contractItem.Сurrency ?? ``}</span></td>                           
-            <td class="text-end"><span class="table_span-remains">${contractItem.RemainingSum ?? `0.00`} ${contractItem.Сurrency ?? ``}</span></td>
-            <td><span class="table_span-volume">${contractItem.ThisYearSum ?? `0.00`} ${contractItem.Сurrency ?? ``}</span></td>
-            
-            <td><span class="table_span-action-main">
-                    <div class="icon info" title="Детальная информация"><a href="/archive/Contracts/Details/${contractItem.Id}"></a></div>                        
-               ${!isEngineering && permissions.groupeName.includes(`GRP_Estimate`) ? `<div class="icon estimate" title="Сметы"><a href="/archive/Estimates?contractId=${contractItem.Id}"></a></div>` : ``}   
-                
-                </span>
+    return contractItems.map(contractItem => {       
+        const isAuthorAllowed = contractItem.Author === permissions.company || isBes;
+        const avans = contractItem.PaymentСonditionsAvans ?? '';
+        const hasNone = avans.includes('Без авансов');
+        const hasCurrent = avans.includes('С предоставлением текущего аванса');
+        const hasTarget = avans.includes('С предоставлением целевого аванса');
+
+        return `<tr>
+        <td>
+          <a class="contract-num" href="/archive/Contracts/Details/${contractItem.Id}">№ ${contractItem.Number ?? ''}</a>
+          <span class="contract-date">от ${contractItem.Date ?? ''}</span>          
         </td>
-    </tr>`
+        <td>
+          <div class="tt-wrap">
+            <div class="clamp-2">${contractItem.NameObject ?? ''}</div>
+            <div class="tt-popover">${contractItem.NameObject ?? ''}</div>
+          </div>
+        </td>
+        <td>${contractItem.Client ?? ''}</td>
+        ${
+            !isEngineering ? `
+        <td>
+          <span class="gen-name">${contractItem.GenContractor ?? ''}</span>
+          ${contractItem.ResponsibleForWork
+                    ? `
+          <span class="subline"><b>Отв. за произв. работ:</b><br>${contractItem.ResponsibleForWork}</span>`
+                    : ''}
+        </td>` : ''
+        }
+
+        <td class="deadline-block">
+        ${contractItem.DateBeginWork || contractItem.DateEndWork
+                ? `
+          <div class="deadline-label">выполнения работ</div>
+          <div class="deadline-range">${contractItem.DateBeginWork ?? ''} - ${contractItem.DateEndWork ?? ''}</div>`
+                : ''}
+        ${contractItem.EnteringTerm ? `  
+          <div class="deadline-input">
+            <div class="deadline-label">ввод</div>
+            <div class="val">${contractItem.EnteringTerm}</div>
+          </div>`
+                : ''}
+        </td>
+        <td>
+          ${hasNone
+                ? `<span class="pay-chip pc-none">Без авансов</span>`
+                : ''
+            }
+
+        ${hasCurrent && hasTarget
+                ? `<span class="pay-chip pc-current">
+                        <a href="/Prepayments/GetArchByContractId?contractId=${contractItem.Id}">
+                            С текущим + целевым авансом
+                        </a>
+                    </span>`
+                :
+            (hasCurrent && !hasTarget) ? `<span class="pay-chip pc-target">
+                        <a href="/Prepayments/GetArchByContractId?contractId=${contractItem.Id}">
+                            С текущим авансом
+                        </a>
+                    </span>`
+                : (!hasCurrent && hasTarget) ? `<span class="pay-chip pc-target">
+                        <a href="/Prepayments/GetArchByContractId?contractId=${contractItem.Id}">
+                           С целевым авансом
+                        </a>
+                    </span>`
+                    : ''
+            }
+            
+        
+          
+          <div class="tt-wrap">
+            <div class="pay-terms">${contractItem.PaymentСonditionsRaschet ?? ''}</div>
+            <div class="tt-popover">${contractItem.PaymentСonditionsRaschet ?? ''}</div>
+          </div>
+          <span class="work-type">${!isEngineering ? `${contractItem.WorkType ?? ''}` : `${contractItem.PaymentСonditionsPrice ?? ''}`}</span>
+        </td>
+        <td >
+          <div class="fin-grid">
+            <div class="fin-cell main" >
+              <span class="lbl">Всего по договору с НДС</span>
+              <span class="val">${contractItem.ContractPrice ?? ''}<span class="fin-cur">${contractItem.Сurrency ?? ''}</span></span>
+            </div>
+            <div class="fin-cell" ><span class="lbl">Выполнено на 01.01</span><span class="val">${contractItem.PreYearSum ?? ''}</span></div>
+            <div class="fin-cell" ><span class="lbl">Объём на год</span><span class="val">${contractItem.RemainingSum ?? ''}</span></div>
+            <div class="fin-cell" ><span class="lbl">Остаток</span><span class="val pos">${contractItem.ThisYearSum ?? ''}</span></div>
+          </div>
+        </td>
+        <td >
+          <button class="action-btn"><svg class="ic ic-18"><use href="#ic-more-vert"/></svg></button>
+            <div class="action-menu">
+                <a class="menu-item save-page-state" href="/archive/Contracts/Details/${contractItem.Id}">
+                    <span class="menu-icon"><svg class="ic ic-15"><use href="#ic-open"></use></svg></span>
+                    <span class="menu-label">Открыть</span>
+                </a>
+                ${isAuthorAllowed ? buildAuthorMenu(contractItem, hasEstimate, hasContract, false, false, false, false, false, false) : ''}
+            </div>
+        </td>
+      </tr > `
+    }
     ).join('');
 }
 
@@ -207,8 +333,6 @@ function parseCurrency(value) {
     const parsed = parseFloat(cleaned);
     return isNaN(parsed) ? 0 : parsed;
 }
-
-
 
 
 function buildAuthorMenu(item, hasEstimate, hasContract, hasReport, canEdit, canDelete, canArchive, canTransfer, isOverdue) {

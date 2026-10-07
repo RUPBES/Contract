@@ -1,474 +1,1439 @@
-﻿@using BusinessLayer.Enums;
+﻿@using BusinessLayer.Enums
 @using BusinessLayer.Helpers
 @using BusinessLayer.Interfaces.Shared
-@using BusinessLayer.Models;
-@model IEnumerable<MvcLayer.Models.FormViewModel>
-@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@using BusinessLayer.Models.KDO
+@model MvcLayer.Models.FormViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scopes
 @inject IHttpContextUserProvider HttpHelper
 
-
 @{
-    var permissions = HttpHelper.GetUserPermissions();
-    var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
-
-    ViewData["Title"] = string.Empty;
     var id = ViewBag.contractId;
-    int backId = 0;
-    if ((int)ViewData["returnContractId"] == 0)
-        backId = (int)ViewData["contractId"];
-    else backId = (int)ViewData["returnContractId"];
+    var contract = id > 0
+            ? Contract.GetById(id, useArchiveData: true)
+            : (Model?.ContractId is > 0
+                ? Contract.GetById(Model?.ContractId??0, useArchiveData: true)
+                : null
+        );
 
-    if (id is not null)
-    {
-        var number = Contract.GetById((int)id).Number;
-        ViewData["Title"] = ViewBag.IsEngineering == false ?
-        $"Фактическое выполнение работ (услуг) согласно справкам о стоимости выполненных работ формы С-3а, договору № {number}" :
-        $"Акты оказанных услуг согласно договору № {number}";
-    }
+    int backId = ViewBag.returnContractId == 0
+            ? ViewBag.contractId
+            : ViewBag.returnContractId;
 
-    string redirectAction = "GetArchByContractId";
-    string redirectController = "Forms";
-    var actionName = ViewBag.IsEngineering == false ? "IndexArch" : "Engineerings";
+    ViewData["Title"] = ViewBag.IsEngineering != true ?
+            $"Фактическое выполнение работ (услуг) согласно справкам о стоимости выполненных работ формы С-3а" :
+            $"Акты оказанных услуг согласно договору";
 
-    var days = Contract.GetPaymentDueDate(id, useArchiveData: true) ?? 0;
+    var actionName = ViewBag.IsEngineering == false
+            ? "IndexArch"
+            : "Engineerings";
 
-    var smrSum = 0M;
-    var smrFixedSum = 0M;
-    var pnrSum = 0M;
-    var addSum = 0M;
-    var eqpSum = 0M;
-    var offsetTPrepSum = 0M;
-    var offsetCPrepSum = 0M;
-    var mtrlSum = 0M;
-    var genSerSum = 0M;
-    var otherSum = 0M;
-    // var otherSubSum = 0M;
+    var days = Contract.GetPaymentDueDate(id) ?? 0;
+    decimal sumCostTotal = (Model?.SmrContractCost + Model?.SmrNdsCost + Model?.PnrCost + Model?.AdditionalCost + Model?.EquipmentCost) ?? 0;
+    decimal sumDeductTotal = (Model?.OffsetTargetPrepayment + Model?.OffsetCurrentPrepayment + Model?.MaterialCost +
+        Model?.OtherExpensesCost + Model?.GenServiceCost + Model?.Reserve) ?? 0;
+    decimal sumSubTotal = 0;
+    decimal sumSubDeduct = 0;
 
 }
 
-<style>
-    .col-tog,
-    .col-tog-av {
-        display: none;
-        scroll-behavior: smooth;
-        transition: all 0.5s;
-    }
-
-    .show-col {
-        display: table-cell;
-        scroll-behavior: smooth;
-        transition: all 0.5s;
-        color: mediumblue;
-    }
-
-    #tab-c3a {
-        overflow-wrap: break-word;
-    }
-
-        #tab-c3a button {
-            color: mediumblue;
-        }
-
-    .svg-circleplus {
-        height: 20px;
-        stroke: white;
-        transition: all 0.5s;
-    }
-
-    #btn_svg,
-    #btn_svg_A {
-        margin-left: 4px;
-        padding: 0px;
-    }
-</style>
+<link rel="stylesheet" href="~/css/period-month-picker.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/form-c3a-details-md3.css" asp-append-version="true" />
 
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="max-width:1350px; overflow: hidden;">
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (backId > 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="DetailsArch" asp-route-id="@backId" class="close-btn"></a>
-                    }
+            <div class="dm-modal">
+                <div class="am-wrap">
 
-                    @if (backId == 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="@actionName" class="close-btn"></a>
-                    }
-
-                </div>
-                <hr class="modal-line">
-
-                @if (Model.Any())
-                {
-                    <div class="modal-overflow-90">
-                        <table id="tab-c3a" class="table table-striped table-bordered table-main">
-                            <thead class="">
-                                @if (ViewBag.IsEngineering == null)
+                    <!-- Шапка -->
+                    <div class="am-header">
+                        <span class="am-header-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                            </svg>
+                        </span>
+                        <div class="am-header-info">
+                            <h1 class="am-header-title">
+                                @ViewData["Title"]
+                                @if (contract != null)
                                 {
-                                    <tr>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.Period)
-                                        </th>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.DateSigning)
-                                        </th>
-                                        <th>
-                                            Дата оплаты по договору
-                                        </th>
-                                        <th>
-                                            <div style="display:flex; flex-direction:row;">
-                                                <div>Общая стоимость</div>
-                                                <button id="btn_svg" class="totalW btn">
-                                                    <svg id="svg_plus" class="svg-circleplus" viewBox="0 0 95 95">
-                                                        <circle cx="50" cy="50" r="35" fill="none" stroke-width="7.5"></circle>
-                                                        <line x1="32.5" y1="50" x2="67.5" y2="50" stroke-width="5"></line>
-                                                        <line x1="50" y1="32.5" x2="50" y2="67.5" stroke-width="5"></line>
-                                                    </svg>
-                                                </button>
-                                            </div>
-
-                                        </th>
-                                        <th class="col-tog">
-                                            Неизменная договорная цена
-                                        </th>
-                                        <th class="col-tog">
-                                            @Html.DisplayNameFor(model => model.PnrCost)
-                                        </th>
-                                        <th class="col-tog">
-                                            @Html.DisplayNameFor(model => model.AdditionalCost)
-                                        </th>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.EquipmentCost)
-                                        </th>
-                                        <th>
-                                            <div style="display:flex; flex-direction:row;">
-                                                <div>Удержания</div>
-                                                <button id="btn_svg_A" class="totalA btn">
-                                                    <svg id="svg_plus" class="svg-circleplus" viewBox="0 0 95 95">
-                                                        <circle cx="50" cy="50" r="35" fill="none" stroke-width="7.5"></circle>
-                                                        <line x1="32.5" y1="50" x2="67.5" y2="50" stroke-width="5"></line>
-                                                        <line x1="50" y1="32.5" x2="50" y2="67.5" stroke-width="5"></line>
-                                                    </svg>
-                                                </button>
-                                            </div>
-
-                                        </th>
-                                        <th class="col-tog-av">
-                                            Зачет целевого аванса
-                                        </th>
-                                        <th class="col-tog-av">
-                                            Зачет текущего аванса
-                                        </th>
-                                        <th class="col-tog-av">
-                                            Материалы
-                                        </th>
-                                        <th class="col-tog-av">
-                                            Другие
-                                        </th>
-                                        <th class="col-tog-av">
-                                            Генуслуги
-                                        </th>
-                                        <th>
-                                            <div>
-                                                К оплате
-                                            </div>
-                                        </th>
-                                        <th>
-                                            <div>
-                                                Файлы
-                                            </div>
-                                        </th>
-                                    </tr>
+                                    <span>, за <span style="color:var(--md3-primary);">@Model?.Period?.ToString("MMMM yyyy")</span></span>
                                 }
-                                else
-                                {
-                                    <tr>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.Period)
-                                        </th>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.DateSigning)
-                                        </th>
-                                        <th>
-                                            Дата оплаты по договору
-                                        </th>
-                                        <th>
-                                            Объем работ
-                                        </th>
-                                        <th>Файлы</th>
-                                    </tr>
-                                }
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model)
-                                {
-                                    <tr style="font-weight:600;">
-                                        @if (ViewBag.IsEngineering == null)
-                                        {
-                                            <td>@item.Period?.ToString("MMMM yyyy")</td>
-                                            <td>@item.DateSigning?.ToShortDateString()</td>
-                                            <td>@(item.DateSigning?.AddDays(days).ToShortDateString())</td>
-                                            <td class="text-end">@((item.SmrContractCost + item.PnrCost + item.AdditionalCost).ToString("N2"))</td>
-                                            <td class="text-end col-tog">@item.SmrContractCost.ToString("N2")</td>
-                                            <td class="text-end col-tog">@item.PnrCost.ToString("N2")</td>
-                                            <td class="text-end col-tog">@item.AdditionalCost.ToString("N2")</td>
-                                            <td class="text-end">@item.EquipmentCost.ToString("N2")</td>
-                                            <td class="text-end">
-                                                @((item.OffsetTargetPrepayment + item.OffsetCurrentPrepayment + item.MaterialCost + item.OtherExpensesCost + item.GenServiceCost + item.Reserve).ToString("N2"))
-                                            </td>
-                                            <td class="text-end col-tog-av">@item.OffsetTargetPrepayment.ToString("N2")</td>
-                                            <td class="text-end col-tog-av">@item.OffsetCurrentPrepayment.ToString("N2")</td>
-                                            <td class="text-end col-tog-av">@item.MaterialCost.ToString("N2")</td>
-                                            <td class="text-end col-tog-av">@item.OtherExpensesCost.ToString("N2")</td>
-                                            <td class="text-end col-tog-av">@item.GenServiceCost.ToString("N2")</td>
-                                            <td class="text-end"><div>@item.TotalCostToBePaid.ToString("N2")</div></td>
-                                        }
-                                        else
-                                        {
-                                            <td>@item.Period?.ToString("MMMM yyyy")</td>
-                                            <td>@item.DateSigning?.ToShortDateString()</td>
-                                            <td class="text-end">@item.SmrCost.ToString("N2")</td>
-                                            <td class="text-end">@item.TotalCostToBePaid.ToString("N2")</td>
+                            </h1>
+                            @if (contract?.NameObject != null)
+                            {
+                                <div class="am-header-sub">
+                                    <span> по договору № <span style="color:var(--md3-primary);">@contract.Number</span></span>
+                                </div>
+                            }
+                        </div>
+                        <div class="am-header-actions">
+                            @if (backId > 0)
+                            {
+                                <a asp-controller="Contracts" asp-action="DetailsArch" asp-route-id="@backId" class="close-btn" aria-label="Закрыть"></a>
+                            }
+                            else
+                            {
+                                <a asp-controller="Contracts" asp-action="@actionName" class="close-btn" aria-label="Закрыть"></a>
+                            }
+                        </div>
+                    </div>
 
-                                        }
+                    <div style="display: flex;justify-content: space-between;">
+                        <form asp-action="GetArchByContractId" id="ppForm" method="get" style="padding-left: 30px;max-width: 550px;">
+                            <input name="contractId" value="@ViewBag.contractId" hidden />
+                            <input name="isEngineering" value="@ViewBag.IsEngineering" hidden />
+                            <input name="returnContractId" value="@ViewBag.returnContractId" hidden />
+                            <input id="ppPeriodInput" name="chosePeriod" type="text" hidden />
 
-                                        <td>
-                                            @foreach (var file in Files.GetAttachedFiles(item.Id, Folder.Form3C, useArchiveData: true))
+                            <div class="pp-bar">
+                                <!-- Иконка -->
+                                <span class="pp-icon">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                                        <line x1="16" y1="2" x2="16" y2="6" />
+                                        <line x1="8" y1="2" x2="8" y2="6" />
+                                        <line x1="3" y1="10" x2="21" y2="10" />
+                                    </svg>
+                                </span>
+
+                                <!-- Стрелка назад -->
+                                <button type="button" class="pp-arrow" id="ppPrev"
+                                        onclick="ppShift(-1)" title="Предыдущий месяц">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2.5"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="15 18 9 12 15 6" />
+                                    </svg>
+                                </button>
+
+                                <!-- Текущий месяц -->
+                                <span class="pp-current-label" id="ppLabel">…</span>
+
+                                <!-- Стрелка вперёд -->
+                                <button type="button" class="pp-arrow" id="ppNext"
+                                        onclick="ppShift(+1)" title="Следующий месяц">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2.5"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="9 18 15 12 9 6" />
+                                    </svg>
+                                </button>
+
+                                <!-- Разделитель -->
+                                <span class="pp-sep"></span>
+
+                                <!-- Быстрый выбор месяца -->
+                                <div class="pp-quick-wrap">
+                                    <button type="button" class="pp-quick-btn" id="ppQuickBtn"
+                                            onclick="ppTogglePopup()">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" stroke-width="2"
+                                             stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="4" width="18" height="18" rx="2" />
+                                            <line x1="3" y1="10" x2="21" y2="10" />
+                                        </svg>
+                                        Выбрать месяц
+                                    </button>
+
+                                    <div class="pp-popup" id="ppPopup">
+                                        <div class="pp-popup-year">
+                                            <button type="button" class="pp-popup-year-btn"
+                                                    id="ppPopYearPrev" onclick="ppPopYearShift(-1)">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                                                     stroke="currentColor" stroke-width="2.5"
+                                                     stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="15 18 9 12 15 6" />
+                                                </svg>
+                                            </button>
+                                            <span class="pp-popup-year-val" id="ppPopYear"></span>
+                                            <button type="button" class="pp-popup-year-btn"
+                                                    id="ppPopYearNext" onclick="ppPopYearShift(+1)">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                                                     stroke="currentColor" stroke-width="2.5"
+                                                     stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="9 18 15 12 9 6" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div class="pp-popup-grid" id="ppPopGrid"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Применить -->
+                                <button type="submit" class="pp-apply" id="ppApply">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2.5"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    Применить
+                                </button>
+                            </div>
+
+
+                        </form>
+                    </div>
+
+                    <!-- Карточка -->
+                    <div>
+                        @if (Model is not null)
+                        {
+                            <div class="table-card">
+                                <div class="table-scroll">
+                                    <table id="costTable">
+                                        <thead>
+                                            @if (ViewBag.IsEngineering == false)
                                             {
-                                                <div>
-                                                    <a href="~/Files/OpenFile?id=@file.Id&useArchiveData=true" target="_blank">@file.FileName</a>
-                                                </div>
+                                                <tr>
+                                                    <!-- Организация скрывается, если её нет -->
+                                                    <th class="simple-head w-org"
+                                                        data-org-column>
+                                                        @* Заказчик/Подрядчик *@
+                                                    </th>
+                                                    <th class="group-head group-cost w-cost">
+                                                        <div class="group-inner">
+                                                            Общая стоимость и оборудование
+                                                            <span class="group-count">4</span>
+                                                        </div>
+                                                    </th>
+                                                    <th class="group-head group-deduction w-deduction">
+                                                        <div class="group-inner">
+                                                            Удержания
+                                                            <span class="group-count">5</span>
+                                                        </div>
+                                                    </th>
+                                                    <th class="group-head group-pay w-pay">
+                                                        К оплате
+                                                    </th>
+                                                </tr>
                                             }
-                                        </td>
+                                            else
+                                            {
+                                                <tr>
+                                                    <th class="simple-head w-org" data-org-column>         </th>
+                                                    <th class="simple-head w-dates">
+                                                        @Html.DisplayNameFor(model => model.DateSigning)
+                                                    </th>
+                                                    <th class="group-head group-cost w-cost">
+                                                        <div class="group-inner">
+                                                            Дата оплаты по договору
+                                                        </div>
+                                                    </th>
+                                                    <th class="group-head group-cost w-cost">
+                                                        <div class="group-inner">
+                                                            Объем работ
+                                                        </div>
+                                                    </th>
+                                                </tr>
+                                            }
 
-                                    </tr>
-                                    var formNested = Form.GetNestedFormsByPeriodAndContrId((int)item.ContractId, (DateTime)item.Period, useArchiveData: true);
-                                    if (formNested?.Count > 0)
-                                    {
-                                        <tr style="background-color:#92b0b1; color:white;font-weight:600; font-size:0.95rem">
-                                            <td class="devide-table" colspan="8">в т.ч. субподряд</td>
-                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="data-row">
+                                                <td class="main-cell" data-org-column>
+                                                    @{
+                                                        var allFiles = Files.GetAttachedFiles(Model.Id, Folder.Form3C);
+                                                    }
+                                                    <span class="org-name">
+                                                        @Organization.GetNameByContractId((int)Model.ContractId)
+                                                    </span>
+                                                    <span class="org-type">
+                                                        Генподрядная организация
+                                                    </span>
+                                                    <div class="row-tools">
 
-                                        @foreach (var sub in formNested)
-                                        {
-                                            smrSum += (sub?.SmrContractCost + sub?.PnrCost + sub?.AdditionalCost) ?? 0;
-                                            smrFixedSum += (sub?.SmrContractCost) ?? 0;
-                                            pnrSum += (sub?.PnrCost) ?? 0;
-                                            addSum += (sub?.AdditionalCost) ?? 0;
-                                            eqpSum += (sub?.EquipmentCost) ?? 0;
-                                            offsetTPrepSum += (sub?.OffsetTargetPrepayment) ?? 0;
-                                            offsetCPrepSum += (sub?.OffsetCurrentPrepayment) ?? 0;
-                                            mtrlSum += (sub?.MaterialCost) ?? 0;
-                                            genSerSum += (sub?.GenServiceCost) ?? 0;
-                                            otherSum += (sub?.OtherExpensesCost) ?? 0;
+                                                        <button class="row-tool"
+                                                                type="button"
+                                                                title="Файлы"
+                                                                onclick="openFiles(this)">
 
-                                            <tr style="background-color:#92b0b1; color:white; font-weight:600; font-size:0.95rem">
-                                                <td>@Organization.GetNameByContractId((int)sub.ContractId, useArchiveData: true)</td>
-                                                <td>@sub?.DateSigning?.ToShortDateString()</td>
-                                                <td>@sub?.DateSigning?.AddDays(days).ToShortDateString()</td>
-                                                <td class="text-end">@((sub?.SmrContractCost + sub?.PnrCost + sub?.AdditionalCost)?.ToString("N2"))</td>
-                                                <td class="text-end col-tog">@(sub?.SmrContractCost.ToString("N2"))</td>
-                                                <td class="text-end col-tog">@sub?.PnrCost.ToString("N2")</td>
-                                                <td class="text-end col-tog">@sub?.AdditionalCost.ToString("N2")</td>
-                                                <td class="text-end">@sub?.EquipmentCost.ToString("N2")</td>
-                                                <td class="text-end">
-                                                    @((sub?.OffsetTargetPrepayment + sub?.OffsetCurrentPrepayment + sub?.MaterialCost +
-                                                                                        sub?.OtherExpensesCost + sub?.GenServiceCost)?.ToString("N2"))
-                                </td>
-                                <td class="text-end col-tog-av">@sub?.OffsetTargetPrepayment.ToString("N2")</td>
-                                <td class="text-end col-tog-av">@sub?.OffsetCurrentPrepayment.ToString("N2")</td>
-                                <td class="text-end col-tog-av">@sub?.MaterialCost.ToString("N2")</td>
-                                <td class="text-end col-tog-av">@sub?.OtherExpensesCost.ToString("N2")</td>
-                                <td class="text-end col-tog-av">@sub?.GenServiceCost.ToString("N2")</td>
-                                <td class="text-end"> @sub?.TotalCostToBePaid.ToString("N2")  </td>
-                                <td>
-                                    <div>
-                                        @foreach (var file in Files.GetAttachedFiles((int)sub?.Id, Folder.Form3C, useArchiveData: true))
+                                                            <svg viewBox="0 0 24 24"
+                                                                 fill="none"
+                                                                 stroke="currentColor"
+                                                                 stroke-width="1.7">
+
+                                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                                <path d="M14 2v6h6" />
+
+                                                            </svg>
+
+                                                            <span class="file-badge">@allFiles.Count()</span>
+
+                                                        </button>
+
+                                                        <button class="row-tool"
+                                                                type="button"
+                                                                title="Подробнее"
+                                                                onclick="toggleRow(this)">
+
+                                                            <svg class="expand-icon"
+                                                                 viewBox="0 0 24 24"
+                                                                 fill="none"
+                                                                 stroke="currentColor"
+                                                                 stroke-width="2">
+
+                                                                <path d="m6 9 6 6 6-6" />
+
+                                                            </svg>
+
+                                                        </button>
+
+                                                        <div class="files-data" hidden>
+
+                                                            @foreach (var file in allFiles)
+                                                            {
+                                                                <a class="detail-file" href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>
+                                                            }
+                                                        </div>
+
+                                                    </div>
+                                                </td>
+                                                @if (ViewBag.IsEngineering == false)
+                                                {
+
+                                                    <!-- поступление -->
+                                                    <td>
+                                                        <div class="amount-grid cost-grid">
+                                                            <div class="amount-item">
+                                                                <span class="amount-label">
+                                                                    Неизменная
+                                                                </span>
+                                                                <span class="amount-value cost-value">
+                                                                    @((Model?.SmrContractCost + Model?.SmrNdsCost)?.ToString("N2"))
+                                                                </span>
+                                                            </div>
+
+                                                            <div class="amount-item">
+                                                                <span class="amount-label">
+                                                                    ПНР
+                                                                </span>
+                                                                <span class="amount-value cost-value">
+                                                                    @Model?.PnrCost.ToString("N2")
+                                                                </span>
+                                                            </div>
+
+                                                            <div class="amount-item">
+                                                                <span class="amount-label">
+                                                                    Доп.работы
+                                                                </span>
+                                                                <span class="amount-value cost-value">
+                                                                    @Model?.AdditionalCost.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                            <div class="amount-item">
+                                                                <span class="amount-label">
+                                                                    Оборудование
+                                                                </span>
+                                                                <span class="amount-value cost-value">
+                                                                    @Model?.EquipmentCost.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="amount-total-row">
+                                                            <div class="amount-total">
+                                                                <span class="amount-total-label">
+                                                                    Итого (c оборудованием)
+                                                                </span>
+                                                                <span class="amount-total-value cost">
+                                                                    @(sumCostTotal.ToString("N2"))
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <!-- удержание -->
+                                                    <td>
+                                                        <div class="amount-grid ded-grid">
+                                                            <div class="amount-item">
+                                                                <span class="amount-label">Цел. аванс</span>
+                                                                <span class="amount-value ded-value">@Model?.OffsetTargetPrepayment.ToString("N2")</span>
+                                                            </div>
+                                                            <div class="amount-item">
+                                                                <span class="amount-label">Тек. аванс</span>
+                                                                <span class="amount-value ded-value">@Model?.OffsetCurrentPrepayment.ToString("N2")</span>
+                                                            </div>
+                                                            <div class="amount-item">
+                                                                <span class="amount-label">Материалы</span>
+                                                                <span class="amount-value ded-value">@Model?.MaterialCost.ToString("N2")</span>
+                                                            </div>
+                                                            <div class="amount-item">
+                                                                <span class="amount-label">Прочие</span>
+                                                                <span class="amount-value ded-value">@Model?.OtherExpensesCost.ToString("N2")</span>
+                                                            </div>
+                                                            <div class="amount-item">
+                                                                <span class="amount-label">Генуслуги</span>
+                                                                <span class="amount-value ded-value">@Model?.GenServiceCost.ToString("N2")</span>
+                                                            </div>
+
+                                                        </div>
+
+                                                        <div class="amount-total-row">
+                                                            <div class="amount-total">
+                                                                <span class="amount-total-label">
+                                                                    Итого удержаний
+                                                                </span>
+                                                                <span class="amount-total-value ded">
+                                                                    @(sumDeductTotal.ToString("N2"))
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <!-- итого к оплате -->
+                                                    <td class="pay-cell">
+                                                        <span class="pay-value">
+                                                            @Model?.TotalCostToBePaid.ToString("N2")
+                                                        </span>
+                                                    </td>
+                                                }
+                                                else
+                                                {
+                                                    <td>@Model?.DateSigning?.ToShortDateString()</td>
+                                                    <td>@(Model?.DateSigning?.AddDays(days).ToShortDateString())</td>
+                                                    <td class="text-end">@Model?.TotalCostToBePaid.ToString("N2")</td>
+                                                }
+
+
+                                            </tr>
+                                            <!-- DETAILS -->
+                                            <tr class="details-row">
+                                                <td class="details-cell" colspan="4">
+                                                    <div class="details-panel">
+                                                        @if (ViewBag.IsEngineering == false)
                                                         {
-                                                            <div>
-                                                                <a href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>
+                                                            <div class="details-layout">
+
+                                                                <section>
+                                                                    <div class="details-title">
+                                                                        Общая стоимость
+                                                                    </div>
+                                                                    <div class="details-list">
+                                                                        <span class="details-label">
+                                                                            Неизменная договорная цена (с НДС)
+                                                                        </span>
+                                                                        <span class="details-value">
+                                                                            @((Model?.SmrContractCost + Model?.SmrNdsCost)?.ToString("N2"))
+                                                                        </span>
+                                                                        <span class="details-label">
+                                                                            @Html.DisplayNameFor(model => model.PnrCost)
+                                                                        </span>
+                                                                        <span class="details-value">
+                                                                            @Model?.PnrCost.ToString("N2")
+                                                                        </span>
+                                                                        <span class="details-label">
+                                                                            @Html.DisplayNameFor(model => model.AdditionalCost)
+                                                                        </span>
+                                                                        <span class="details-value">
+                                                                            @Model?.AdditionalCost.ToString("N2")
+                                                                        </span>
+                                                                        <span class="details-label">
+                                                                            @Html.DisplayNameFor(model => model.EquipmentCost)
+                                                                        </span>
+                                                                        <span class="details-value">
+                                                                            @Model?.EquipmentCost.ToString("N2")
+                                                                        </span>
+                                                                    </div>
+                                                                </section>
+
+                                                                <section>
+                                                                    <div class="details-title">
+                                                                        Удержания
+                                                                    </div>
+                                                                    <div class="details-list">
+                                                                        <span class="details-label">
+                                                                            @Html.DisplayNameFor(model => model.OffsetTargetPrepayment)
+                                                                        </span>
+                                                                        <span class="details-value ded">
+                                                                            @Model?.OffsetTargetPrepayment.ToString("N2")
+                                                                        </span>
+                                                                        <span class="details-label">
+                                                                            @Html.DisplayNameFor(model => model.OffsetCurrentPrepayment)
+                                                                        </span>
+                                                                        <span class="details-value ded">
+                                                                            @Model?.OffsetCurrentPrepayment.ToString("N2")
+                                                                        </span>
+                                                                        <span class="details-label">
+                                                                            @Html.DisplayNameFor(model => model.MaterialCost)
+                                                                        </span>
+                                                                        <span class="details-value ded">
+                                                                            @Model?.MaterialCost.ToString("N2")
+                                                                        </span>
+                                                                        <span class="details-label">
+                                                                            @Html.DisplayNameFor(model => model.OtherExpensesCost)
+                                                                        </span>
+                                                                        <span class="details-value ded">
+                                                                            @Model?.OtherExpensesCost.ToString("N2")
+                                                                        </span>
+                                                                        <span class="details-label">
+                                                                            @Html.DisplayNameFor(model => model.GenServiceCost)
+                                                                        </span>
+                                                                        <span class="details-value ded">
+                                                                            @Model?.GenServiceCost.ToString("N2")
+                                                                        </span>
+                                                                        <span class="details-label">
+                                                                            @Html.DisplayNameFor(model => model.Reserve)
+                                                                        </span>
+                                                                        <span class="details-value ded">
+                                                                            @Model?.Reserve.ToString("N2")
+                                                                        </span>
+                                                                    </div>
+                                                                </section>
+
                                                             </div>
                                                         }
+                                                        <div class="details-layout details-bottom" style="grid-template-columns:repeat(3, 1fr)">
+                                                            <section>
+                                                                <div class="details-title">
+                                                                    Даты
+                                                                </div>
+                                                                <div class="details-list">
+                                                                    <span class="details-label">
+                                                                        @Html.DisplayNameFor(model => model.DateSigning)
+                                                                    </span>
+                                                                    <span class="details-value">
+                                                                        @Model?.DateSigning?.ToShortDateString()
+                                                                    </span>
+                                                                    <span class="details-label">
+                                                                        Дата оплаты по договору
+                                                                    </span>
+                                                                    <span class="details-value">
+                                                                        @(Model?.DateSigning?.AddDays(days).ToShortDateString())
+                                                                    </span>
+                                                                </div>
+                                                            </section>
+                                                            <section>
+                                                                @if (allFiles.Any())
+                                                                {
+                                                                    <div class="details-title">
+                                                                        Файлы
+                                                                    </div>
+                                                                    <div class="detail-files">
+                                                                        @foreach (var file in allFiles)
+                                                                        {
+                                                                            <div class="am-file-row">
+                                                                                <a class="am-file-link"
+                                                                                   title="@file.FileName"
+                                                                                   href="~/Files/OpenFile?id=@file.Id"
+                                                                                   target="_blank">@file.FileName</a>
+                                                                            </div>
+                                                                        }
+
+                                                                    </div>
+                                                                }
+                                                            </section>
+                                                        </div>
+
+                                                        @* <div class="details-bottom"></div> *@
                                                     </div>
                                                 </td>
                                             </tr>
-                                        }
+                                            <!-- =====================================================
+                                                СУБПОДРЯД
+                                                ===================================================== -->
+                                            @{
+                                                var formNested = Form.GetNestedFormsByPeriodAndContrId((int)Model?.ContractId, (DateTime)Model?.Period);
+                                            }
+                                            @foreach (var sub in formNested)
+                                            {
 
-                            @*строка "Всего субподряд" -- сумма объема по субподрядным организаций и филиалов*@
-                            <tr style="background-color:#92b0b1; color:black;font-weight:600; font-size:0.95rem">
-                                <td colspan="2">Всего субподряд</td>
-                                <td></td>
-                                <td class="text-end">@smrSum.ToString("N2")</td>
-                                <td class="text-end col-tog">@smrFixedSum.ToString("N2")</td>
-                                <td class="text-end col-tog">@pnrSum.ToString("N2")</td>
-                                <td class="text-end col-tog">@addSum.ToString("N2")</td>
-                                <td class="text-end">@eqpSum.ToString("N2")</td>
-                                <td class="text-end">
-                                    @((offsetTPrepSum + offsetCPrepSum + mtrlSum + otherSum + genSerSum).ToString("N2"))
-                                </td>
-                                <td class="text-end col-tog-av">@offsetTPrepSum.ToString("N2")</td>
-                                <td class="text-end col-tog-av">@offsetCPrepSum.ToString("N2")</td>
-                                <td class="text-end col-tog-av">@mtrlSum.ToString("N2")</td>
-                                <td class="text-end col-tog-av">@otherSum.ToString("N2")</td>
-                                <td class="text-end col-tog-av">@genSerSum.ToString("N2")</td>
-                                <td class="text-end">
-                                    <div>
-                                        @((smrFixedSum + pnrSum + addSum + eqpSum - offsetCPrepSum - offsetTPrepSum -
-                                                                                mtrlSum - otherSum - genSerSum).ToString("N2"))
-                                                                                                                           </div>
-                                                                                                                       </td>
-                                                                                                                       <td></td>
+                                                var allFilesNested = Files.GetAttachedFiles(sub.Id, Folder.Form3C);
 
-                            </tr>
+                                                <tr class="data-row">
+                                                    <td class="main-cell" data-org-column>
+                                                        <span class="org-name">
+                                                            @Organization.GetNameByContractId((int)sub.ContractId)
+                                                        </span>
+                                                        <span class="org-type">
+                                                            Субподрядная организация
+                                                        </span>
+                                                        <div class="row-tools">
+                                                            <button class="row-tool"
+                                                                    type="button"
+                                                                    title="Файлы"
+                                                                    onclick="openFiles(this)">
+                                                                <svg viewBox="0 0 24 24"
+                                                                     fill="none"
+                                                                     stroke="currentColor"
+                                                                     stroke-width="1.7">
+                                                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                                    <path d="M14 2v6h6" />
+                                                                </svg>
+                                                                <span class="file-badge">@allFilesNested.Count()</span>
+                                                            </button>
+                                                            <button class="row-tool"
+                                                                    type="button"
+                                                                    title="Подробнее"
+                                                                    onclick="toggleRow(this)">
+                                                                <svg class="expand-icon"
+                                                                     viewBox="0 0 24 24"
+                                                                     fill="none"
+                                                                     stroke="currentColor"
+                                                                     stroke-width="2">
+                                                                    <path d="m6 9 6 6 6-6" />
+                                                                </svg>
+                                                            </button>
+                                                            <div class="files-data" hidden>
+                                                                @foreach (var file in allFilesNested)
+                                                                {
+                                                                    <a class="detail-file" href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>
+                                                                }
+                                                        </div>
 
-                            @*строка "собственные силы" -- сумма объема по субподрядным организаций и филиалов*@
-                            <tr style="background-color:#92b0b1; color:black;font-weight:600; font-size:0.95rem">
-                                <td colspan="2">Собственные силы</td>
-                                <td></td>
-                                <td class="text-end">@(((item.SmrContractCost + item.PnrCost + item.AdditionalCost) - smrSum).ToString("N2"))</td>
-                                <td class="text-end col-tog">
-                                    @(((item?.SmrContractCost - smrFixedSum) ?? 0).ToString("N2"))
-                                </td>
-                                <td class="text-end col-tog">@(((item?.PnrCost - pnrSum) ?? 0).ToString("N2"))</td>
-                                <td class="text-end col-tog">@(((item?.AdditionalCost - addSum) ?? 0).ToString("N2"))</td>
-                                <td class="text-end">@(((item?.EquipmentCost - eqpSum) ?? 0).ToString("N2"))</td>
-                                <td class="text-end">
+                                                    </div>
+                                                </td>
+                                                <!-- поступление -->
+                                                <td>
+                                                    <div class="amount-grid cost-grid">
+                                                        <div class="amount-item">
+                                                            <span class="amount-label">
+                                                                Неизменная
+                                                            </span>
+                                                            <span class="amount-value cost-value">
+                                                                @((sub?.SmrContractCost + sub?.SmrNdsCost)?.ToString("N2"))
+                                                            </span>
+                                                        </div>
+                                                        <div class="amount-item">
+                                                            <span class="amount-label">
+                                                                ПНР
+                                                            </span>
+                                                            <span class="amount-value cost-value">
+                                                                @sub?.PnrCost.ToString("N2")
+                                                            </span>
+                                                        </div>
+                                                        <div class="amount-item">
+                                                            <span class="amount-label">
+                                                                Доп.работы
+                                                            </span>
+                                                            <span class="amount-value cost-value">
+                                                                @sub?.AdditionalCost.ToString("N2")
+                                                            </span>
+                                                        </div>
+                                                        <div class="amount-item">
+                                                            <span class="amount-label">
+                                                                Оборудование
+                                                            </span>
+                                                            <span class="amount-value cost-value">
+                                                                @sub?.EquipmentCost.ToString("N2")
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="amount-total-row">
+                                                        <div class="amount-total">
+                                                            <span class="amount-total-label">
+                                                                Итого (c оборудованием)
+                                                            </span>
+                                                            <span class="amount-total-value cost">
+                                                                @((sub?.SmrContractCost + sub?.SmrNdsCost + sub?.PnrCost + sub?.AdditionalCost + sub?.EquipmentCost)?.ToString("N2"))
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <!-- удержание -->
+                                                <td>
+                                                    <div class="amount-grid ded-grid">
+                                                        <div class="amount-item">
+                                                            <span class="amount-label">Цел. аванс</span>
+                                                            <span class="amount-value ded-value">@sub?.OffsetTargetPrepayment.ToString("N2")</span>
+                                                        </div>
+                                                        <div class="amount-item">
+                                                            <span class="amount-label">Тек. аванс</span>
+                                                            <span class="amount-value ded-value">@sub?.OffsetCurrentPrepayment.ToString("N2")</span>
+                                                        </div>
+                                                        <div class="amount-item">
+                                                            <span class="amount-label">Материалы</span>
+                                                            <span class="amount-value ded-value">@sub?.MaterialCost.ToString("N2")</span>
+                                                        </div>
+                                                        <div class="amount-item">
+                                                            <span class="amount-label">Прочие</span>
+                                                            <span class="amount-value ded-value">@sub?.OtherExpensesCost.ToString("N2")</span>
+                                                        </div>
+                                                        <div class="amount-item">
+                                                            <span class="amount-label">Генуслуги</span>
+                                                            <span class="amount-value ded-value">@sub?.GenServiceCost.ToString("N2")</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="amount-total-row">
+                                                        <div class="amount-total">
+                                                            <span class="amount-total-label">
+                                                                Итого удержаний
+                                                            </span>
+                                                            <span class="amount-total-value ded">
+                                                                @((sub?.OffsetTargetPrepayment + sub?.OffsetCurrentPrepayment +
+                                                                                                                            sub?.MaterialCost + sub?.OtherExpensesCost + sub?.GenServiceCost + sub?.Reserve)?.ToString("N2"))
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <!-- итого к оплате -->
+                                            <td class="pay-cell">
+                                                <span class="pay-value">
+                                                    @sub?.TotalCostToBePaid.ToString("N2")
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <!-- DETAILS -->
+                                        <tr class="details-row">
+                                            <td class="details-cell" colspan="4">
+                                                <div class="details-panel">
+                                                    <div class="details-layout">
+                                                        <section>
+                                                            <div class="details-title">
+                                                                Общая стоимость
+                                                            </div>
+                                                            <div class="details-list">
+                                                                <span class="details-label">
+                                                                    Неизменная договорная цена (с НДС)
+                                                                </span>
+                                                                <span class="details-value">
+                                                                    @((sub?.SmrContractCost + sub?.SmrNdsCost)?.ToString("N2"))
+                                                                </span>
+                                                                <span class="details-label">
+                                                                    @Html.DisplayNameFor(model => model.PnrCost)
+                                                                </span>
+                                                                <span class="details-value">
+                                                                    @sub?.PnrCost.ToString("N2")
+                                                                </span>
+                                                                <span class="details-label">
+                                                                    @Html.DisplayNameFor(model => model.AdditionalCost)
+                                                                </span>
+                                                                <span class="details-value">
+                                                                    @sub?.AdditionalCost.ToString("N2")
+                                                                </span>
+                                                                <span class="details-label">
+                                                                    @Html.DisplayNameFor(model => model.EquipmentCost)
+                                                                </span>
+                                                                <span class="details-value">
+                                                                    @sub?.EquipmentCost.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                        </section>
+                                                        <section>
+                                                            <div class="details-title">
+                                                                Удержания
+                                                            </div>
+                                                            <div class="details-list">
+                                                                <span class="details-label">
+                                                                    @Html.DisplayNameFor(model => model.OffsetTargetPrepayment)
+                                                                </span>
+                                                                <span class="details-value ded">
+                                                                    @sub?.OffsetTargetPrepayment.ToString("N2")
+                                                                </span>
+                                                                <span class="details-label">
+                                                                    @Html.DisplayNameFor(model => model.OffsetCurrentPrepayment)
+                                                                </span>
+                                                                <span class="details-value ded">
+                                                                    @sub?.OffsetCurrentPrepayment.ToString("N2")
+                                                                </span>
+                                                                <span class="details-label">
+                                                                    @Html.DisplayNameFor(model => model.MaterialCost)
+                                                                </span>
+                                                                <span class="details-value ded">
+                                                                    @sub?.MaterialCost.ToString("N2")
+                                                                </span>
+                                                                <span class="details-label">
+                                                                    @Html.DisplayNameFor(model => model.OtherExpensesCost)
+                                                                </span>
+                                                                <span class="details-value ded">
+                                                                    @sub?.OtherExpensesCost.ToString("N2")
+                                                                </span>
+                                                                <span class="details-label">
+                                                                    @Html.DisplayNameFor(model => model.GenServiceCost)
+                                                                </span>
+                                                                <span class="details-value ded">
+                                                                    @sub?.GenServiceCost.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                        </section>
+                                                    </div>
+                                                    <div class="details-layout details-bottom" style="grid-template-columns:repeat(3, 1fr)">
+                                                        <section>
+                                                            <div class="details-title">
+                                                                Даты
+                                                            </div>
+                                                            <div class="details-list">
+                                                                <span class="details-label">
+                                                                    @Html.DisplayNameFor(model => model.DateSigning)
+                                                                </span>
+                                                                <span class="details-value">
+                                                                    @sub?.DateSigning?.ToShortDateString()
+                                                                </span>
+                                                                <span class="details-label">
+                                                                    Дата оплаты по договору
+                                                                </span>
+                                                                <span class="details-value">
+                                                                    @(sub?.DateSigning?.AddDays(days).ToShortDateString())
+                                                                </span>
+                                                            </div>
+                                                        </section>
+                                                        <section>
+                                                            @if (allFilesNested.Any())
+                                                                    {
+                                                                        <div class="details-title">
+                                                                            Файлы
+                                                                        </div>
+                                                                        <div class="detail-files">
+                                                                            @foreach (var file in allFilesNested)
+                                                                            {
+                                                                                <div>
+                                                                                    <a class="detail-file" href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>
+                                                                                </div>
+                                                                            }
+                                                                        </div>
+                                                                    }
+                                                                </section>
+                                                            </div>
 
-                                    @((
-                                                                        (item?.OffsetTargetPrepayment - offsetTPrepSum) ?? 0 +
-                                                                        (item?.OffsetCurrentPrepayment - offsetCPrepSum) ?? 0 +
-                                                                        (item?.MaterialCost - mtrlSum) ?? 0 +
-                                                                        (item?.OtherExpensesCost - otherSum) ?? 0 +
-                                                                        (item?.GenServiceCost ?? 0 - genSerSum)
-                                                                        ).ToString("N2"))
-                                                                                     </td>
-                                                                                     <td class="text-end col-tog-av">@(((item?.OffsetTargetPrepayment - offsetTPrepSum) ?? 0).ToString("N2"))</td>
-                                                                                     <td class="text-end col-tog-av">@(((item?.OffsetCurrentPrepayment - offsetCPrepSum) ?? 0).ToString("N2"))</td>
-                                                                                     <td class="text-end col-tog-av">@(((item?.MaterialCost - mtrlSum) ?? 0).ToString("N2"))</td>
-                                                                                     <td class="text-end col-tog-av">@(((item?.OtherExpensesCost - otherSum) ?? 0).ToString("N2"))</td>
-                                                                                     <td class="text-end col-tog-av">@(((item?.GenServiceCost - genSerSum) ?? 0).ToString("N2"))</td>
-                                                                                     <td class="text-end">
-                                                                                         <div>
-                                        @((item.TotalCostToBePaid - (smrFixedSum + pnrSum + addSum + eqpSum -
-                                                                                offsetCPrepSum - offsetTPrepSum - mtrlSum - otherSum)).ToString("N2"))
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+
+
+                                            @if (formNested?.Count > 0)
+                                            {
+
+
+                                                <!-- =====================================================
+                                                     СТРОКА СУБИТОГА СУБПОДРЯДОВ
+                                                     ===================================================== -->
+
+                                                <tr class="summary-row subcontract">
+                                                    <td class="summary-label" data-org-column>
+                                                        Итого субподряды
+                                                        <small>
+                                                            @formNested.Count() организации
+                                                        </small>
+                                                    </td>
+
+                                                    @{
+                                                        decimal sumSubSmrFixed = formNested.Select(x => new
+                                                        {
+                                                            Smr = x.SmrContractCost + x.SmrNdsCost,
+                                                        }).Sum(x => x.Smr);
+                                                        decimal sumSubPnr = formNested.Select(x => x.PnrCost).Sum();
+                                                        decimal sumSubAdd = formNested.Select(x => x.AdditionalCost).Sum();
+                                                        decimal sumSubEquip = formNested.Select(x => x.EquipmentCost).Sum();
+
+                                                        sumSubTotal = sumSubSmrFixed + sumSubPnr + sumSubAdd + sumSubEquip;
+
+                                                        decimal sumSubTgtAdv = formNested.Select(x => x.OffsetTargetPrepayment).Sum();
+                                                        decimal sumSubCurAdv = formNested.Select(x => x.OffsetCurrentPrepayment).Sum();
+                                                        decimal sumSubMat = formNested.Select(x => x.MaterialCost).Sum();
+                                                        decimal sumSubOther = formNested.Select(x => x.OtherExpensesCost).Sum();
+                                                        decimal sumSubGenServ = formNested.Select(x => x.GenServiceCost).Sum();
+
+                                                        sumSubDeduct = sumSubTgtAdv + sumSubCurAdv + sumSubMat + sumSubOther + sumSubGenServ;
+                                                    }
+                                                    <!-- Стоимость -->
+                                                    <td class="summary-cost">
+                                                        <div class="summary-mini summary-cost-grid">
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Неизменная
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @sumSubSmrFixed.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    ПНР
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @sumSubPnr.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Доп.работы
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @sumSubAdd.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Оборудование
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @sumSubEquip.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="amount-total-row">
+                                                            <div class="amount-total">
+                                                                <span class="amount-total-label">
+                                                                    Итого
+                                                                </span>
+                                                                <span class="amount-total-value cost">
+                                                                    @sumSubTotal.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <!-- Удержания -->
+                                                    <td class="summary-deduction">
+                                                        <div class="summary-mini summary-ded-grid">
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Цел.
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @sumSubTgtAdv.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Тек.
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @sumSubCurAdv.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Мат.
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @sumSubMat.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Проч.
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @sumSubOther.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Ген.
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @sumSubGenServ.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="amount-total-row">
+                                                            <div class="amount-total">
+                                                                <span class="amount-total-label">
+                                                                    Итого
+                                                                </span>
+                                                                <span class="amount-total-value ded">
+                                                                    @sumSubDeduct.ToString("N2")
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="summary-pay">
+                                                        <span class="summary-number">
+                                                            @((sumSubTotal - sumSubDeduct).ToString("N2"))
+                                                        </span>
+                                                    </td>
+                                                </tr>
+
+                                                <!-- =====================================================
+                                                     ИТОГО СОБСТВЕННЫМИ СИЛАМИ
+                                                     ===================================================== -->
+
+                                                <tr class="summary-row own-force">
+                                                    <td class="summary-label" data-org-column>
+                                                        Итого собственными силами
+                                                        <small>
+                                                            собственные работы
+                                                        </small>
+                                                    </td>
+                                                    <td class="summary-cost">
+                                                        <div class="summary-mini summary-cost-grid">
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Незмен.
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @(((Model?.SmrContractCost + Model?.SmrNdsCost) - sumSubSmrFixed)?.ToString("N2"))
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    ПНР
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @((Model?.PnrCost - sumSubPnr)?.ToString("N2"))
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Доп.работы
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @((Model?.AdditionalCost - sumSubAdd)?.ToString("N2"))
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Оборудование
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @((Model?.EquipmentCost - sumSubEquip)?.ToString("N2"))
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="amount-total-row">
+                                                            <div class="amount-total">
+                                                                <span class="amount-total-label">
+                                                                    Итого
+                                                                </span>
+                                                                <span class="amount-total-value cost">
+                                                                    @((sumCostTotal - sumSubTotal).ToString("N2"))
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="summary-deduction">
+                                                        <div class="summary-mini summary-ded-grid">
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Цел.
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @((Model?.OffsetTargetPrepayment - sumSubTgtAdv)?.ToString("N2"))
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Тек.
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @((Model?.OffsetCurrentPrepayment - sumSubCurAdv)?.ToString("N2"))
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Мат.
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @((Model?.MaterialCost - sumSubMat)?.ToString("N2"))
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Проч.
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @((Model?.OtherExpensesCost - sumSubOther)?.ToString("N2"))
+                                                                </span>
+                                                            </div>
+                                                            <div class="summary-mini-item">
+                                                                <span class="summary-mini-label">
+                                                                    Ген.
+                                                                </span>
+                                                                <span class="summary-mini-value">
+                                                                    @((Model?.GenServiceCost - sumSubGenServ)?.ToString("N2"))
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="amount-total-row">
+                                                            <div class="amount-total">
+                                                                <span class="amount-total-label">
+                                                                    Итого
+                                                                </span>
+                                                                <span class="amount-total-value ded">
+                                                                    @((sumDeductTotal - sumSubDeduct).ToString("N2"))
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="summary-pay">
+                                                        <span class="summary-number">
+                                                            @((Model?.TotalCostToBePaid - (sumSubTotal - sumSubDeduct))?.ToString("N2"))
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- =========================================================
+                                     НИЖНЯЯ ПАНЕЛЬ
+                                     ========================================================= -->
+
+                                <div class="table-footer">
+                                    <div class="footer-left">
+                                        <span class="badge">
+                                            Записей:
+                                            <strong style="margin-left:4px;">
+                                                @(1 + formNested.Count())
+                                            </strong>
+                                        </span>
+                                        <span class="badge total">
+                                            К оплате итого:
+                                            <strong style="margin-left:4px;">
+                                                @((Model?.TotalCostToBePaid - (sumSubTotal - sumSubDeduct))?.ToString("N2")) @contract?.Сurrency
+                                            </strong>
+                                        </span>
                                     </div>
-                                </td>
-                                <td></td>
-                            </tr>
-                                                        }
-                                }
-                            </tbody>
-                        </table>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Пустое состояние -->
+                            <div class="am-empty">
+                                <svg class="am-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <line x1="9" y1="13" x2="15" y2="13" />
+                                </svg>
+                                <p class="am-empty-text">Заполненные спраки С3-А отсутствуют</p>
+                            </div>
+                        }
                     </div>
-                }
-                else
-                {
-                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                        <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
-                        </symbol>
-                        <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
-                        </symbol>
-                        <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-                        </symbol>
-                    </svg>
-                    <div class="alert alert-warning d-flex align-items-center" role="alert">
-                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill" /></svg>
-                        <div>
-                            Отсутствуют данные
-                        </div>
-                    </div>
-                }
-
-
+                </div>
             </div>
         </div>
     </div>
 </div>
+
 @section Scripts {
-    <script type="text/javascript">
+    <script>
+                /*
+         * Есть ли вложенные организации.
+         *
+         * true  -> показываем колонку "Организация"
+         * false -> убираем её.
+         */
+        const hasChildOrganizations = true;
 
-        function toggeleColumnTable() {
-            let numberColspan;
-            const devideTable = document.querySelector(".devide-table");
-            const btn1 = document.querySelector(".totalW");
-            const btn2 = document.querySelector(".totalA");
-            const cols = document.querySelectorAll(".col-tog");
-            const cols2 = document.querySelectorAll(".col-tog-av");
 
-            if (btn1 != null)
-                btn1.addEventListener('click', () => {
-                    cols.forEach((e) => {
-                        e.classList.toggle('show-col');
-                    });
-                    numberColspan = devideTable.getAttribute('colspan');
-                    if (numberColspan === '8') {
-                        numberColspan = 11;
-                    }
-                    else if (numberColspan === '11') {
-                        numberColspan = 8;
-                    }
-                    else if (numberColspan === '16') {
-                        numberColspan = 13;
-                    }
-                    else if (numberColspan === '13') {
-                        numberColspan = 16;
-                    }
-                    devideTable.setAttribute('colspan', numberColspan);
-                });
+        /* =========================================================
+           УДАЛЕНИЕ КОЛОНКИ ОРГАНИЗАЦИИ
+           ========================================================= */
 
-            if (btn2 != null)
-                btn2.addEventListener('click', () => {
-                    cols2.forEach((e) => {
-                        e.classList.toggle('show-col');
-                    });
-                    numberColspan = devideTable.getAttribute('colspan');
+        function updateOrganizationColumn() {
 
-                    if (numberColspan === '8') {
-                        numberColspan = 13;
+            if (hasChildOrganizations) {
+                return;
+            }
+
+            /*
+             * Удаляем заголовок + значения.
+             */
+            document
+                .querySelectorAll("[data-org-column]")
+                .forEach(el => el.remove());
+
+
+            /*
+             * Переносим row-tools в ячейку периода,
+             * поскольку организации больше нет.
+             */
+            document
+                .querySelectorAll(".data-row")
+                .forEach(row => {
+
+                    const tools = row.querySelector(".row-tools");
+                    const periodCell = row.children[0];
+
+                    if (
+                        tools &&
+                        periodCell
+                    ) {
+                        periodCell.classList.add("main-cell");
+                        periodCell.appendChild(tools);
                     }
-                    else if (numberColspan === '11') {
-                        numberColspan = 16;
-                    }
-                    else if (numberColspan === '13') {
-                        numberColspan = 8;
-                    }
-                    else if (numberColspan === '16') {
-                        numberColspan = 11;
-                    }
-                    devideTable.setAttribute('colspan', numberColspan);
                 });
         }
-        toggeleColumnTable();
 
 
-        let btn_el = $("#btn_svg")[0]
-        $("#btn_svg").click(function () {
-            if (btn_el.children[0].id === 'svg_plus') {
-                $('#btn_svg').html('<?xml version="1.0" ?><svg id="close_svg" height="16px" version="1.1" viewBox="0 0 24 24" width="16px" xmlns="http://www.w3.org/2000/svg" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" xmlns:xlink="http://www.w3.org/1999/xlink"><title/><desc/><defs/><g fill="none" fill-rule="evenodd" id="miu" stroke="white" stroke-width="1"><g id="Artboard-1" transform="translate(-575.000000, -155.000000)"><g id="slice" transform="translate(215.000000, 119.000000)"/><path d="M587.5,178 C593.851275,178 599,172.851275 599,166.5 C599,160.148725 593.851275,155 587.5,155 C581.148725,155 576,160.148725 576,166.5 C576,172.851275 581.148725,178 587.5,178 Z M587.5,177 C593.29899,177 598,172.29899 598,166.5 C598,160.70101 593.29899,156 587.5,156 C581.70101,156 577,160.70101 577,166.5 C577,172.29899 581.70101,177 587.5,177 Z M583.257359,171.449747 L582.550253,170.742641 L586.792893,166.5 L582.550253,162.257359 L583.257359,161.550253 L587.5,165.792893 L591.742641,161.550253 L592.449747,162.257359 L588.207107,166.5 L592.449747,170.742641 L591.742641,171.449747 L587.5,167.207107 L583.257359,171.449747 Z" fill="#000000" id="circle-close-delete-remove-outline-stroke"/></g></g></svg>')
-            } else {
-                $('#btn_svg').html(' <svg id="svg_plus" class="svg-circleplus" viewBox="0 0 95 95"> <circle cx="50" cy="50" r="35" fill="none" stroke-width="7.5"></circle><line x1="32.5" y1="50" x2="67.5" y2="50" stroke-width="5"></line><line x1="50" y1="32.5" x2="50" y2="67.5" stroke-width="5"></line></svg>')
+        /* =========================================================
+           РАСКРЫТИЕ СТРОКИ
+           ========================================================= */
+
+        function toggleRow(button) {
+            const row = button.closest(".data-row");
+            const details = row.nextElementSibling;
+            const isOpen = details.classList.contains("open");
+
+            /*
+             * Закрываем остальные строки.
+             */
+            document
+                .querySelectorAll(".details-row.open")
+                .forEach(item => {
+                    item.classList.remove("open");
+                });
+
+            document
+                .querySelectorAll(".data-row.expanded")
+                .forEach(item => {
+                    item.classList.remove("expanded");
+                });
+
+            /*
+             * Открываем текущую строку.
+             */
+            if (!isOpen) {
+                details.classList.add("open");
+                row.classList.add("expanded");
+            }
+        }
+
+
+        /* =========================================================
+           ФАЙЛЫ
+           ========================================================= */
+
+        function openFiles(button) {
+            /*
+             * Убираем существующие popup.
+             */
+            document
+                .querySelectorAll(".file-popup")
+                .forEach(el => el.remove());
+
+            const wrapper = button.closest(".row-tools");
+            const filesData = wrapper.querySelector(".files-data");
+            const links = [...filesData.querySelectorAll("a")];
+
+
+            /*
+             * Один файл -> сразу открываем.
+             */
+            if (links.length === 1) {
+                window.open(
+                    links[0].href,
+                    "_blank"
+                );
+                return;
             }
 
-        })
+            /*
+             * Несколько файлов -> список.
+             */
+            const popup = document.createElement("div");
+            popup.className = "file-popup";
 
-        let btn_el_A = $("#btn_svg_A")[0]
-        $("#btn_svg_A").click(function () {
-            if (btn_el_A.children[0].id === 'svg_plus') {
-                $('#btn_svg_A').html('<?xml version="1.0" ?><svg id="close_svg" height="16px" version="1.1" viewBox="0 0 24 24" width="16px" xmlns="http://www.w3.org/2000/svg" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" xmlns:xlink="http://www.w3.org/1999/xlink"><title/><desc/><defs/><g fill="none" fill-rule="evenodd" id="miu" stroke="white" stroke-width="1"><g id="Artboard-1" transform="translate(-575.000000, -155.000000)"><g id="slice" transform="translate(215.000000, 119.000000)"/><path d="M587.5,178 C593.851275,178 599,172.851275 599,166.5 C599,160.148725 593.851275,155 587.5,155 C581.148725,155 576,160.148725 576,166.5 C576,172.851275 581.148725,178 587.5,178 Z M587.5,177 C593.29899,177 598,172.29899 598,166.5 C598,160.70101 593.29899,156 587.5,156 C581.70101,156 577,160.70101 577,166.5 C577,172.29899 581.70101,177 587.5,177 Z M583.257359,171.449747 L582.550253,170.742641 L586.792893,166.5 L582.550253,162.257359 L583.257359,161.550253 L587.5,165.792893 L591.742641,161.550253 L592.449747,162.257359 L588.207107,166.5 L592.449747,170.742641 L591.742641,171.449747 L587.5,167.207107 L583.257359,171.449747 Z" fill="#000000" id="circle-close-delete-remove-outline-stroke"/></g></g></svg>')
-            } else {
-                $('#btn_svg_A').html(' <svg id="svg_plus" class="svg-circleplus" viewBox="0 0 95 95"> <circle cx="50" cy="50" r="35" fill="none" stroke-width="7.5"></circle><line x1="32.5" y1="50" x2="67.5" y2="50" stroke-width="5"></line><line x1="50" y1="32.5" x2="50" y2="67.5" stroke-width="5"></line></svg>')
+            links.forEach(source => {
+
+                const link = document.createElement("a");
+                link.href = source.href;
+                link.target = "_blank";
+                link.textContent = source.textContent.trim();
+                popup.appendChild(link);
+            });
+
+            document.body.appendChild(popup);
+            const rect = button.getBoundingClientRect();
+            popup.style.left =
+                Math.max(
+                    8,
+                    rect.right - popup.offsetWidth
+                ) + "px";
+
+            popup.style.top = rect.bottom + 6 + "px";
+
+
+            /*
+             * Закрываем при клике вне.
+             */
+            setTimeout(() => {
+                document.addEventListener(
+                    "click",
+                    function closePopup(event) {
+                        if (
+                            !popup.contains(event.target) &&
+                            event.target !== button
+                        ) {
+                            popup.remove();
+                            document.removeEventListener("click",closePopup);
+                        }
+                    }
+                );
+
+            }, 0);
+        }
+        updateOrganizationColumn();
+    </script>
+    <script>
+        (function () {
+            const MONTHS_NOM = [
+                'Январь','Февраль','Март','Апрель','Май','Июнь',
+                'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'
+            ];
+            const MONTHS_SHORT = [
+                'Янв','Фев','Мар','Апр','Май','Июн',
+                'Июл','Авг','Сен','Окт','Ноя','Дек'
+            ];
+
+            /* ── Границы из ViewBag (Razor → JS) ── */
+            const BOUND_START = parseBound('@ViewBag.PeriodRange?.PeriodStart?.ToString("yyyy-MM-dd")');
+            const BOUND_END   = parseBound('@ViewBag.PeriodRange?.PeriodEnd?.ToString("yyyy-MM-dd")');
+            const CURRENT_VAL = '@ViewBag.ChosePeriod?.ToString("yyyy-MM-dd")';
+
+             function parseBound(str) {
+            if (!str || str.trim() === '') return null;
+            const d = new Date(str);
+            return isNaN(d) ? null : { y: d.getFullYear(), m: d.getMonth() };
+        }
+
+        /* ── Текущий выбранный месяц ── */
+        const currentParsed = parseBound(CURRENT_VAL);
+        const now = new Date();
+        let selY = currentParsed ? currentParsed.y : (BOUND_START ? BOUND_START.y : now.getFullYear());
+        let selM = currentParsed ? currentParsed.m : (BOUND_START ? BOUND_START.m : now.getMonth());
+
+        /* Подстраховка: если выбранный период вдруг вне границ — подтягиваем к ближайшей границе */
+        if (isBeforeStart(selY, selM) && BOUND_START) {
+            selY = BOUND_START.y;
+            selM = BOUND_START.m;
+        } else if (isAfterEnd(selY, selM) && BOUND_END) {
+            selY = BOUND_END.y;
+            selM = BOUND_END.m;
+        }
+
+            /* Год в попапе */
+            let popY = selY;
+
+            /* ── Ограничения ── */
+            function isBeforeStart(y, m) {
+                if (!BOUND_START) return false;
+                return y < BOUND_START.y || (y === BOUND_START.y && m < BOUND_START.m);
             }
 
-        })
+            function isAfterEnd(y, m) {
+                if (!BOUND_END) return false;
+                return y > BOUND_END.y || (y === BOUND_END.y && m > BOUND_END.m);
+            }
 
+            function isOutOfBounds(y, m) {
+                return isBeforeStart(y, m) || isAfterEnd(y, m);
+            }
+
+            /* ── Рендер строки ── */
+            function renderBar() {
+                const lbl   = document.getElementById('ppLabel');
+                const prev  = document.getElementById('ppPrev');
+                const next  = document.getElementById('ppNext');
+                const input = document.getElementById('ppPeriodInput');
+
+                if (lbl) lbl.textContent = MONTHS_NOM[selM ] + ' ' + selY;
+
+                /* Границы стрелок */
+                let prevY = selY, prevM = selM - 1;
+                if (prevM < 0) { prevM = 11; prevY--; }
+
+                let nextY = selY, nextM = selM + 1;
+                if (nextM > 11) { nextM = 0; nextY++; }
+
+                if (prev) prev.disabled = isOutOfBounds(prevY, prevM);
+                if (next) next.disabled = isOutOfBounds(nextY, nextM);
+
+                if (input) input.value = selY + '-' + String(selM + 1).padStart(2, '0') + '-01';
+            }
+
+            /* ── Рендер попапа ── */
+            function renderPopup() {
+                const yearEl = document.getElementById('ppPopYear');
+                const grid   = document.getElementById('ppPopGrid');
+                const prevYB = document.getElementById('ppPopYearPrev');
+                const nextYB = document.getElementById('ppPopYearNext');
+
+                if (yearEl) yearEl.textContent = popY;
+
+                /* Кнопки года */
+                if (prevYB) prevYB.disabled =
+                    BOUND_START ? popY <= BOUND_START.y : false;
+                if (nextYB) nextYB.disabled =
+                    BOUND_END   ? popY >= BOUND_END.y   : false;
+
+                if (!grid) return;
+                grid.innerHTML = '';
+
+                for (let m = 0; m < 12; m++) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'pp-popup-month';
+                    btn.textContent = MONTHS_SHORT[m];
+                    btn.title = MONTHS_NOM[m] + ' ' + popY;
+
+                    const disabled = isOutOfBounds(popY, m);
+                    btn.disabled = disabled;
+
+                    if (popY === selY && m === selM) btn.classList.add('pp-m-selected');
+                    else if (popY === now.getFullYear() && m === now.getMonth())
+                        btn.classList.add('pp-m-current');
+
+                    if (!disabled) {
+                        btn.addEventListener('click', () => {
+                            selY = popY;
+                            selM = m;
+                            renderBar();
+                            ppClosePopup();
+                        });
+                    }
+
+                    grid.appendChild(btn);
+                }
+            }
+
+            /* ── Сдвиг месяца стрелками ── */
+            window.ppShift = function (dir) {
+                let y = selY, m = selM + dir;
+                if (m < 0)  { m = 11; y--; }
+                if (m > 11) { m = 0;  y++; }
+                if (isOutOfBounds(y, m)) return;
+                selY = y; selM = m;
+                renderBar();
+                document.getElementById('ppForm')?.submit(); // добавлено: сразу отправляем форму
+            };
+
+            /* ── Сдвиг года в попапе ── */
+            window.ppPopYearShift = function (dir) {
+                const ny = popY + dir;
+                if (BOUND_START && ny < BOUND_START.y) return;
+                if (BOUND_END   && ny > BOUND_END.y)   return;
+                popY = ny;
+                renderPopup();
+            };
+
+            /* ── Попап ── */
+            window.ppTogglePopup = function () {
+                const p = document.getElementById('ppPopup');
+                if (!p) return;
+                const willOpen = !p.classList.contains('pp-popup-open');
+                p.classList.toggle('pp-popup-open');
+                if (willOpen) { popY = selY; renderPopup(); }
+            };
+
+            function ppClosePopup() {
+                document.getElementById('ppPopup')?.classList.remove('pp-popup-open');
+            }
+
+            /* Клик вне попапа — закрыть */
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.pp-quick-wrap')) ppClosePopup();
+            });
+
+            /* Перед отправкой — обновить скрытый input */
+            document.getElementById('ppForm')?.addEventListener('submit', function () {
+                const inp = document.getElementById('ppPeriodInput');
+                if (inp) inp.value = selY + '-' + String(selM + 1).padStart(2, '0') + '-01';
+            });
+
+            /* ── Инициализация ── */
+            renderBar();
+        })();
     </script>
 }

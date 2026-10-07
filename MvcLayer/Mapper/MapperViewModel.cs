@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
 using BusinessLayer.Models.KDO;
-using BusinessLayer.Models.PRO;
 using DatabaseLayer.Models.KDO;
 using MvcLayer.Controllers;
 using MvcLayer.Models;
-using MvcLayer.Models.Data;
 using MvcLayer.Models.JSONSerializer;
 
 namespace MvcLayer.Mapper
@@ -37,7 +35,8 @@ namespace MvcLayer.Mapper
 
             CreateMap<OrganizationDTO, OrganizationsJson>().ReverseMap();
             CreateMap<DepartmentDTO, DepartmentsJson>().ReverseMap();
-            CreateMap<PrepaymentDTO, PrepaymentViewModel>().ReverseMap();
+            CreateMap<PrepaymentDTO, PrepaymentViewModelOld>().ReverseMap();
+            CreateMap<PrepaymentReceivedDTO, PrepaymentViewModelOld>().ReverseMap();
             CreateMap<PrepaymentTakeDTO, PrepaymentsTakeAddViewModel>().ReverseMap();
             CreateMap<PaymentDTO, PaymentViewModel>().ReverseMap();
             CreateMap<ServiceGCViewModel, ServiceGCDTO>().ReverseMap();

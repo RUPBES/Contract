@@ -9,6 +9,7 @@ using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
+using MvcLayer.Models.Data;
 using MvcLayer.Models.Reports;
 using System.Reflection;
 
@@ -53,18 +54,6 @@ namespace MvcLayer.Controllers
         {
             var contract = _contractService.Find(x => x.Id == contractId, x => new() { IsEngineering = x.IsEngineering }).FirstOrDefault();
 
-            //если нет объёмов работ, то выбрасываем сообщение
-            if (!(_scopeWork.Find(x => x.ContractId == contractId && x.IsOwnForces == false)?.LastOrDefault()?.Id > 0))
-            {
-                NotificationHelper.SetNotification(TempData, "Не заполнен объем работ!", NotificationType.Warning);
-                if (returnContractId < 1)
-                {
-                    returnContractId = contractId;
-                }
-
-                return RedirectToAction("Details", "Contracts", new { id = returnContractId });
-            }
-
             ViewData["IsEngin"] = contract?.IsEngineering ?? false;
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
@@ -76,9 +65,9 @@ namespace MvcLayer.Controllers
         [Route("archive/ScopeWorks/")]
         public IActionResult GetArchByContractId(int contractId, bool isEngineering, int returnContractId = 0)
         {
-            var contract = _contractService.Find(x => x.Id == contractId, x => new() { IsEngineering = x.IsEngineering }, useArchiveData:true).FirstOrDefault();
+            var contract = _contractService.Find(x => x.Id == contractId, x => new() { IsEngineering = x.IsEngineering }, useArchiveData: true).FirstOrDefault();
 
-            if (!(_scopeWork.Find(x => x.ContractId == contractId && x.IsOwnForces == false, useArchiveData:true)?.LastOrDefault()?.Id > 0))
+            if (!(_scopeWork.Find(x => x.ContractId == contractId && x.IsOwnForces == false, useArchiveData: true)?.LastOrDefault()?.Id > 0))
             {
                 NotificationHelper.SetNotification(TempData, "Объем работ не заполнен!", NotificationType.Warning);
                 if (returnContractId < 1)
@@ -93,124 +82,137 @@ namespace MvcLayer.Controllers
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
 
-            return View(_mapper.Map<ScopeWorkViewModel>(_scopeWork.GetLastScope(contractId: contractId, isOwnForces: false, useArchiveData:true)));
+            return View(_mapper.Map<ScopeWorkViewModel>(_scopeWork.GetLastScope(contractId: contractId, isOwnForces: false, useArchiveData: true)));
         }
 
-
-        [Route("ScopeWorks/Create/Period")]
-        public IActionResult ChoosePeriod(int contractId, int returnContractId = 0)
+        [Authorize(Policy = "CreatePolicy")]
+        public IActionResult Create(int contractId, int returnContractId = 0, PeriodChooseViewModel periodViewModel = null)
         {
+
             if (contractId > 0)
             {
-                ViewBag.ReturnContractId = returnContractId;
-                ViewBag.ContractId = contractId;
-
-                var isScope = _scopeWork.Find(x => x.ContractId == contractId && x.IsOwnForces != true).FirstOrDefault();
-                if (isScope != null)
-                {
-                    return View(new PeriodChooseViewModel { ContractId = contractId });
-                }
-
-                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                 var contract = _contractService.GetById(contractId);
-                var scopeViewModel = new ScopeWorkViewModel();
-                var costs = new List<SWCostDTO>();
-                scopeViewModel.ContractId = contractId;
-
-                var start = new DateTime();
-
                 if (!contract.DateBeginWork.HasValue)
                 {
                     NotificationHelper.SetNotification(TempData, "Не заполнена дата начала работ!", NotificationType.Warning);
-                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                    return RedirectToAction("Details", "Contracts", new { id = returnContractId == 0 ? contractId : returnContractId });
                 }
 
                 if (!contract.DateEndWork.HasValue)
                 {
                     NotificationHelper.SetNotification(TempData, "Не заполнена дата окончания работ!", NotificationType.Warning);
-                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                    return RedirectToAction("Details", "Contracts", new { id = returnContractId == 0 ? contractId : returnContractId });
                 }
 
-                start = contract.DateBeginWork.Value;
-
-                while (DateComparer.IsLessOrSameYearAndMonth(start, contract.DateEndWork))
+                if (periodViewModel is { ChangeScopeWorkId: null, AmendmentId: null, IsChange: null })
                 {
-                    costs.Add(new SWCostDTO
+
+                    var isScope = _scopeWork.Find(x => x.ContractId == contractId && x.IsOwnForces != true).Any();
+                    if (isScope)
                     {
-                        Period = start
-                    });
+                        var listAmendment = _scopeWork.GetFreeAmendment(contractId);
+                        var vm = new ActionChooseViewModel();
+                        vm.CloseUrl = Url.Action("Details", "Contracts", new { id = returnContractId != 0 ? returnContractId : contractId });
 
-                    start = start.AddMonths(1);
-                }
+                        if (!listAmendment.Any())
+                        {
+                            vm.HeadlineIcon = "check_circle";
+                            vm.HeadlineType = AlertType.Success;
+                            vm.HeadlineText = "Объем работ заполнен";
+                            vm.SupportingText = "Дополнительных соглашений, не найдено...";
+                            vm.ShowSelector = false;
+                            vm.Alerts = new() { new AlertItem { Type = AlertType.Info, Text = "Отсутствуют незаполненные дополнительные соглашения" } };
+                            vm.Actions = new()
+                        {
+                            new ActionItem { Text = "Просмотр данных", Icon = "search", Variant = ActionVariant.Outlined,
+                                Controller = "ScopeWorks", Action = "GetByContractId", RouteValues = { ["contractId"] = contractId.ToString(), ["returnContractId"] = returnContractId.ToString() } },
+                            new ActionItem { Text = "Доп. соглашение", Icon = "add", Variant = ActionVariant.Filled, Accent = "create",
+                                Controller = "Amendments", Action = "Create", RouteValues = { ["contractId"] = contractId.ToString(), ["isScope"] = "true", ["returnContractId"] = returnContractId.ToString() } }
+                        };
+                        }
+                        else
+                        {
+                            /*
+                             Как это работает во view:
+                                1-Model.Selector.HiddenFields → рендерятся как <input type="hidden"> внутри <form id="md3SelectorForm">.
+                                2-Model.Selector.Options → рендерятся как строки .md3-picker-item, каждая с data-value="@opt.Value" и невидимым <input type="radio">.
+                                3-Клик по строке (JS в конце partial'а):
+                                    *снимает is-checked со всех строк,
+                                    *ставит его на выбранную,
+                                    *кладёт data-value в #md3SelectedValue (скрытое поле с именем Model.Selector.SelectName, то есть AmendmentId),
+                                    *вызывает form.requestSubmit() — форма улетает GET-запросом на FormController/FormAction с параметром AmendmentId=... — точно так же, как раньше срабатывал $("#AmendId").on("change", ...).
+                             */
+                            vm.Title = "Выбрать дополнительное соглашение";
+                            vm.HeadlineIcon = "warning";    // верхний смысловой блок — как раньше был жёлтый баннер
+                            vm.HeadlineType = AlertType.Warning;
+                            vm.HeadlineText = "Объем работ для данного договора заполнен";
+                            vm.SupportingText = "Выберите дополнительное соглашение, чтобы продолжить:";
+                            vm.ShowSelector = true;
+                            vm.Selector = new SelectorBlock
+                            {
+                                SelectName = "AmendmentId",
+                                FormController = "ScopeWorks",   // controller, куда уйдёт submit формы
+                                FormAction = "Create",            // action, куда уйдёт submit формы
 
-                scopeViewModel.SWCosts.AddRange(costs);
+                                // list <option> → list picker-строк
+                                Options = listAmendment
+                                            .Select(org => new SelectOptionItem
+                                            {
+                                                Value = org.Id.ToString(),
+                                                Text = $"Номер: {org.Number} - Период работ: с {org.DateBeginWork?.ToShortDateString()} по  {org.DateEndWork?.ToShortDateString()} - Изменено: {org.ContractChanges}"
+                                            })
+                                            .ToList(),
 
-                ViewData["IsEngin"] = contract.IsEngineering == true ? true : false;
-                ViewData["contractPrice"] = contract.ContractPrice;
-
-                return View("Create", scopeViewModel);
-
-            }
-            return View();
-        }
-
-        [Authorize(Policy = "CreatePolicy")]
-        [Route("ScopeWorks/Create/Costs")]
-        [ActionName("Create/Period")]
-        public IActionResult CreatePeriod(PeriodChooseViewModel scopeWork, int contractId, int returnContractId = 0)
-        {
-            if (scopeWork is not null)
-            {
-                //todo: что тут происходит? зачем все в TEMPDATA запихивать???
-                if (TempData["contractId"] != null)
-                {
-                    contractId = (int)TempData["contractId"];
-                }
-                if (TempData["returnContractId"] != null)
-                {
-                    returnContractId = (int)TempData["returnContractId"];
-                }
-
-                ScopeWorkViewModel scope = new ScopeWorkViewModel();
-                List<SWCostDTO> costs = new List<SWCostDTO>();
-
-                scope.IsChange = scopeWork.AmendmentId > 0 ? true : null;
-                scope.ContractId = scopeWork.ContractId;
-                scope.ChangeScopeWorkId = scopeWork.ChangeScopeWorkId;
-                scope.AmendmentId = scopeWork.AmendmentId;
-
-                while (DateComparer.IsLessOrSameYearAndMonth(scopeWork.PeriodStart, scopeWork.PeriodEnd))
-                {
-                    costs.Add(new SWCostDTO
+                                // это были <input ... hidden /> в исходной форме
+                                HiddenFields = new Dictionary<string, string?>
+                                {
+                                    ["ContractId"] = contractId.ToString(),
+                                    ["ChangeScopeWorkId"] = periodViewModel?.ChangeScopeWorkId is > 0
+                                        ? periodViewModel?.ChangeScopeWorkId.ToString()
+                                        : _scopeWork.Find(x => x.ContractId == contractId && x.IsOwnForces != true)?.LastOrDefault()?.Id.ToString(),
+                                    ["IsChange"] = true.ToString(),
+                                }
+                            };
+                        }
+                        return PartialView("/Views/Shared/Partial/_ActionChooseModal.cshtml", vm);
+                    }
+                    else
                     {
-                        Period = scopeWork.PeriodStart
-                    });
+                        ViewData["isEngin"] = contract.IsEngineering == true
+                          ? true
+                          : false;
+                        ViewData["returnContractId"] = returnContractId;
+                        ViewData["contractId"] = contractId;
+                        ViewData["contractPrice"] = contract.ContractPrice;
 
-                    scopeWork.PeriodStart = scopeWork.PeriodStart.AddMonths(1);
+                        var scopeViewModelNotAmndmnt = new ScopeWorkViewModel();
+                        var costsNotAmndmnt = GetCostsByPeriod(contract?.DateBeginWork, contract?.DateEndWork);
+
+                        scopeViewModelNotAmndmnt.ContractId = contractId;
+                        scopeViewModelNotAmndmnt.SWCosts.AddRange(costsNotAmndmnt);
+                        return View(scopeViewModelNotAmndmnt);
+                    }
+
                 }
+                var amendment = _amendmentService.GetById(periodViewModel.AmendmentId ?? 0);
 
-                scope.SWCosts.AddRange(costs);
-
-                var contract = _contractService.GetById(contractId);
-                var amendment = _amendmentService.GetById((int)scope?.AmendmentId);
-
-                ViewBag.IsEngin = contract.IsEngineering;
-                ViewData["returnContractId"] = returnContractId;
+                ViewData["isEngin"] = contract.IsEngineering == true ? true : false;
+                ViewData["contractPrice"] = amendment?.ContractPrice ?? contract.ContractPrice;
+                ViewData["returnContractId"] = TempData["returnContractId"] ?? returnContractId;
                 ViewData["contractId"] = contractId;
-                ViewData["contractPrice"] = amendment != null ? amendment.ContractPrice : contract.ContractPrice;
 
-                if (scope is not null)
-                {
-                    return View("Create", scope);
-                }
+                var scopeViewModel = new ScopeWorkViewModel();
+                var costs = GetCostsByPeriod(amendment?.DateBeginWork, amendment?.DateEndWork, contractId);
 
-                if (contractId > 0)
-                {
-                    return View(new ScopeWorkViewModel { ContractId = contractId });
-                }
-                return View("Create", scopeWork);
+                scopeViewModel.ContractId = contractId;
+                scopeViewModel.SWCosts.AddRange(costs);
+                return View(scopeViewModel);
             }
-            return View("Create", scopeWork);
+            else
+            {
+                NotificationHelper.SetNotification(TempData, "Ошибка запроса!", NotificationType.Warning);
+                return RedirectToAction("Index", "Contracts");
+            }
         }
 
         [HttpPost]
@@ -272,7 +274,7 @@ namespace MvcLayer.Controllers
             {
                 if (_prepayment.FindByContractId((int)viewModel.ContractId).Count() == 0 && contract.PaymentСonditionsAvans != null && !contract.PaymentСonditionsAvans.Contains("Без авансов"))
                 {
-                    return RedirectToAction("ChoosePeriod", "Prepayments", new { contractId = viewModel.ContractId, isFact = false, returnContractId = returnContractId });
+                    return RedirectToAction("Create", "Prepayments", new { contractId = viewModel.ContractId, isFact = false, returnContractId = returnContractId });
                 }
                 else return RedirectToAction("GetByContractId", "ScopeWorks", new { contractId = viewModel.ContractId, returnContractId = returnContractId });
             }
@@ -288,14 +290,13 @@ namespace MvcLayer.Controllers
             var contract = _contractService.GetById(contractId);
             var amendment = _scopeWork.GetAmendmentByScopeId(Id);
 
-            ViewData["IsEngin"] = contract.IsEngineering;
+            ViewData["isEngin"] = contract.IsEngineering;
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
-            ViewData["contractPrice"] = (amendment != null) ? amendment.ContractPrice : contract.ContractPrice;
+            ViewData["contractPrice"] = amendment?.ContractPrice ?? contract.ContractPrice;
 
             return View(_mapper.Map<ScopeWorkViewModel>(_scopeWork.GetById(Id)));
         }
-
 
         [HttpPost]
         [Authorize(Policy = "EditPolicy")]
@@ -362,6 +363,7 @@ namespace MvcLayer.Controllers
                 return await Task.FromResult<IActionResult>(BadRequest());
             }
         }
+
 
 
         public IActionResult GetCostDeviation(string currentFilter, int? page, string searchString)
@@ -741,14 +743,6 @@ namespace MvcLayer.Controllers
             return View(viewModel);
         }
 
-        //todo: убарть этот брЭд! или переписать на получение дынных периода
-        public IActionResult GetPeriodAmendment(int Id)
-        {
-            return PartialView("_Period", Id);
-        }
-
-
-
 
 
         [Authorize(Policy = "CreatePolicy")]
@@ -815,5 +809,42 @@ namespace MvcLayer.Controllers
             }
         }
 
+
+
+
+        /*
+         *
+         *
+         Вспомогательные методы
+         
+         */
+
+        /// <summary>
+        /// Возвращает список заполненных стоимостей по периодам. Если в БД есть за период заполненное значение стоимостей, то они заполняются, если нет - пустое значение с периодом
+        /// </summary>
+        /// <param name="start">Начало периода</param>
+        /// <param name="end">Окончание периода</param>
+        /// <param name="contractId">ID Договора. Если значение null - то заполняется пустые стоимости по периодам, для создания нового объема (без ДС), если нет - то проверяются еще по заполненные данные по ДС!</param>
+        /// <returns>Список заполненных стоимостей по периодам</returns>
+        private List<SWCostDTO> GetCostsByPeriod(DateTime? start, DateTime? end, int? contractId = null)
+        {
+            List<SWCostDTO> plan = new();
+            var lastScope = contractId is not null ? _scopeWork.GetLastScope(contractId ?? 0, isOwnForces: false) : null;
+
+            while (DateComparer.IsLessOrSameYearAndMonth(start, end))
+            {
+                var costs = lastScope is not null? lastScope?.SWCosts?.FirstOrDefault(x => x.Period?.Year == start?.Year && x.Period?.Month == start?.Month) : null;
+                if (costs?.Id is > 0)
+                {
+                    plan.Add(costs);
+                }
+                else
+                {
+                    plan.Add(new SWCostDTO { Period = start });
+                }
+                start = start?.AddMonths(1);
+            }
+            return plan;
+        }
     }
 }

@@ -32,16 +32,20 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<SelectionProcedureViewModel>>(_selectProcedureService.GetAll()));
         }
 
-        public IActionResult GetByContractId(int contractId)
+        public IActionResult GetByContractId(int contractId, int returnContractId = 0)
         {
+            ViewBag.contractId = contractId;
+            ViewBag.returnContractId = returnContractId;
             return View(_mapper.Map<SelectionProcedureViewModel>(_selectProcedureService.Find(x => x.ContractId == contractId).LastOrDefault()));
         }
 
         //при создании договора, автоматически создается запись в таблице "Процедура выбора" с Видом закупки,
         // поэтому необходимо найти созданную для данного договора проц.выбора и добавить все данные
         [Authorize(Policy = "CreatePolicy")]
-        public IActionResult Create(int contractId)
+        public IActionResult Create(int contractId, int returnContractId = 0)
         {
+            ViewBag.contractId = contractId;
+            ViewBag.returnContractId = returnContractId;
             if (contractId > 0)
             {
                 return View(_mapper.Map<SelectionProcedureViewModel>(_selectProcedureService.Find(x => x.ContractId == contractId).FirstOrDefault()));
@@ -53,7 +57,7 @@ namespace MvcLayer.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policy = "CreatePolicy")]
-        public IActionResult Create(SelectionProcedureViewModel selectProcedure)
+        public IActionResult Create(SelectionProcedureViewModel selectProcedure, int returnContractId = 0)
         {
             if (selectProcedure is not null)
             {
@@ -74,21 +78,25 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "EditPolicy")]
-        public ActionResult Edit(int id, int? contractId = null)
-        {
+        public ActionResult Edit(int id, int? contractId = null, int returnContractId = 0)
+        {           
             ViewBag.contractId = contractId;
+            ViewBag.returnContractId = returnContractId;
             return View(_mapper.Map<SelectionProcedureViewModel>(_selectProcedureService.GetById(id)));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policy = "EditPolicy")]
-        public IActionResult Edit(SelectionProcedureViewModel selectProcedure)
+        public IActionResult Edit(SelectionProcedureViewModel selectProcedure, int returnContractId = 0)
         {
             if (selectProcedure is not null)
             {
+                ViewBag.contractId = selectProcedure.ContractId;
+                ViewBag.returnContractId = returnContractId;
                 try
                 {
+
                     _selectProcedureService.Update(_mapper.Map<SelectionProcedureDTO>(selectProcedure));
                     NotificationHelper.SetNotification(TempData, $"Данные процедуры выбора обновлены", NotificationType.Info);
                     if (selectProcedure.FilesEntity != null && selectProcedure.FilesEntity.Count() > 0)
@@ -129,8 +137,11 @@ namespace MvcLayer.Controllers
 
 
         [Route("/archive/SelectionProcedure/")]
-        public IActionResult GetArchByContractId(int contractId)
+        public IActionResult GetArchByContractId(int contractId, bool isEngineering, int returnContractId = 0)
         {
+            ViewBag.IsEngineering = isEngineering;
+            ViewBag.contractId = contractId;
+            ViewBag.returnContractId = returnContractId;
             return View(_mapper.Map<SelectionProcedureViewModel>(_selectProcedureService.Find(x => x.ContractId == contractId, useArchiveData:true).LastOrDefault()));
         }
     }

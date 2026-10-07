@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BusinessLayer.Models.Extra;
 using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.PRO;
 using BusinessLayer.Models.Settings;
@@ -22,8 +23,13 @@ namespace BusinessLayer.Mapper
 
             CreateMap<VPaymentCash, VPaymentCashDTO>().ReverseMap();
             CreateMap<PrepaymentFact, PrepaymentFactDTO>().ReverseMap();
+            CreateMap<PrepaymentReceivedDTO, PrepaymentReceived>().ReverseMap();
             CreateMap<PrepaymentPlan, PrepaymentPlanDTO>().ReverseMap();
             CreateMap<PrepaymentTake, PrepaymentTakeDTO>().ReverseMap();
+            CreateMap<PeriodAdvanceDTO, PeriodAdvance>().ReverseMap();
+            CreateMap<PeriodVersionDTO, PeriodVersion>().ReverseMap();
+            CreateMap<PrepaymentScheduleDTO, PrepaymentSchedule>().ReverseMap();
+            CreateMap<AdvanceSummaryDTO, AdvanceSummary>().ReverseMap();
 
             CreateMap<Contract, ContractDTO>().ReverseMap();
             CreateMap<ContractFile, ContractFileDTO>().ReverseMap();

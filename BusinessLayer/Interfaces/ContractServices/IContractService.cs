@@ -31,5 +31,8 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 
         Task<bool> MoveToArchive(int contrId);
         Task<int> Restructure(int contrId);
+
+        bool HasCommissionAct(int? contractId);
+        (DateTime Start, DateTime End)? GetFullPeriodRange(int contractId, bool useArchiveData = false);
     }
 }

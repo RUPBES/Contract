@@ -28,6 +28,7 @@ namespace BusinessLayer.IoC
         public static void RegisterContainer(IServiceCollection services, string connectionString)
         {
             services.AddTransient<IReadonlyPaymentDapperRepo, PaymentDpRepository>(provider => new PaymentDpRepository(connectionString));
+            services.AddTransient<IReadonlyPrepaymentDapperRepo, PrepaymentDpRepository>(provider => new PrepaymentDpRepository(connectionString));
             services.AddTransient<IReadonlyRepoDapper<VContract>, VContractDpRepository>(provider => new VContractDpRepository(connectionString));
             services.AddTransient<IReadonlyRepoDapper<VContractEngin>, VContractEnginDpRepository>(provider => new VContractEnginDpRepository(connectionString));
             services.AddTransient<IReadonlyContractDapperRepo, ContractDpRepository>(provider => new ContractDpRepository(connectionString));

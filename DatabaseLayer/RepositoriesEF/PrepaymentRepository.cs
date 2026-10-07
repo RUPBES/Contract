@@ -2,6 +2,7 @@
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace DatabaseLayer.Repositories
 {
-    internal class PrepaymentRepository: IRepository<Prepayment>
+    internal class PrepaymentRepository : IRepository<Prepayment>
     {
         private readonly ContractsContext _context;
         public PrepaymentRepository(ContractsContext context)
@@ -28,7 +29,7 @@ namespace DatabaseLayer.Repositories
 
         public void Delete(int id, int? secondId = null)
         {
-            Prepayment prepayment  = _context.Prepayments.Find(id);
+            Prepayment prepayment = _context.Prepayments.Find(id);
 
             if (prepayment is not null)
             {
@@ -38,19 +39,28 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Prepayment> Find(Func<Prepayment, bool> predicate)
         {
-            return _context.Prepayments.Include(x=>x.PrepaymentPlans).Include(x=>x.PrepaymentFacts).Where(predicate).ToList();
+            return _context.Prepayments
+                 .AsNoTracking()
+                 .Include(x => x.PrepaymentPlans)
+                 .Include(x => x.PrepaymentFacts)
+                 .Where(predicate)
+                 .ToList();
         }
 
         public IEnumerable<Prepayment> GetAll()
         {
-            return _context.Prepayments.Include(x => x.PrepaymentPlans).Include(x => x.PrepaymentFacts).ToList();
+            return _context.Prepayments
+                .AsNoTracking()
+                .Include(x => x.PrepaymentPlans)
+                .Include(x => x.PrepaymentFacts)
+                .ToList();
         }
 
         public Prepayment GetById(int id, int? secondId = null)
         {
             if (id > 0)
             {
-                return _context.Prepayments.Include(x => x.PrepaymentPlans).Include(x => x.PrepaymentFacts).FirstOrDefault(x=>x.Id == id);
+                return _context.Prepayments.Include(x => x.PrepaymentPlans).Include(x => x.PrepaymentFacts).FirstOrDefault(x => x.Id == id);
             }
             else
             {
@@ -65,7 +75,7 @@ namespace DatabaseLayer.Repositories
                 var prepayment = _context.Prepayments.Find(entity.Id);
 
                 if (prepayment is not null)
-                {                    
+                {
                     prepayment.ContractId = entity.ContractId;
                     prepayment.IsChange = entity.IsChange;
                     prepayment.ChangePrepaymentId = entity.ChangePrepaymentId;

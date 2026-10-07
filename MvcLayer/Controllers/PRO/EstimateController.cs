@@ -568,14 +568,7 @@ public class EstimateController : Controller
     //}
 
 
-    ////todo: 3) delete this method
-    //public ActionResult ChangeDrawningKit(int EstimateId, string DrawningKit)
-    //{
-    //    var estimate = _estimateService.Find(x => x.Id == EstimateId).FirstOrDefault();
-    //    estimate.DrawingsKit = DrawningKit;
-    //    _estimateService.Update(estimate);
-    //    return Content("OK");
-    //}
+   
 
     #endregion
 

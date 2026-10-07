@@ -161,7 +161,7 @@ namespace BusinessLayer.Services
         public (DateTime StartDate, DateTime EndDate)? GetScopeWorkPeriodRange(int contractId)
         {
             (DateTime start, DateTime end) resultPeriod;
-
+           
             //проверяем есть измененный объем работы по доп.соглашению (флаг - IsChange = true), если есть выбираем последний объем работы по ДС
             //если нет, находим основной (без ДС) и берем начальную и конечную дату. Если объема работы для договора не существует,
             //возвращаем NULL

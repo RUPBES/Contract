@@ -9,6 +9,7 @@ namespace MvcLayer.Models
         public int Id { get; set; }
 
         [DisplayName("Номер")]
+        [Required(ErrorMessage = "Заполните номер согласования")]
         public string? Number { get; set; }
 
         [DisplayName("Дата")]
@@ -23,6 +24,7 @@ namespace MvcLayer.Models
         [Required(ErrorMessage = "Не указана причина")]
         public string? Reason { get; set; }
 
+        [DisplayName("Претензионно-исковая работа?")]
         public bool? IsClaimLitigation { get; set; }
 
         public string? Type { get; set; }

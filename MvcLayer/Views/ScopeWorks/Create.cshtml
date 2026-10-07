@@ -1,493 +1,704 @@
-﻿@using BusinessLayer.Models;
-@using BusinessLayer.Models.KDO
-@using MvcLayer.Models;
+﻿@using MvcLayer.Models;
 @using Newtonsoft.Json;
-@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scope
 @model MvcLayer.Models.ScopeWorkViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 @{
+    ViewData["Title"] = ViewBag.isEngin == false ? "Объем работ" : "Объем услуг";
     int index = 0;
-    ViewData["Title"] = ViewBag.IsEngin == false ? "Объем работ" : "Объем услуг";
-    int backId = ViewBag.ReturnContractId == 0 ? ViewBag.ContractId : ViewBag.ReturnContractId;
 
-    //todo: заполнять данные объема надо в контроллере!
-    ScopeWorkDTO prevSWCost = new ScopeWorkDTO();
-    if (Model.ChangeScopeWorkId != null)
-    {
-        prevSWCost = Scope.GetById((int)Model.ChangeScopeWorkId);
-    }
-    else
-    {
-        prevSWCost = null;
-    }
+    int backId = ViewBag.returnContractId == 0
+        ? (int)ViewBag.contractId
+        : (int)ViewBag.returnContractId;
 
-    decimal? sumSmr = 0;
-    decimal? sumPnr = 0;
-    decimal? sumEquip = 0;
-    decimal? sumOther = 0;
-    decimal? sumAdditional = 0;
+    var contract = ViewData["contractId"] is > 0
+        ? Contract.GetById((int)ViewData["contractId"])
+        : null;
+
+    var contractPrice = ViewBag.contractPrice is not null
+        ? ViewBag.contractPrice
+        : 0M;
 }
 
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
 <style>
-    .cont-table {
-        overflow-x: scroll;
+    .dlg-content {
+        overflow-y: auto;
+        padding: 5px 20px 20px;
+        flex: 1 1 auto;
     }
 
-    th,
-    td {
+    .btn-filled {
+        background: var(--md3-primary);
+        color: #fff;
+    }
+
+        .btn-filled:hover {
+            background: #154784;
+        }
+
+    .btn-outlined {
+        background: var(--md3-surface);
+        color: var(--md3-primary);
+        border-color: var(--md3-outline-strong);
+    }
+
+        .btn-outlined:hover {
+            background: var(--md3-primary-light);
+            border-color: var(--md3-primary-mid);
+        }
+
+    .btn-excel {
+        color: var(--md3-gen);
+        border-color: var(--md3-outline-strong);
+    }
+
+        .btn-excel:hover {
+            background: var(--md3-gen-light);
+            border-color: var(--md3-gen);
+        }
+
+    .btn-text {
+        background: transparent;
+        color: var(--md3-on-surface-med);
+        padding: 9px 12px;
+    }
+
+        .btn-text:hover {
+            background: var(--md3-surface-2);
+        }
+
+    .btn[disabled] {
+        opacity: .45;
+        cursor: not-allowed;
+    }
+
+    .demo-switch {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11.5px;
+        color: var(--md3-on-surface-low);
+    }
+
+    .seg {
+        display: flex;
+        border: 1px solid var(--md3-outline-strong);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+        .seg button {
+            border: none;
+            background: var(--md3-surface);
+            color: var(--md3-on-surface-med);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 13px;
+            cursor: pointer;
+            transition: all var(--md3-transition);
+            border-right: 1px solid var(--md3-outline);
+        }
+
+            .seg button:last-child {
+                border-right: none
+            }
+
+            .seg button.active {
+                background: var(--md3-primary);
+                color: #fff;
+            }
+
+            .seg button:hover:not(.active) {
+                background: var(--md3-primary-light);
+            }
+
+
+    .toolbar {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        justify-content: end;
+    }
+
+    .section-label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .04em;
+        color: var(--md3-on-surface-med);
+        margin: 2px 0 8px 2px;
+        text-transform: uppercase;
+    }
+
+    .table-outer {
+        /*  width: 90%; */
+        margin: 0 auto;
+    }
+
+    .scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(15,20,35,.36);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        z-index: 10;
+    }
+
+    .table-scroll {
+        overflow-x: auto;
+        overflow-y: hidden;
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        background: var(--md3-surface);
+    }
+
+        .table-scroll::-webkit-scrollbar {
+            height: 10px
+        }
+
+        .table-scroll::-webkit-scrollbar-thumb {
+            background: var(--md3-outline-strong);
+            border-radius: 8px
+        }
+
+    .periods-grid {
+        display: grid;
+        width: max-content;
+        min-width: 100%;
+    }
+
+        .periods-grid > .g-cell:nth-last-child(-n+1000) {
+        }
+        /* noop reset for specificity safety */
+        .periods-grid .g-cell:last-child, .periods-grid > .g-cell:nth-child(1n) {
+        }
+
+    .g-cell {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--md3-outline);
+        border-right: 1px solid var(--md3-outline);
+        display: flex;
+        align-items: center;
+        min-height: 46px;
+        gap: 5px;
+    }
+
+    .g-head {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--md3-surface-2);
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--md3-on-surface-med);
+        justify-content: center;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+    }
+
+        .g-head.g-label {
+            z-index: 4;
+        }
+
+    .g-label {
+        position: sticky;
+        left: 0;
+        z-index: 3;
+        background: var(--md3-surface-2);
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        box-shadow: 1px 0 0 var(--md3-outline);
+    }
+
+        .g-label .msi {
+            font-size: 16px;
+            margin-right: 6px;
+            color: var(--md3-primary);
+            flex-shrink: 0;
+        }
+
+
+    .g-input-cell {
+        padding: 7px 8px;
+    }
+
+    .g-input {
+        width: 100%;
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-sm);
+        padding: 8px 10px;
+        font-size: 13px;
+        /* font-family: 'Roboto Mono', monospace; */
+        color: var(--md3-on-surface);
+        background: var(--md3-surface);
+        transition: border-color var(--md3-transition), box-shadow var(--md3-transition);
+    }
+
+        .g-input:hover {
+            border-color: var(--md3-outline-strong);
+        }
+
+        .g-input:focus {
+            outline: none;
+            border-color: var(--md3-primary);
+            box-shadow: 0 0 0 3px var(--md3-primary-light);
+        }
+
+        .g-input::placeholder {
+            color: var(--md3-on-surface-low);
+            font-family: 'Roboto', sans-serif;
+        }
+
+    .row-current .g-input {
+    }
+
+    .row-target .g-input {
+    }
+
+    .row-worked .g-input {
+    }
+
+    div.g-label > svg {
+        stroke: var(--md3-primary);
+    }
+
+    .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
         min-width: 250px;
+        max-width: 320px;
+        width: 100%;
+    }
+
+        .summary-item .k {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--md3-on-surface-med);
+        }
+
+        .summary-item .v {
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Roboto Mono', monospace;
+            padding: 5px 10px;
+            border-radius: 999px;
+        }
+
+        .summary-item.target .v {
+            background: var(--md3-primary-light);
+            color: var(--md3-primary);
+        }
+
+
+
+        .summary-item.current .v {
+            background: var(--md3-gen-light);
+            color: var(--md3-gen);
+        }
+
+
+        .summary-item.diff .v {
+            background: var(--md3-warning-fill);
+            color: var(--md3-warning);
+        }
+
+            .summary-item.diff .v.zero {
+                background: var(--md3-surface-3);
+                color: var(--md3-on-surface-low);
+            }
+
+
+
+
+    @@media (max-width:640px) {
+        .dialog {
+            border-radius: 16px;
+            max-height: 94vh
+        }
+
+        .table-outer {
+            width: 100%
+        }
+
+        .summary-bar {
+            flex-direction: column;
+            align-items: stretch
+        }
+
+        .summary-item {
+            justify-content: space-between
+        }
     }
 
     .dm-modal {
-        width: 1400px;
+        width: min(90vw, 1600px) !important;
+        max-width: 1600px !important;
     }
-
-    .form-group {
-        text-align: right;
-    }
-
-    .input-group {
-        flex: 1; /* Блоки занимают равное пространство */
-        display: flex;
-        flex-direction: column; /* Элементы внутри блока располагаются вертикально */
-    }
-        /* Стили для span и input */
-        .input-group span {
-            font-weight: bold; /* Жирный текст для метки */
-            margin-bottom: 5px; /* Отступ снизу */
-            font-size: 1.25rem;
-        }
-
-        .input-group input {
-            width: 100%; /* Занимает 100% ширины блока */
-            padding: 8px; /* Внутренний отступ */
-            box-sizing: border-box; /* Учитываем padding в ширине */
-        }
-
-    .input_result {
-        width: 150px;
-    }
-
-    .input_block--result {
-        display: flex; /* Располагаем блоки в строку */
-        justify-content: space-between; /* Равные промежутки между блоками */
-        width: 100%; /* Ширина контейнера */
-        gap: 20px; /* Расстояние между блоками */
-    }
-
-    .result_block {
-        display: flex;
-        justify-content: space-between;
-    }
-
-    .text_error {
-        color: red; /* Красный цвет текста */
-        font-weight: bold; /* Жирный текст */
-        margin: auto; /* Отступ снизу */
-        text-align: center;
-    }
-
-    .table-main tr:nth-child(2n) {
-        background-color: #ecf2f9 !important;
-    }
-
-    .button-block {
-        display: flex;
-        gap: 10px; /* Расстояние между кнопками */
-        height: max-content;
-        margin-top: auto; /* Прижимаем к нижней части */
-    }
-
-        .button-block a {
-            text-align: center; /* Центрирование текста */
-            flex: 1;
-            cursor: pointer; /* Курсор в виде указателя */
-        }
-
-            .button-block a:hover {
-                opacity: 0.7;
-            }
-
-        .button-block button {
-            text-align: center; /* Центрирование текста */
-            flex: 1;
-            cursor: pointer; /* Курсор в виде указателя */
-        }
-
-            .button-block button:hover {
-                opacity: 0.7;
-            }
 </style>
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
             <div class="dm-modal">
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
+                @*   {{-- ══ ШАПКА ══ --}} *@
+                <div class="org-header" style="border-bottom:1.5px solid var(--md3-outline); gap:10px;">
+                    <div class="org-header-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <div class="org-header-info">
+                        <h2 class="org-header-title" id="editOrgTitle"
+                            style="font-size:15px; margin:0 0 1px;">
+                            @ViewData["Title"] по договору №@contract?.Number
+                        </h2>
+                        <p class="org-header-sub" style="font-size:11px;">
+                            @contract?.NameObject
+                        </p>
+                    </div>
                     @if (backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn" aria-label="Закрыть"></a>
                     }
-                    @if (backId == 0)
+                    else
                     {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="" class="close-btn" aria-label="Закрыть"></a>
                     }
                 </div>
-                <hr class="modal-line" style="width:980px" />
-                <form asp-action="Create" class="row" asp-route-returnContractId="@backId">
-                    <div class="cont-table">
-                        <table class="table table-bordered table-main table-hover">
-                            <tr>
-                                <th>Период</th>
-                                @foreach (var item in Model.SWCosts)
-                                {
-                                    <th>
-                                        @item.Period?.ToString("MMMM yyyy")
-                                        <input asp-for="SWCosts[index].Period" type="text" class="form-control" value="@item.Period" hidden />
-                                    </th>
-                                    index++;
-                                }
-                                @{
-                                    index = 0;
-                                }
-                            </tr>
-                            @if (ViewBag.IsEngin != true)
-                            {
-                                <tr>
-                                    <th>Стоимость неизменной цены СМР</th>
-                                    @foreach (var item in Model.SWCosts)
-                                    {
-                                        if (prevSWCost != null)
-                                        {
-                                            var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.SmrCost).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                sumSmr += obj;
-                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost SmrCost" value="@obj" /></td>
-                                            }
-                                            else
-                                            {
-                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost SmrCost" value="" /></td>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost SmrCost" value="" /></td>
-                                        }
-                                        index++;
-                                    }
-                                    @{
-                                        index = 0;
-                                    }
-                                </tr>
-                                <tr>
-                                    <th>Стоимость ПНР</th>
-                                    @foreach (var item in Model.SWCosts)
-                                    {
-                                        if (prevSWCost != null)
-                                        {
-                                            var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.PnrCost).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                sumPnr += obj;
-                                                <td class="text-end"><input name="SWCosts[@index].PnrCost" type="text" class="form-control cost PnrCost" value="@obj" /></td>
-                                            }
-                                            else
-                                            {
-                                                <td class="text-end"><input name="SWCosts[@index].PnrCost" type="text" class="form-control cost PnrCost" value="" /></td>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <td class="text-end"><input name="SWCosts[@index].PnrCost" type="text" class="form-control cost PnrCost" value="" /></td>
-                                        }
-                                        index++;
-                                    }
-                                    @{
-                                        index = 0;
-                                    }
-                                </tr>
-                                <tr>
-                                    <th>Стоимость оборудования</th>
-                                    @foreach (var item in Model.SWCosts)
-                                    {
-                                        if (prevSWCost != null)
-                                        {
-                                            var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.EquipmentCost).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                sumEquip += obj;
-                                                <td class="text-end"><input name="SWCosts[@index].EquipmentCost" type="text" class="form-control cost EquipmentCost" value="@obj" /></td>
-                                            }
-                                            else
-                                            {
-                                                <td class="text-end"><input name="SWCosts[@index].EquipmentCost" type="text" class="form-control cost EquipmentCost" value="" /></td>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <td class="text-end"><input name="SWCosts[@index].EquipmentCost" type="text" class="form-control cost EquipmentCost" value="" /></td>
-                                        }
-                                        index++;
-                                    }
-                                    @{
-                                        index = 0;
-                                    }
-                                </tr>
-                                <tr>
-                                    <th>Стоимость прочих работ и услуг</th>
-                                    @foreach (var item in Model.SWCosts)
-                                    {
-                                        if (prevSWCost != null)
-                                        {
-                                            var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.OtherExpensesCost).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                sumOther += obj;
-                                                <td class="text-end"><input name="SWCosts[@index].OtherExpensesCost" type="text" class="form-control cost OtherExpensesCost" value="@obj" /></td>
-                                            }
-                                            else
-                                            {
-                                                <td class="text-end"><input name="SWCosts[@index].OtherExpensesCost" type="text" class="form-control cost OtherExpensesCost" value="" /></td>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <td class="text-end"><input name="SWCosts[@index].OtherExpensesCost" type="text" class="form-control cost OtherExpensesCost" value="" /></td>
-                                        }
-                                        index++;
-                                    }
-                                    @{
-                                        index = 0;
-                                    }
-                                </tr>
-                                <tr>
-                                    <th>Стоимость доп. работ</th>
-                                    @foreach (var item in Model.SWCosts)
-                                    {
-                                        if (prevSWCost != null)
-                                        {
-                                            var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.AdditionalCost).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                sumAdditional += obj;
-                                                <td class="text-end"><input name="SWCosts[@index].AdditionalCost" type="text" class="form-control cost AdditionalCost" value="@obj" /></td>
-                                            }
-                                            else
-                                            {
-                                                <td class="text-end"><input name="SWCosts[@index].AdditionalCost" type="text" class="form-control cost AdditionalCost" value="" /></td>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <td class="text-end"><input name="SWCosts[@index].AdditionalCost" type="text" class="form-control cost AdditionalCost" value="" /></td>
-                                        }
-                                        index++;
-                                    }
-                                    @{
-                                        index = 0;
-                                    }
-                                </tr>
-                                <tr>
-                                    <th>Стоимость материалов заказчика (справочно)</th>
-                                    @foreach (var item in Model.SWCosts)
-                                    {
-                                        if (prevSWCost != null)
-                                        {
-                                            var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.MaterialCost).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                <td class="text-end"><input name="SWCosts[@index].MaterialCost" type="text" class="form-control cost" value="@obj" /></td>
-                                            }
-                                            else
-                                            {
-                                                <td class="text-end"><input name="SWCosts[@index].MaterialCost" type="text" class="form-control cost" value="" /></td>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <td class="text-end"><input name="SWCosts[@index].MaterialCost" type="text" class="form-control cost" value="" /></td>
-                                        }
-                                        index++;
-                                    }
-                                    @{
-                                        index = 0;
-                                    }
-                                </tr>
-                            }
-                            else
-                            {
-                                <tr>
-                                    <th>Объем услуг</th>
-                                    @foreach (var item in Model.SWCosts)
-                                    {
-                                        if (prevSWCost != null)
-                                        {
-                                            var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.SmrCost).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost SmrCost" value="@obj" /></td>
-                                            }
-                                            else
-                                            {
-                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost SmrCost" value="" /></td>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost SmrCost" value="" /></td>
-                                        }
-                                        index++;
-                                    }
-                                    @{
-                                        index = 0;
-                                    }
-                                </tr>
-                            }
-                            @foreach (var item in Model.SWCosts)
-                            {
-                                <input asp-for="SWCosts[index].IsOwnForces" hidden />
-                                index++;
-                            }
 
-                            <input asp-for="ContractId" hidden />
-                            <input asp-for="IsOwnForces" hidden />
-                            <input asp-for="IsChange" hidden />
-                            <input asp-for="AmendmentId" hidden />
-                            <input asp-for="ChangeScopeWorkId" hidden />
-                        </table>
-                    </div>
-                    <div class="form-group mt-3 result_block">
-                        @{
-                            var contractPrice = (decimal)ViewData["contractPrice"];
-                            var sum = sumSmr + sumPnr + sumEquip + sumOther + sumAdditional;
-                            var result = contractPrice - sum;
-                            <div class="input_block--result">
-                                <div class="input-group">
-                                    <span class="input-group-text">Всего по договору с НДС:</span>
+                @* {{-- ══ ФОРМА ══ --}} *@
+                <form asp-action="Create" asp-route-returnContractId="@backId" novalidate>
+                    <input asp-for="ContractId" hidden />
+                    <input asp-for="IsOwnForces" hidden />
+                    <input asp-for="IsChange" hidden />
+                    <input asp-for="AmendmentId" hidden />
+                    <input asp-for="ChangeScopeWorkId" hidden />
+                     <input name="returnContractId" value="@ViewBag.returnContractId" hidden>
 
-                                    <input class="input_result" id="sumTarget" value="@contractPrice.ToString("N2")" readonly />
-                                </div>
-                                <div class="input-group">
-                                    <span class="input-group-text">Введенная плановая сумма:</span>
-                                    <input class="input_result" id="sumTargetWork" value="@sum?.ToString("N2")" readonly />
-                                </div>
-                                <div class="input-group">
-                                    <span class="input-group-text">Разница </span>
-                                    <input class=" input_result" id="resultValue" value="@result?.ToString("N2")" readonly />
-                                </div>
 
+                    <div class="org-body" style="padding:12px 16px 5px; gap:10px;">
+                        <div class="dlg-content">
+                            @*   <div class="toolbar">
+                                <button type="button" class="md3-btn md3-btn-secondary-tonal" id="openWizardBtn" style="max-width: fit-content;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                        <polyline points="14 2 14 8 20 8" />
+                                        <path d="M8 13l2.5 4M10.5 13L8 17" />
+                                    </svg>
+                                    Импорт из Excel
+                                </button>                                
+                            </div>            *@               
+
+                            <div class="table-outer">
+                                <div class="table-scroll">
+                                    <div class="periods-grid" id="periodsGrid" style="grid-template-columns: 330px repeat(@(Model.SWCosts.Count), minmax(170px, 1fr));">
+                                        <div class="g-cell g-head g-label">Период</div>
+                                        @foreach (var item in Model.SWCosts)
+                                        {
+                                            <div class="g-cell g-head">@item.Period?.ToString("MMMM yyyy")</div>
+                                            <input asp-for="SWCosts[index].Period" type="text" class="form-control" value="@item.Period" hidden />
+                                            index++;
+                                        }
+                                        @{
+                                            index = 0;
+                                        }
+
+                                        @if (ViewBag.IsEngin != true)
+                                        {
+                                            <div class="g-cell g-label row-current">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                    <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                    <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                </svg>
+                                                Стоимость неизменной цены СМР
+                                            </div>
+                                            @for (int index = 0; index < Model.SWCosts.Count; index++)
+                                            {
+
+                                                <div class="g-cell g-input-cell row-current">
+                                                    <input class="g-input cost-format SmrCost"
+                                                           type="text" inputmode="decimal" placeholder="0,00" data-row="SmrCost"
+                                                           name="SWCosts[@index].SmrCost"
+                                                           value="@Model.SWCosts[index].SmrCost"
+                                                           data-col="@index">
+                                                </div>
+                                            }
+
+                                            <div class="g-cell g-label row-current">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                    <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                    <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                </svg>
+                                                Стоимость ПНР
+                                            </div>
+                                            @for (int index = 0; index < Model.SWCosts.Count; index++)
+                                            {
+
+                                                <div class="g-cell g-input-cell row-current">
+                                                    <input class="g-input cost-format PnrCost"
+                                                           type="text" inputmode="decimal" placeholder="0,00" data-row="PnrCost"
+                                                           name="SWCosts[@index].PnrCost"
+                                                           value="@Model.SWCosts[index].PnrCost"
+                                                           data-col="@index">
+                                                </div>
+                                            }
+
+                                            <div class="g-cell g-label row-current">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                    <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                    <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                </svg>
+                                                Стоимость оборудования
+                                            </div>
+                                            @for (int index = 0; index < Model.SWCosts.Count; index++)
+                                            {
+
+                                                <div class="g-cell g-input-cell row-current">
+                                                    <input class="g-input cost-format EquipmentCost"
+                                                           type="text" inputmode="decimal" placeholder="0,00" data-row="EquipmentCost"
+                                                           name="SWCosts[@index].EquipmentCost"
+                                                           value="@Model.SWCosts[index].EquipmentCost"
+                                                           data-col="@index">
+                                                </div>
+                                            }
+
+                                            <div class="g-cell g-label row-current">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                    <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                    <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                </svg>
+                                                Стоимость прочих работ и услуг
+                                            </div>
+                                            @for (int index = 0; index < Model.SWCosts.Count; index++)
+                                            {
+
+                                                <div class="g-cell g-input-cell row-current">
+                                                    <input class="g-input cost-format OtherExpensesCost"
+                                                           type="text" inputmode="decimal" placeholder="0,00" data-row="OtherExpensesCost"
+                                                           name="SWCosts[@index].OtherExpensesCost"
+                                                           value="@Model.SWCosts[index].OtherExpensesCost"
+                                                           data-col="@index">
+                                                </div>
+                                            }
+
+                                            <div class="g-cell g-label row-current">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                    <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                    <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                </svg>
+                                                Стоимость доп. работ
+                                            </div>
+                                            @for (int index = 0; index < Model.SWCosts.Count; index++)
+                                            {
+
+                                                <div class="g-cell g-input-cell row-current">
+                                                    <input class="g-input cost-format AdditionalCost"
+                                                           type="text" inputmode="decimal" placeholder="0,00" data-row="AdditionalCost"
+                                                           name="SWCosts[@index].AdditionalCost"
+                                                           value="@Model.SWCosts[index].AdditionalCost"
+                                                           data-col="@index">
+                                                </div>
+                                            }
+
+                                            <div class="g-cell g-label row-current">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                    <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                    <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                </svg>
+                                                Стоимость материалов заказчика (справочно)
+                                            </div>
+                                            @for (int index = 0; index < Model.SWCosts.Count; index++)
+                                            {
+                                                <div class="g-cell g-input-cell row-current">
+                                                    <input class="g-input cost-format"
+                                                           type="text" inputmode="decimal" placeholder="0,00" data-row="MaterialCost"
+                                                           name="SWCosts[@index].MaterialCost"
+                                                           value="@Model.SWCosts[index].MaterialCost"
+                                                           data-col="@index">
+                                                </div>
+                                            }
+
+                                        }
+
+                                        @if (ViewBag.IsEngin == true)
+                                        {
+                                            <div class="g-cell g-label row-target">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2c0 1.1 1.1 1.5 2.5 2s2.5.9 2.5 2c0 1.1-1.1 2-2.5 2s-2.5-.9-2.5-2" />
+                                                    <line x1="12" y1="6" x2="12" y2="7.5" />
+                                                    <line x1="12" y1="16.5" x2="12" y2="18" />
+                                                </svg>
+                                                Объем услуг
+                                            </div>
+                                            @for (int index = 0; index < Model.SWCosts.Count; index++)
+                                            {
+                                                <div class="g-cell g-input-cell row-target">
+                                                    <input class="g-input cost-format SmrCost"
+                                                           type="text" inputmode="decimal"
+                                                           placeholder="0,00" data-row="SmrCost"
+                                                           name="SWCosts[@index].SmrCost"
+                                                           value="@Model.SWCosts[index].SmrCost"
+                                                           data-col="@index">
+                                                </div>
+                                            }
+                                        }
+                                        @for (int index = 0; index < Model.SWCosts.Count; index++)
+                                        {
+                                            <input asp-for="SWCosts[index].IsOwnForces" hidden />
+                                        }
+
+                                    </div>
+                                </div>
                             </div>
-                        }
-                        <div class="button-block">
-
-                            <span id="text_error" class="text_error"></span>
-
-                            <a class="btn btn-success btn_load" asp-action="GetByFile" asp-route-returnContractId="@ViewData["returnContractId"]" asp-route-contractId="@ViewData["contractId"]">Загрузить из Excel</a>
-
-                            <button type="submit" id="createButton" class="btn btn-primary">Создать</button>
                         </div>
+                    </div>
+                    <div style="display: flex;gap: 20px;padding: 2px 40px 16px;white-space: nowrap;justify-content: space-around;">
+                        <div class="summary-item current">
+                            <span class="k">Всего по договору с НДС:</span>
+                            <span class="v">
+                                <span id="sumCurrent">@contractPrice.ToString("N2")</span>
+                                <span>@contract?.Сurrency</span>
+                            </span>
+                        </div>
+                        <div class="summary-item target">
+                            <span class="k">Введенная плановая сумма:</span>
+                            <span class="v">
+                                <span id="sumTarget">0,00</span>
+                                <span>@contract?.Сurrency</span>
+                            </span>
+                        </div>
+                        <div class="summary-item diff">
+                            <span class="k">Разница:</span>
+                            <span class="v zero" id="sumDiff">0,00</span>
+                        </div>
+                    </div>
+
+                    @*  {{-- ══ ФУТЕР ══ --}} *@
+                    <div class="org-footer" style="padding:10px 16px 14px;">
+
+                        <a asp-controller="ScopeWorks"
+                           asp-action="GetByContractId"
+                           asp-route-contractId=@(backId > 0 ? @backId : null)
+                           asp-route-returnContractId="@ViewBag.returnContractId"
+                           class="md3-btn md3-btn-ghost" style="padding:6px 14px; font-size:12px;">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                <path d="M19 12H5M12 5l-7 7 7 7"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            Отмена
+                        </a>
+                        <div class="org-footer-spacer"></div>
+                        <button type="submit" class="md3-btn md3-primary-btn" style="padding:6px 16px; font-size:12px;" id="submitBtn">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M17 21v-8H7v8M7 3v5h8"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            Сохранить
+                        </button>
+
+
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
-
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-
     }
+    <script src="~/js/cost-formatter.js"></script>
     <script>
-        $(function ($) {
-            var allCost = $(".cost")
-            for (let el of allCost) {
-                digits_float(el)
+                    /* ---- number helpers ---- */
+
+             const grid = document.querySelector('.periods-grid');
+            function parseNum(v){
+              const n = parseFloat(String(v ?? '0').replace(/\s/g,'').replace(',', '.'));
+              return isNaN(n) ? 0 : n;
             }
-            $('body').on('input', '.cost', function (e) {
-                digits_float(this);
+            function fmt(n){
+              return n.toLocaleString('ru-RU', {minimumFractionDigits:2, maximumFractionDigits:2});
+            }
+
+            /* ---- core summary calculation ----
+               Суммирует все поля в каждой из трёх строк (Текущий / Целевой / Отработка)
+               по всем отрисованным периодам и пишет итоги + разницу в summary-bar. */
+            function updateSummary(){
+              let current = 0, target = 0;
+
+              grid.querySelectorAll('.g-input[data-row="SmrCost"], .g-input[data-row="PnrCost"], .g-input[data-row="EquipmentCost"], .g-input[data-row="OtherExpensesCost"], .g-input[data-row="AdditionalCost"]').forEach(i => target += parseNum(i.value));
+              current = parseNum('@Html.Raw(contractPrice)');
+
+              document.getElementById('sumCurrent').textContent = fmt(current);
+              document.getElementById('sumTarget').textContent = fmt(target);
+
+              // const diff = current - target;
+              const diff = Math.round((current - target) * 100) / 100;
+              const diffEl = document.getElementById('sumDiff');
+              diffEl.textContent = fmt(diff);
+              diffEl.classList.toggle('zero', diff === 0);
+
+              // Обновляем состояние кнопки при каждом пересчёте
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.disabled = diff !== 0;
+                submitBtn.title = diff !== 0 ? 'Сумма не сходится' : '';
+
+            }
+                    // Отдельно, один раз при загрузке страницы — подстраховка на случай submit другим способом
+        // document.getElementById('scpFormId').addEventListener('submit', function (e) {
+        //     const diffEl = document.getElementById('sumDiff');
+        //     if (!diffEl.classList.contains('zero')) {
+        //         e.preventDefault();
+        //         alert('Сумма не сходится: разница должна быть равна 0.');
+        //     }
+        // });
+
+            /* Делегирование: один слушатель на контейнере ловит input с любого поля,
+               включая появившиеся позже (например, после смены числа периодов) */
+            grid.addEventListener('input', (e) => {
+              if (e.target.classList.contains('g-input')) updateSummary();
             });
-        });
-        check();
-        $('body').on('input', '.SmrCost', function (e) {
-            digits_float(this);
-            check();
-        });
-        $('body').on('input', '.PnrCost', function (e) {
-            digits_float(this);
-            check();
-        });
-        $('body').on('input', '.EquipmentCost', function (e) {
-            digits_float(this);
-            check();
-        });
-        $('body').on('input', '.OtherExpensesCost', function (e) {
-            digits_float(this);
-            check();
-        });
-        $('body').on('input', '.AdditionalCost', function (e) {
-            digits_float(this);
-            check();
-        });
 
-        function check() {
-            let btn = document.getElementById("createButton");
+            /* Пересчёт сразу при загрузке страницы */
+            window.addEventListener('DOMContentLoaded', updateSummary);
 
-            let SmrCost = $(".SmrCost");
-            let PnrCost = $(".PnrCost");
-            let EquipmentCost = $(".EquipmentCost");
-            let OtherExpensesCost = $(".OtherExpensesCost");
-            let AdditionalCost = $(".AdditionalCost");
-            let sum = 0;
-            let result = 0;
-            for (let item of SmrCost) {
-                const regExp = /,/g;
-                let num = item.value.replaceAll(' ', '').replace(regExp, '.')
-                sum += +num;
+            /* Для программного заполнения полей (например, после импорта из Excel) —
+               input.value = ... в JS НЕ генерирует событие 'input', поэтому обычный
+               слушатель его не поймает; эта функция заполняет ячейки и сама
+               пересчитывает суммы сразу после заполнения. */
+            function fillPeriodValues(data){
+              [/* 'current', */'target'].forEach(row => {
+                const inputs = grid.querySelectorAll(`.g-input[data-row="${row}"]`);
+                (data[row] || []).forEach((val, idx) => {
+                  if (inputs[idx]) inputs[idx].value = val;
+                });
+              });
+              updateSummary();
             }
-            for (let item of PnrCost) {
-                const regExp = /,/g;
-                let num = item.value.replaceAll(' ', '').replace(regExp, '.')
-                sum += +num;
-            }
-            for (let item of EquipmentCost) {
-                const regExp = /,/g;
-                let num = item.value.replaceAll(' ', '').replace(regExp, '.')
-                sum += +num;
-            }
-            for (let item of OtherExpensesCost) {
-                const regExp = /,/g;
-                let num = item.value.replaceAll(' ', '').replace(regExp, '.')
-                sum += +num;
-            }
-            for (let item of AdditionalCost) {
-                const regExp = /,/g;
-                let num = item.value.replaceAll(' ', '').replace(regExp, '.')
-                sum += +num;
-            }
-            sum = Math.round(sum * 100) / 100;
-            const regExp = /,/g;
-            let o = document.querySelector("#sumTarget").value.replace(regExp, '.');
-            o = o.replace(/\s+/g, '');
-            let contractPrice = +o;
-
-            result = contractPrice - sum;
-            if (result === 0) {
-                $("#resultValue").focus(function () { $(this).addClass("focused") });
-                btn.removeAttribute('disabled')
-                $('#text_error').text('')
-            } else {
-                btn.setAttribute('disabled', true)
-                $('#text_error').text('Сумма не сходится!')
-            }
-
-            var sumText = sum.toString().replace('.', ',');
-            $("#sumTargetWork").val(sumText);
-            digits_float("#sumTargetWork");
-            var resultText = result.toString().replace('.', ',');
-            $("#resultValue").val(resultText);
-            digits_float("#resultValue");
-        }
     </script>
 }
